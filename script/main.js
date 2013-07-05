@@ -26,13 +26,13 @@
  *      (still need to refresh the page when session dies)
  *
  * Latest changelog:
- * 1. improve performace when dj advances
- * 2. improve overall performance
+ * 1. improved performace when dj advances
+ * 2. improved overall performance
  * 3. added chat history function
  * 4. added chat box shortcuts
  *
  *
- * 5 JULY 2013,
+ * 6 JULY 2013,
  * Ebola
  */
 
@@ -1170,10 +1170,13 @@ var autoqueue;
  * Whether or not the user has enabled hiding this video.
  */
 var hideVideo;
-/*
+/* ###
  * Whether or not the user has enabled the userlist.
  */
 var userList;
+var timeout_updateUserList;
+var time_lastUpdateUserList = 0;
+var INTERVAL_UPDATEUsERLiST = 5000; // msec
 /*
  * Whether the current video was skipped or not.
  */
@@ -1640,13 +1643,33 @@ function joinQueue()
  */
 function populateUserlist()
 {
+    // limit rate
+    var dateNow = new Date();
+    var tickNow = dateNow.getTime();
+    dateNow = null;
+
+    if (tickNow - time_lastUpdateUserList >= INTERVAL_UPDATEUsERLiST) {
+        clearTimeout(timeout_updateUserList);
+        time_lastUpdateUserList = tickNow;
+    } else {
+        clearTimeout(timeout_updateUserList);
+        timeout_updateUserList = setTimeout(function() {
+            populateUserlist();
+        }, INTERVAL_UPDATEUsERLiST);
+        return;
+    }
+
+    console.log("populating user list");
+
+
     var userList = $('#plugbot-userlist');
+    var users = API.getUsers();
     /*
      * Destroy the old userlist DIV and replace it with a fresh
      * empty one to work with.
      */
     userList.html(' ')
-            .append('<h1 style="text-indent:12px;color:#42A5DC;font-size:14px;font-variant:small-caps;">Users: ' + API.getUsers().length + '</h1>')
+            .append('<h1 style="text-indent:12px;color:#42A5DC;font-size:14px;font-variant:small-caps;">Users: ' + users.length + '</h1>')
             .append('<p style="padding-left:12px;text-indent:0px !important;font-style:italic;color:#42A5DC;font-size:11px;">Click a username to<br />open user-box!</p><br />');
 
     /*
@@ -1666,7 +1689,7 @@ function populateUserlist()
      * Populate the users array with the next user
      * in the room (this is stored alphabetically.)
      */
-    $.each(API.getUsers(), function(index, key) {
+    $.each(users, function(index, key) {
         appendUser(key);
     });
 }
