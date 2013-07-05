@@ -20,7 +20,7 @@ Open Video List | Open video link (YouTube) in new tab without "?feature=player_
 ### Installation ###
 Drag the text from the link below (it will look like code) into your Bookmarks Bar and it should make a new bookmark.
 
-@@@
+<a href="javascript:%20(function%20()%20{%20%20var%20jsCode%20=%20document.createElement('script');%20jsCode.setAttribute('id',%20'plugbot-js');%20jsCode.setAttribute('src',%20'https://raw.github.com/ebola777/Plugbot-Enhanced-by-Ebola/master/script/main.min.js');%20document.body.appendChild(jsCode);%20}());">PlugBot Enhanced</a>
 
 ### Author ###
 + <strong>Ebola</strong>
