@@ -95,6 +95,7 @@ But you still need to refresh page when session dies
 
 ### Feedback/Bugs
 <a href="https://github.com/ebola777/Plugbot-Enhanced-by-Ebola/pulls">Create a new pull request</a>
+<br>
 <a href="https://github.com/ebola777/Plugbot-Enhanced-by-Ebola/issues">Create a new issue</a>
 
 ### Version History
