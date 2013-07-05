@@ -31,8 +31,10 @@ Search chat history sent by you<br>
 2. press UP/DOWN continuously to search between
 			older and newer messages
 3. press other keys would stop searching immediately
+- chat history up to 20 items
 
-- max 20 items
+- press ESC to focus chat box (when it's not focused)
+- press ESC to clear text in chat box (when it's focused)
 
 #### Auto Woot/Meh
 Automatically WOOT/MEH! each song as it is played
