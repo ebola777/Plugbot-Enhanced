@@ -4,10 +4,10 @@
 Go to Installation section in the following link in my blog and
 	see instructions there
 
-<a href="http://ebola777.pixnet.net/blog/post/48002738" target="_blank">PlugBot Enhanced</a>
+<a href="http://ebola777.pixnet.net/blog/post/48002738">PlugBot Enhanced</a>
 
 ### Original Script
-<a href="https://github.com/connergdavis/Plugbot" target="_blank">https://github.com/connergdavis/Plugbot</a>
+<a href="https://github.com/connergdavis/Plugbot">https://github.com/connergdavis/Plugbot</a>
 
 ### Snapshot
 ![ss1](http://pic.pimg.tw/ebola777/1371839011-1013933568.png "ss1")
@@ -24,7 +24,7 @@ press CTRL + mouse click to add emoticons continuously
 	(without dialog closing) <br>
 
 - recent emoticons (you & other users)
-- catalog based on <a href="http://www.emoji-cheat-sheet.com/" target="_blank">emoji cheat sheet</a>
+- catalog based on <a href="http://www.emoji-cheat-sheet.com/">emoji cheat sheet</a>
 - smartly add spaces between emoticons and text
 
 #### Chat History & Shortcuts
@@ -94,6 +94,7 @@ But you still need to refresh page when session dies
 + <strong>Ebola</strong>
 
 ### Feedback/Bugs
+<a href="https://github.com/ebola777/Plugbot-Enhanced-by-Ebola/pulls">Create a new pull request</a>
 <a href="https://github.com/ebola777/Plugbot-Enhanced-by-Ebola/issues">Create a new issue</a>
 
 ### Version History
