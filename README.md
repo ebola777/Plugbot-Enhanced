@@ -1,7 +1,7 @@
 ## Plug.bot Enhanced by Ebola
 
 ### Installation
-Go to Installation section in my post in my blog and
+Go to Installation section in the post in my blog and
 	see instructions there
 
 <a href="http://ebola777.pixnet.net/blog/post/48002738" target="_blank">PlugBot Enhanced</a>
@@ -14,17 +14,18 @@ Go to Installation section in my post in my blog and
 
 ![ss2](http://pic.pimg.tw/ebola777/1371839011-2333931159.png "ss2")
 
+-----
 ### Features List
 #### Emoticons Dialog
-A simple emoticons dialog,<br>
+A simple emoticons dialog<br>
 
-click smiley icon in chat box to show <br>
+click smiley icon in chat box to show it <br>
 press CTRL + mouse click to add emoticons continuously
 	(without dialog closing) <br>
 
 - recent emoticons (you & other users)
-- catalog based on emoji cheat sheet
-- smartly add spaces between emoticon text
+- catalog based on <a href="http://www.emoji-cheat-sheet.com/" target="_blank">emoji cheat sheet</a>
+- smartly add spaces between emoticons and text
 
 #### Chat History & Shortcuts
 Search chat history sent by you<br>
@@ -45,19 +46,19 @@ Auto-Meh is just for fun, DON'T PRESS IT
 Automatically add yourself back to the DJ Waitlist
 	once you've been moved back into the crowd
 
-#### Userlist
+#### Userlist & User-box
 A dynamic list of every user in the room,
 	color-coded by their current vote. <br>
 Green = "Woot", Red = "Meh", White = No vote <br>
-Special usergroups (i.e. moderator) are denoted by the icon you'd normally see in the chat
+Special usergroups (i.e. moderator) are denoted by the icon you'd normally see in the chat<br>
+Click any username would show user-box instead of @mention in original script
 
 #### Toggle UI
 Allows you to easily configure your Plug.bot experience <br>
-enable or disable each of its features at the click of a button. <br>
 Red = Off, Green = On
 
 #### Hide Video
-Hides videos from view on the site <br>
+Hides videos from view on the site. <br>
 this is in effect until disabled
 
 #### Skip Video
@@ -68,6 +69,22 @@ This is exactly like hide video,
 #### Open Video List
 Open video link (YouTube) in new tab
 	without "?feature=player_embedded" in URL
+
+-----
+### Improvement
+
+#### Performance
+You may notice this script would be less laggy when switching song
+	in large room with over 150 people than original script
+
+#### Skipping Video
+Properly resume volume and video when switching song
+
+#### This session has now ended. Goodbye.
+It's usually annoying when you're playing fullscreen game,
+	a popup of this message shows and you return to desktop and player dies in game,
+	so I suppress this message. <br>
+But you still need to refresh page when session dies
 
 -----
 
