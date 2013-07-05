@@ -1,7 +1,7 @@
 ## Plug.bot Enhanced by Ebola
 
 ### Installation
-Go to Installation section in the post in my blog and
+Go to Installation section in the following link in my blog and
 	see instructions there
 
 <a href="http://ebola777.pixnet.net/blog/post/48002738" target="_blank">PlugBot Enhanced</a>
