@@ -6,9 +6,6 @@ Go to Installation section in the following link in my blog and
 
 <a href="http://ebola777.pixnet.net/blog/post/48002738">PlugBot Enhanced</a>
 
-### Original Script
-<a href="https://github.com/connergdavis/Plugbot">https://github.com/connergdavis/Plugbot</a>
-
 ### Snapshot
 ![ss1](http://pic.pimg.tw/ebola777/1371839011-1013933568.png "ss1")
 
@@ -66,7 +63,7 @@ This is exactly like hide video,
 	except it additionally mutes the audio and will automatically re-enable
 	everything after the current video is over
 
-#### Open Video List
+#### Open Video Link
 Open video link (YouTube) in new tab
 	without "?feature=player_embedded" in URL
 
@@ -89,6 +86,15 @@ But you still need to refresh page when session dies
 -----
 
 ![ss3](http://pic.pimg.tw/ebola777/1371839012-2083724812_n.png "ss3")
+
+### Installation
+Go to Installation section in the following link in my blog and
+	see instructions there
+
+<a href="http://ebola777.pixnet.net/blog/post/48002738">PlugBot Enhanced</a>
+
+### Original Script
+<a href="https://github.com/connergdavis/Plugbot">https://github.com/connergdavis/Plugbot</a>
 
 ### Author
 + <strong>Ebola</strong>
