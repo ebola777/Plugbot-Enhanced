@@ -1659,9 +1659,6 @@ function populateUserlist()
         return;
     }
 
-    console.log("populating user list");
-
-
     var userList = $('#plugbot-userlist');
     var users = API.getUsers();
     /*
@@ -2050,7 +2047,7 @@ function updateVidURL(noDisplay) {
  */
 function suppressAlert() {
     window.alert = function(text) {
-        console.log('ALERT ' + text);
+        console.log('ALERT: ' + text);
     }
 }
 
