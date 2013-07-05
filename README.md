@@ -18,12 +18,16 @@ Skip Video | This is exactly like hide video, except it additionally mutes the a
 Open Video List | Open video link (YouTube) in new tab without "?feature=player_embedded" in URL
 
 ### Installation ###
-Drag the text from the link below (it will look like code) into your Bookmarks Bar and it should make a new bookmark.
+Drag this link into your Bookmarks Bar<br>
+When in a plug.dj room, make sure video has shown then press
+	this bookmark
 
-<a href="javascript:%20(function%20()%20{%20%20var%20jsCode%20=%20document.createElement('script');%20jsCode.setAttribute('id',%20'plugbot-js');%20jsCode.setAttribute('src',%20'https://raw.github.com/ebola777/Plugbot-Enhanced-by-Ebola/master/script/main.min.js');%20document.body.appendChild(jsCode);%20}());">PlugBot Enhanced</a>
+<a href="javascript: (function () {  var jsCode = document.createElement('script'); jsCode.setAttribute('id', 'plugbot-js'); jsCode.setAttribute('src', 'https://raw.github.com/ebola777/Plugbot-Enhanced-by-Ebola/master/script/main.min.js'); document.body.appendChild(jsCode); }());">PlugBot Enhanced</a>
 
 ### Author ###
 + <strong>Ebola</strong>
+
+###
 
 ### Version History ###
 Version | Release Date | Changes
