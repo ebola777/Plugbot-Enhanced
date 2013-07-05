@@ -1,7 +1,18 @@
 ## Plug.bot Enhanced by Ebola
 
+### Installation
+Go to Installation section in my post in my blog and
+	see instructions there
+
+<a href="http://ebola777.pixnet.net/blog/post/48002738" target="_blank">PlugBot Enhanced</a>
+
 ### Original Script
 <a href="https://github.com/connergdavis/Plugbot" target="_blank">https://github.com/connergdavis/Plugbot</a>
+
+### Snapshot
+![ss1](http://pic.pimg.tw/ebola777/1371839011-1013933568.png "ss1")
+
+![ss2](http://pic.pimg.tw/ebola777/1371839011-2333931159.png "ss2")
 
 ### Features List
 #### Emoticons Dialog
@@ -60,11 +71,7 @@ Open video link (YouTube) in new tab
 
 -----
 
-### Installation
-Go to Installation section in my post in my blog and
-	see instructions there
-
-<a href="http://ebola777.pixnet.net/blog/post/48002738" target="_blank">PlugBot Enhanced</a>
+![ss3](http://pic.pimg.tw/ebola777/1371839012-2083724812_n.png "ss3")
 
 ### Author
 + <strong>Ebola</strong>
