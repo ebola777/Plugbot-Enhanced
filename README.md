@@ -74,12 +74,14 @@ Open video link (YouTube) in new tab
 
 #### Performance
 You may notice this script would be less laggy when switching song
-	in large room with over 150 people than original script
+	in large room with over 150 people than original script.<br>
+Also, I turn avatars animation off when you are not at plug.dj tab or
+	browser is minimized to tray
 
 #### Skipping Video
 Properly resume volume and video when switching song
 
-#### This session has now ended. Goodbye.
+#### "This session has now ended. Goodbye."
 It's usually annoying when you're playing fullscreen game,
 	a popup of this message shows and you return to desktop and player dies in game,
 	so I suppress this message. <br>
@@ -109,5 +111,6 @@ Go to Installation section in the following link in my blog and
 ### Version History
 Version | Release Date | Changes
 --------|--------------|--------
+1.02 | 6 JULY 2013 | <ul><li>Improve canvas performance</li></ul>
 1.01 | 6 JULY 2013 | <ul><li>Improve userlist performance</li></ul>
 1.0 | 5 JULY 2013 | <ul><li>Initial version</li></ul>

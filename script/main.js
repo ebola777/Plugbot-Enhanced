@@ -22,15 +22,18 @@
  * 7. fixed skipping video problem in original script (resume volume
  *      and video in next track)
  * 8. improved browser performance when switching song (dj advances)
- * 9. suppress "This session has now ended. Goodbye." alert box
+ * 9. improved browser performance when plug.dj tab is not focused
+ * 10. suppress "This session has now ended. Goodbye." alert box
  *      (still need to refresh the page when session dies)
  *
+ * Version 1.02
  * Latest changelog:
- * 1. improved performace when dj advances
- * 2. improved overall performance
- * 3. added chat history function
- * 4. added chat box shortcuts
+ * 1. improved performace when tab is not focused
+ * 2. automeh is set to false on default, pressing autowoot does not
+ *      affect automeh so that you can disable autowoot
  *
+ * This script is on Github:
+ * https://github.com/ebola777/Plugbot-Enhanced-by-Ebola
  *
  * 6 JULY 2013,
  * Ebola
@@ -1158,10 +1161,11 @@ var EmojiUI = Class.extend({
  *
  * @author  Conner Davis (Fruity Loops)
  */
-/*
- * Whether the user has currently enabled auto-woot.
+/* ###
+ * Whether the user has currently enabled auto-woot/auto-meh
  */
 var autowoot;
+var automeh = false;
 /*
  * Whether the user has currently enabled auto-queueing.
  */
@@ -1174,9 +1178,9 @@ var hideVideo;
  * Whether or not the user has enabled the userlist.
  */
 var userList;
-var timeout_updateUserList;
-var time_lastUpdateUserList = 0;
-var INTERVAL_UPDATEUsERLiST = 5000; // msec
+var timeout_updateUserList; // timeout delay to update user-list
+var time_lastUpdateUserList = 0; // last time of updating user-list
+var INTERVAL_UPDATEUsERLiST = 3000; // interval to update user-list, msec
 /*
  * Whether the current video was skipped or not.
  */
@@ -1193,7 +1197,14 @@ var vidURL = '';
  * Emoticons view
  */
 var EmojiUIView = new EmojiUI();
-
+/* ###
+ * Original animation speed
+ */
+var oriAnimSpeed = 0;
+/* ###
+ * Is webpage visible
+ */
+var isWebVisible = true;
 
 /*
  * Cookie constants
@@ -1289,7 +1300,7 @@ function displayUI()
     $('#chat').prepend('<div id="plugbot-ui"></div>');
 
     var cWoot = autowoot ? '#3FFF00' : '#ED1C24';
-    var cMeh = (!autowoot) ? '#3FFF00' : '#ED1C24'; // ### auto-meh
+    var cMeh = automeh ? '#3FFF00' : '#ED1C24'; // ### auto-meh
     var cQueue = autoqueue ? '#3FFF00' : '#ED1C24';
     var cHideVideo = hideVideo ? '#3FFF00' : '#ED1C24';
     var cUserList = userList ? '#3FFF00' : '#ED1C24';
@@ -1345,7 +1356,7 @@ function displayEmoticons() {
     EmojiUIView.initHandlers1();
 }
 
-/**
+/** ###
  * For every button on the Plug.bot UI, we have listeners backing them
  * that are built to intercept the user's clicking each button.  Based
  * on the button that they clicked, we can execute some logic that will
@@ -1401,20 +1412,20 @@ function initUIListeners()
         jaaulde.utils.cookies.set(COOKIE_USERLIST, userList);
     });
 
-    /*
+    /* ###
      * Toggle auto-woot.
      */
     $('#plugbot-btn-woot').live('click', function() // ### .live()
     {
         autowoot = !autowoot;
-        $(this).css('color', autowoot ? '#3FFF00' : '#ED1C24');
-        $('#plugbot-btn-meh').css('color', (!autowoot) ? '#3FFF00' : '#ED1C24');
+        (autowoot) &&
+            (automeh = false);
 
-        if (autowoot)
-        {
+        $(this).css('color', autowoot ? '#3FFF00' : '#ED1C24');
+        $('#plugbot-btn-meh').css('color', automeh ? '#3FFF00' : '#ED1C24');
+
+        if (autowoot) {
             $('#button-vote-positive').click();
-        } else { // ### meh
-            $('#button-vote-negative').click();
         }
 
         jaaulde.utils.cookies.set(COOKIE_WOOT, autowoot);
@@ -1425,18 +1436,16 @@ function initUIListeners()
      */
     $('#plugbot-btn-meh').live('click', function() // ### .live()
     {
-        autowoot = !autowoot;
-        $(this).css('color', (!autowoot) ? '#3FFF00' : '#ED1C24');
+        automeh = !automeh;
+        (automeh) &&
+            (autowoot = false);
+
+        $(this).css('color', automeh ? '#3FFF00' : '#ED1C24');
         $('#plugbot-btn-woot').css('color', autowoot ? '#3FFF00' : '#ED1C24');
 
-        if ( !autowoot)
-        {
+        if (automeh) {
             $('#button-vote-negative').click();
-        } else {
-            $('#button-vote-positive').click();
         }
-
-        jaaulde.utils.cookies.set(COOKIE_WOOT, autowoot);
     });
 
     /*
@@ -1532,6 +1541,9 @@ function initUIListeners()
         var user_obj = Models.room.userHash[user_id] || Models.room.nirUserHash[user_id];
         RoomUser.rollover.showChat(user_obj, pos.left + 300, pos.top);
     });
+
+    // ### Init visibility watch
+    init_visWatch();
 }
 
 /** ###
@@ -1571,14 +1583,13 @@ function djAdvanced(obj)
         hideVideoTemp = false;
     }
 
-    /*
+    /* ###
      * If auto-woot is enabled, WOOT! the song.
-     * ### otherwise, MEH! the song
+     * otherwise, MEH! the song
      */
-    if (autowoot)
-    {
+    if (autowoot) { // WOOT
         $('#button-vote-positive').click();
-    } else {
+    } else if (automeh) { // MEH
         $('#button-vote-negative').click();
     }
 
@@ -1643,16 +1654,18 @@ function joinQueue()
  */
 function populateUserlist()
 {
+    // check if page is visible
+    if ( !isWebVisible) { return; }
+
     // limit rate
     var dateNow = new Date();
     var tickNow = dateNow.getTime();
     dateNow = null;
 
+    clearTimeout(timeout_updateUserList);
     if (tickNow - time_lastUpdateUserList >= INTERVAL_UPDATEUsERLiST) {
-        clearTimeout(timeout_updateUserList);
         time_lastUpdateUserList = tickNow;
     } else {
-        clearTimeout(timeout_updateUserList);
         timeout_updateUserList = setTimeout(function() {
             populateUserlist();
         }, INTERVAL_UPDATEUsERLiST);
@@ -1964,14 +1977,13 @@ $('body').append('<div id="plugbot-userlist"></div>');
  */
 function onCookiesLoaded()
 {
-    /*
+    /* ###
      * Hit the woot button, if autowoot is enabled.
-     * ### Hit the meh button if disabled
+     * Hit the meh button if disabled
      */
-    if (autowoot)
-    {
+    if (autowoot) {
         $('#button-vote-positive').click();
-    } else {
+    } else if (automeh) {
         $('#button-vote-negative').click();
     }
 
@@ -2070,4 +2082,62 @@ function resetPlayback() {
  */
 function injectStyles(rule) {
     $('head').append('<style type="text/css">' + rule + '</style>');
+}
+
+/* Init webpage visibility watch
+ */
+function init_visWatch() {
+    var hidden = "hidden";
+
+    // Standards:
+    if (hidden in document)
+        document.addEventListener("visibilitychange", onchange);
+    else if ((hidden = "mozHidden") in document)
+        document.addEventListener("mozvisibilitychange", onchange);
+    else if ((hidden = "webkitHidden") in document)
+        document.addEventListener("webkitvisibilitychange", onchange);
+    else if ((hidden = "msHidden") in document)
+        document.addEventListener("msvisibilitychange", onchange);
+
+    // IE 9 and lower:
+    else if ('onfocusin' in document)
+        document.onfocusin = document.onfocusout = onchange;
+
+    // All others:
+    else
+        window.onfocus = window.onblur = onchange;
+
+    function onchange(evt) {
+        var isvis = true;
+        evt = evt || window.event;
+
+        if (evt.type == "focus" || evt.type == "focusin") {
+            isvis = true;
+        } else if (evt.type == "blur" || evt.type == "focusout") {
+            isvis = false;
+        } else {
+            isvis = !this[hidden];
+        }
+
+        if (isvis) {
+            onWindowFocus();
+        } else {
+            onWindowBlur();
+        }
+    }
+}
+
+/* When window is focused
+ */
+function onWindowFocus() {
+    (0 !== oriAnimSpeed) &&
+        (animSpeed = oriAnimSpeed, isWebVisible = true);
+}
+
+/* When window is NOT focused
+ */
+function onWindowBlur() {
+    oriAnimSpeed = animSpeed;
+    animSpeed = 1e100;
+    isWebVisible = false;
 }
