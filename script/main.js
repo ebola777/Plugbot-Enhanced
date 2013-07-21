@@ -28,33 +28,46 @@
  *      (still need to refresh the page when session dies)
  *
  * - Version:
- * 1.03
+ * 1.04
  *
  * - Latest changelog:
- * 1. fixed breakdown caused by plug.dj new version
- * 2. set focus to chat input field when opening emoticons dialog
- * 3. removed function to freeze avatar animation
+ * 1. Fixed userlist is not refreshing when plud.dj page focus is
+ *      switched on
+ * 2. Fixed re-positioning emoticons dialog when pressing chat expand
+ *      button
+ * 3. Makes PlugBot UI unselectable, so you won't select the text
+ *      when quickly clicking button on PlugBot UI
+ * 4. Detects room joining, it can woot! and auto-queue when changing
+ *      room
  *
  * - Issues:
- * 1. Sometimes cannot log recent emoticons and chat sent by yourself,
- *      probably caused by new version of plug.dj
- * 2. Cannot detect plug.dj admins
+ * 1. Some userlist icons cannot be displayed, still waiting plugbot
+ *      to fix it
  *
  * - Script structure:
- * 1. Require.js debugging snippet (:95)
- * 2. Emoji class (:106)
- * 3. PlugBot main code (:1221)
- * 4. Public functions (:2209)
+ * 1. Require.js debugging snippet (:107)
+ * 2. Initialization (:115)
+ * 3. Emoji class (:118)
+ * 4. PlugBot main code (:1240)
+ * 5. Public functions (:2294)
  *
  * - Development notice:
  * 1. How to debug EmojiUI?
  *      type the following command in console:
  *      req('app/models/3rd/EmojiUI', 'EmojiUI');
+ * 2. How to debug plug.dj models/views?
+ *      similar to #1, find 1st argument (XXX) in
+ *      'define("XXX", ["a", "b", "c"], function(A, B, C) {...});'
+ *      type in console:
+ *      req('XXX', 'YYY');
+ *      and then you can use YYY to debug.
+ *      it's recommended to list a code snippets when developing for
+ *      ease of use
  *
  * This script is on Github:
  * https://github.com/ebola777/Plugbot-Enhanced-by-Ebola
  *
- * 20 JULY 2013,
+ * 21 JULY 2013,
  * Ebola
  */
 
@@ -92,7 +105,7 @@
  */
 
 //===== ### Require.js ======
-// http://stackoverflow.com/questions/13920722/accessing-backbone-objects-inside-requirejs-module-from-console
+// http://stackoverflow.com/questions/13920722/accessing-backbone-objects-inside-requirejs-module-from-console/13922366#13922366
 var req = function(module, name) {
     require([module], function(m) {
         window[name] = m;
@@ -900,16 +913,16 @@ define('app/models/3rd/EmojiUI',
          */
         repos: function() {
             // re-pos emoticons dialog
-            if ('block' === $('#button-chat-expand').css('display')) {
-                // show at bottom
-                $('#dialog-emoticons').css({
-                    top: $('#emoji-button').offset().top + 26,
-                    left: $('#emoji-button').offset().left - $('#dialog-emoticons').width() + 32
-                });
-            } else {
+            if ('block' !== $('#button-chat-expand').css('display')) {
                 // show at top
                 $('#dialog-emoticons').css({
                     top: $('#emoji-button').offset().top - $('#dialog-emoticons').height() - 10,
+                    left: $('#emoji-button').offset().left - $('#dialog-emoticons').width() + 32
+                });
+            } else {
+                // show at bottom
+                $('#dialog-emoticons').css({
+                    top: $('#emoji-button').offset().top + 26,
                     left: $('#emoji-button').offset().left - $('#dialog-emoticons').width() + 32
                 });
             }
@@ -950,6 +963,9 @@ define('app/models/3rd/EmojiUI',
                 $('#dialog-emoticons-panelRight').scrollTop(0);
             }
             this.preventScroll = false;
+
+            // focus input field
+            $('#chat-input-field').focus();
 
             // store index
             this.currentTab = index;
@@ -1119,12 +1135,14 @@ define('app/models/3rd/EmojiUI',
                 myName = API.getUser().username;
             var msg = obj.message;
 
+            // check user
+            if ('undefined' === typeof(user)) { user = myName; }
+
             // record message sent by my
             if (user === myName) {
                 if (_this.historyMessage.length + 1 > _this.MAX_HISTORYChAT) { _this.historyMessage.shift(); }
                 _this.historyMessage.push( msg.replace(/&lt;/g, '<')
-                                                .replace(/&gt;/g, '>')
-                                                .replace(/&amp;/g, '&') ); // record history
+                                                .replace(/&gt;/g, '>') ); // record history
             }
 
             function i(e) {
@@ -1135,6 +1153,8 @@ define('app/models/3rd/EmojiUI',
             var n = this.cons;
             var s = /:([^ :]+):/;
             var t = !1;
+            msg = msg.replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
             msg.substr(0, 2) == ": " && (t = !0, msg = msg.substr(2));
             for (var o in n)
                 (function(t, n) {
@@ -1221,6 +1241,7 @@ define('app/models/3rd/EmojiUI',
 define('app/models/3rd/PlugBot',
     [
         'jquery',
+        'app/base/Context',
         'app/models/PlaybackModel',
         'app/views/room/PlaybackView',
         'app/models/RoomModel',
@@ -1229,6 +1250,7 @@ define('app/models/3rd/PlugBot',
     ],
     function(
         $,
+        BaseContext,
         PlaybackModel,
         PlaybackView,
         RoomModel,
@@ -1358,6 +1380,7 @@ define('app/models/3rd/PlugBot',
          * Called upon receiving a message
          */
         API.on(API.CHAT, EmojiUIModel.onChatReceived, EmojiUIModel);
+        BaseContext.on("chat:send", EmojiUIModel.onChatReceived, EmojiUIModel);
     }
 
 
@@ -1373,10 +1396,10 @@ define('app/models/3rd/PlugBot',
          */
         $('#plugbot-ui').remove();
 
-        /*
+        /* ###
          * Generate the HTML code for the UI.
          */
-        $('#chat').prepend('<div id="plugbot-ui"></div>');
+        $('#chat').prepend('<div id="plugbot-ui" class="unselectable"></div>');
 
         var cWoot = autowoot ? '#3FFF00' : '#ED1C24';
         var cMeh = automeh ? '#3FFF00' : '#ED1C24'; // ### auto-meh
@@ -1423,6 +1446,7 @@ define('app/models/3rd/PlugBot',
 
         // remove old elements
         $('#emoji-button').remove();
+        $('#dialog-emoticons').remove();
 
         // set chat field style
         chatInputField.css('width', '267px');
@@ -1465,10 +1489,14 @@ define('app/models/3rd/PlugBot',
          * Chat expands/collapses
          */
         $('#button-chat-expand').click(function() {
-            EmojiUIModel.repos();
+            setTimeout(function() {
+                EmojiUIModel.repos();
+            }, 100);
         });
         $('#button-chat-collapse').click(function() {
-            EmojiUIModel.repos();
+            setTimeout(function() {
+                EmojiUIModel.repos();
+            }, 100);
         });
 
         /*
@@ -2105,6 +2133,8 @@ define('app/models/3rd/PlugBot',
         /*
          * Call all init-related functions to start the software up.
          */
+        initWatchRoomJoin(onRoomJoin); // ### init watch room joining
+        injectCustomStyles(); // ### inject custom styles
         updateVidURL(true); // ### update video url
         suppressAlert(); // ### suppress alert function
 
@@ -2115,12 +2145,67 @@ define('app/models/3rd/PlugBot',
         displayEmoticons(); // ### display emoticons
     }
 
+    /* When joining a new room
+     */
+    function onRoomJoin() {
+        // reset time to force userlist to refresh
+        time_lastUpdateUserList = 0;
+
+        // wait a little moment then invoke djAdvance
+        setTimeout(function() {
+            djAdvanced(null);
+        }, 1000);
+    }
+
+    /* Inject custom css styles for plugbot
+     */
+    function injectCustomStyles() {
+        // unselectable class
+        injectStyles('.unselectable { \
+                        -moz-user-select: -moz-none; \
+                        -khtml-user-select: none; \
+                        -webkit-user-select: none; \
+                        -o-user-select: none; \
+                        user-select: none; \
+                    }');
+    }
+
+    /* Initialize timer to watch room joining
+     */
+    function initWatchRoomJoin(callback) {
+        var lastURL = '';
+
+        var duration = 100;
+        var interval_watchURLChange,
+            interval_watchRoomJoin;
+        var watchURLChange,
+            watchRoomJoin;
+
+        watchURLChange = function () {
+            if (window.location.href != lastURL) {
+                if ('' !== lastURL) {
+                    interval_watchRoomJoin = setInterval(watchRoomJoin, duration);
+                }
+                lastURL = window.location.href;
+            }
+        }
+
+        watchRoomJoin = function() {
+            if (0 !== API.getUsers().length) {
+                callback();
+                clearInterval(interval_watchRoomJoin);
+            }
+        }
+
+        interval_watchURLChange = setInterval(watchURLChange, duration);
+    }
+
     /* Update video orignal url
      * \param   noDisplay       |   don't call displayUI()
      */
     function updateVidURL(noDisplay) {
         var media = PlaybackModel.get('media');
-        if ( !media) { return; }
+        if ('undefined' === typeof(media)) { return; }
         var format = media.get('format');
         var id = media.get('cid');
 
@@ -2195,7 +2280,8 @@ define('app/models/3rd/PlugBot',
     /* When window is focused
      */
     function onWindowFocus() {
-        isWebVisible = true
+        isWebVisible = true;
+        populateUserlist();
     }
 
     /* When window is NOT focused

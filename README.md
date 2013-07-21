@@ -77,7 +77,11 @@ You may notice this script would be less laggy when switching song
 	in large room with over 150 people than original script.<br>
 
 #### Skipping Video
-Properly resume volume and video when switching song
+Properly resumes volume and video when switching song
+
+#### Changing room
+Auto-woots and auto-queues when room changes,
+	and updates userlist immediately
 
 #### "This session has now ended. Goodbye."
 It's usually annoying when you're playing fullscreen game,
@@ -88,9 +92,7 @@ But you still need to refresh page when session dies
 -----
 ### Issues
 
-1. Sometimes cannot log recent emoticons and chat sent by yourself,
-	probably caused by new version of plug.dj
-2. Cannot detect plug.dj admins
+1. Some userlist icons cannot be displayed, still waiting plugbot to fix it
 
 -----
 
@@ -117,6 +119,7 @@ Go to Installation section in the following link in my blog and
 ### Version History
 Version | Release Date | Changes
 --------|--------------|--------
+1.04 | 21 JULY 2013 | <ul><li>Fixed userlist is not refreshing when plud.dj page focus is switched on</li> <li>Fixed re-positioning emoticons dialog when pressing chat expand button</li> <li>Makes PlugBot UI unselectable, so you won't select the text when quickly clicking button on PlugBot UI</li> <li>Detects room joining, it can woot! and auto-queue when changing room</li> </ul>
 1.03 | 20 JULY 2013 | <ul><li>Fix breakdown due to new version of plug.dj</li></ul>
 1.02 | 6 JULY 2013 | <ul><li>Improve canvas performance</li></ul>
 1.01 | 6 JULY 2013 | <ul><li>Improve userlist performance</li></ul>
