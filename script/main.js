@@ -28,7 +28,7 @@
  *      (still need to refresh the page when session dies)
  *
  * - Version:
- * 1.05
+ * 1.05.1
  *
  * - Latest changelog:
  * 1. Fixed userlist icons are not correctly displayed
@@ -1826,7 +1826,7 @@ define('app/models/3rd/PlugBot',
          * 3: manager
          * 4/5: (co-)host
          */
-        var permission = user.permission;
+        var permission = +(user.permission);
         var currentDJ = API.getDJs()[0];
         var userIsDJ = false;
 
