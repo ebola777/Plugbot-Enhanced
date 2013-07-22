@@ -28,28 +28,20 @@
  *      (still need to refresh the page when session dies)
  *
  * - Version:
- * 1.04
+ * 1.05
  *
  * - Latest changelog:
- * 1. Fixed userlist is not refreshing when plud.dj page focus is
- *      switched on
- * 2. Fixed re-positioning emoticons dialog when pressing chat expand
- *      button
- * 3. Makes PlugBot UI unselectable, so you won't select the text
- *      when quickly clicking button on PlugBot UI
- * 4. Detects room joining, it can woot! and auto-queue when changing
- *      room
+ * 1. Fixed userlist icons are not correctly displayed
  *
  * - Issues:
- * 1. Some userlist icons cannot be displayed, still waiting plugbot
- *      to fix it
+ * Empty
  *
  * - Script structure:
- * 1. Require.js debugging snippet (:107)
- * 2. Initialization (:115)
- * 3. Emoji class (:118)
- * 4. PlugBot main code (:1240)
- * 5. Public functions (:2294)
+ * 1. Require.js debugging snippet (:99)
+ * 2. Initialization (:107)
+ * 3. Emoji class (:110)
+ * 4. PlugBot main code (:1232)
+ * 5. Public functions (:2289)
  *
  * - Development notice:
  * 1. How to debug EmojiUI?
@@ -67,7 +59,7 @@
  * This script is on Github:
  * https://github.com/ebola777/Plugbot-Enhanced-by-Ebola
  *
- * 21 JULY 2013,
+ * 22 JULY 2013,
  * Ebola
  */
 
@@ -1811,7 +1803,7 @@ define('app/models/3rd/PlugBot',
         });
     }
 
-    /**
+    /** ###
      * Appends another user's username to the userlist.
      *
      * @param username
@@ -1835,14 +1827,11 @@ define('app/models/3rd/PlugBot',
          * 4/5: (co-)host
          */
         var permission = user.permission;
+        var currentDJ = API.getDJs()[0];
+        var userIsDJ = false;
 
-        /*
-         * If they're an admin, set them as a fake permission,
-         * makes it easier.
-         */
-        if (user.admin)
-        {
-            permission = 99;
+        if ('undefined' !== currentDJ) {
+            userIsDJ = (currentDJ.username == username);
         }
 
         /*
@@ -1869,7 +1858,8 @@ define('app/models/3rd/PlugBot',
             case 5:
                 imagePrefix = 'host';
                 break;
-            case 99:
+            case 9:
+            case 10:
                 imagePrefix = 'admin';
                 break;
         }
@@ -1880,33 +1870,31 @@ define('app/models/3rd/PlugBot',
          * to denote that they're playing right now (since
          * they can't vote their own song.)
          */
-        if (0 !== API.getDJs().length) { // ###
-            if (API.getDJs()[0].username == username)
+        if (userIsDJ)
+        {
+            if (imagePrefix === 'normal')
             {
-                if (imagePrefix === 'normal')
-                {
-                    drawUserlistItem('void', '#42A5DC', username);
-                }
-                else
-                {
-                    drawUserlistItem(imagePrefix + '_current.png', '#42A5DC', username);
-                }
-            }
-            else if (imagePrefix === 'normal')
-            {
-                /*
-                 * If they're a normal user, they have no special icon.
-                 */
-                drawUserlistItem('void', colorByVote(user.vote), username);
+                drawUserlistItem('void', '#42A5DC', username);
             }
             else
             {
-                /*
-                 * Otherwise, they're ranked and they aren't playing,
-                 * so draw the image next to them.
-                 */
-                drawUserlistItem(imagePrefix + imagePrefixByVote(user.vote), colorByVote(user.vote), username);
+                drawUserlistItem(imagePrefix + '_current.png', '#42A5DC', username);
             }
+        }
+        else if (imagePrefix === 'normal')
+        {
+            /*
+             * If they're a normal user, they have no special icon.
+             */
+            drawUserlistItem('void', colorByVote(user.vote), username);
+        }
+        else
+        {
+            /*
+             * Otherwise, they're ranked and they aren't playing,
+             * so draw the image next to them.
+             */
+            drawUserlistItem(imagePrefix + imagePrefixByVote(user.vote), colorByVote(user.vote), username);
         }
     }
 
@@ -1965,7 +1953,7 @@ define('app/models/3rd/PlugBot',
         }
     }
 
-    /**
+    /** ###
      * Draw a user in the userlist.
      *
      * @param imagePath
@@ -1978,6 +1966,13 @@ define('app/models/3rd/PlugBot',
      */
     function drawUserlistItem(imagePath, color, username)
     {
+        var currentDJ = API.getDJs()[0];
+        var userIsDJ = false;
+
+        if ('undefined' !== currentDJ) {
+            userIsDJ = (currentDJ.username == username);
+        }
+
         /*
          * If they aren't a normal user, draw their rank icon.
          */
@@ -1991,7 +1986,7 @@ define('app/models/3rd/PlugBot',
          * Write the HTML code to the userlist.
          */
         $('#plugbot-userlist').append(
-            '<p class="plugbot-userlist-user" style="cursor:pointer;' + (imagePath === 'void' ? '' : 'text-indent:6px !important;') + 'color:' + color + ';' + ((API.getDJs()[0].username == username) ? 'font-size:15px;font-weight:bold;' : '') + '" >' + username + '</p>');
+            '<p class="plugbot-userlist-user" style="cursor:pointer;' + (imagePath === 'void' ? '' : 'text-indent:6px !important;') + 'color:' + color + ';' + (userIsDJ ? 'font-size:15px;font-weight:bold;' : '') + '" >' + username + '</p>');
     }
 
     ///////////////////////////////////////////////////////////

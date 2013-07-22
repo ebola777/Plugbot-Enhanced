@@ -1,10 +1,9 @@
 ## Plug.bot Enhanced by Ebola
 
 ### Installation
-Go to Installation section in the following link in my blog and
+Go to Installation section
+	<a href="http://ebola777.pixnet.net/blog/post/48002738">in my blog</a> and
 	see instructions there
-
-<a href="http://ebola777.pixnet.net/blog/post/48002738">link</a>
 
 ### Snapshot
 ![ss1](http://pic.pimg.tw/ebola777/1371839011-1013933568.png "ss1")
@@ -18,7 +17,7 @@ A simple emoticons dialog<br>
 
 click smiley icon in chat box to show it <br>
 press CTRL + mouse click to add emoticons continuously
-	(without dialog closing) <br>
+	(without closing dialog) <br>
 
 - recent emoticons (you & other users)
 - catalog based on <a href="http://www.emoji-cheat-sheet.com/">emoji cheat sheet</a>
@@ -92,7 +91,7 @@ But you still need to refresh page when session dies
 -----
 ### Issues
 
-1. Some userlist icons cannot be displayed, still waiting plugbot to fix it
+Empty
 
 -----
 
@@ -100,10 +99,9 @@ But you still need to refresh page when session dies
 ![ss3](http://pic.pimg.tw/ebola777/1371839012-2083724812_n.png "ss3")
 
 ### Installation
-Go to Installation section in the following link in my blog and
+Go to Installation section
+	<a href="http://ebola777.pixnet.net/blog/post/48002738">in my blog</a> and
 	see instructions there
-
-<a href="http://ebola777.pixnet.net/blog/post/48002738">link</a>
 
 ### Original Script
 <a href="https://github.com/connergdavis/Plugbot">https://github.com/connergdavis/Plugbot</a>
@@ -119,6 +117,7 @@ Go to Installation section in the following link in my blog and
 ### Version History
 Version | Release Date | Changes
 --------|--------------|--------
+1.05 | 22 JULY 2013 | <ul><li>Fixed userlist icons are not correctly displayed</li></ul>
 1.04 | 21 JULY 2013 | <ul><li>Fixed userlist is not refreshing when plud.dj page focus is switched on</li> <li>Fixed re-positioning emoticons dialog when pressing chat expand button</li> <li>Makes PlugBot UI unselectable, so you won't select the text when quickly clicking button on PlugBot UI</li> <li>Detects room joining, it can woot! and auto-queue when changing room</li> </ul>
 1.03 | 20 JULY 2013 | <ul><li>Fix breakdown due to new version of plug.dj</li></ul>
 1.02 | 6 JULY 2013 | <ul><li>Improve canvas performance</li></ul>
