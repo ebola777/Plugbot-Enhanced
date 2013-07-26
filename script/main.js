@@ -28,7 +28,7 @@
  * 		(still need to refresh the page when session dies)
  *
  * - Version:
- * 1.06
+ * 1.06.1
  *
  * - Latest changelog:
  * 1. Merged code from PlugBot v1.2
@@ -42,7 +42,7 @@
  * 2. Initialization (:108)
  * 3. Emoji class (:111)
  * 4. PlugBot main code (:1233)
- * 5. Public functions (:2294)
+ * 5. Public functions (:2284)
  *
  * - Development notice:
  * 1. How to debug EmojiUI?
@@ -1341,10 +1341,7 @@ define('app/models/3rd/PlugBot',
 		 */
 		API.on(API.VOTE_UPDATE, function (obj)
 		{
-			if (userList)
-			{
-				populateUserlist();
-			}
+			populateUserlist();
 		});
 
 		/*
@@ -1352,10 +1349,7 @@ define('app/models/3rd/PlugBot',
 		 */
 		API.on(API.USER_JOIN, function (user)
 		{
-			if (userList)
-			{
-				populateUserlist();
-			}
+			populateUserlist();
 		});
 
 		/*
@@ -1363,10 +1357,7 @@ define('app/models/3rd/PlugBot',
 		 */
 		API.on(API.USER_LEAVE, function (user)
 		{
-			if (userList)
-			{
-				populateUserlist();
-			}
+			populateUserlist();
 		});
 
 		/* ###
@@ -1492,7 +1483,7 @@ define('app/models/3rd/PlugBot',
 			}, 100);
 		});
 
-		/*
+		/* ###
 		 * Toggle userlist.
 		 */
 		$('#plugbot-btn-userlist').live("click", function() // ### .live()
@@ -1507,6 +1498,9 @@ define('app/models/3rd/PlugBot',
 			}
 			else
 			{
+				// reset time to force userlist to refresh
+				time_lastUpdateUserList = 0;
+				// refresh
 				populateUserlist();
 			}
 			jaaulde.utils.cookies.set(COOKIE_USERLIST, userList);
@@ -1693,13 +1687,10 @@ define('app/models/3rd/PlugBot',
 			$('#button-vote-negative').click();
 		}
 
-		/*
+		/* ###
 		 * If the userlist is enabled, re-populate it.
 		 */
-		if (userList)
-		{
-			populateUserlist();
-		}
+		populateUserlist();
 
 		// ### update vid url
 		updateVidURL(false);
@@ -1758,6 +1749,8 @@ define('app/models/3rd/PlugBot',
 	 */
 	function populateUserlist()
 	{
+		if ( !userList) { return; }
+
 		// check if page is visible
 		if ( !isWebVisible) { return; }
 
@@ -1776,13 +1769,13 @@ define('app/models/3rd/PlugBot',
 			return;
 		}
 
-		var userList = $('#plugbot-userlist');
+		var userListObj = $('#plugbot-userlist');
 		var users = API.getUsers();
 		/*
 		 * Destroy the old userlist DIV and replace it with a fresh
 		 * empty one to work with.
 		 */
-		userList.html(' ')
+		userListObj.html(' ')
 				.append('<h1 style="text-indent:12px;color:#42A5DC;font-size:14px;font-variant:small-caps;">Users: ' + users.length + '</h1>')
 				.append('<p style="padding-left:12px;text-indent:0px !important;font-style:italic;color:#42A5DC;font-size:11px;">Click a username to<br />open user-box!</p><br />');
 
@@ -1795,7 +1788,7 @@ define('app/models/3rd/PlugBot',
 				($.inArray(API.getDJs(), API.getUser()) == -1)) {
 				var spot = $('#button-dj-waitlist-view').prop('title').split('(')[1];
 				spot = spot.substring(0, spot.indexOf(')'));
-				userList.append('<h1 id="plugbot-queuespot"><span style="font-variant:small-caps">Waitlist:</span> ' + spot + '</h1><br />');
+				userListObj.append('<h1 id="plugbot-queuespot"><span style="font-variant:small-caps">Waitlist:</span> ' + spot + '</h1><br />');
 			}
 		}
 
@@ -2122,13 +2115,10 @@ define('app/models/3rd/PlugBot',
 			});
 		}
 
-		/*
+		/* ###
 		 * Generate userlist, if userList is enabled.
 		 */
-		if (userList)
-		{
-			populateUserlist();
-		}
+		populateUserlist();
 
 		/*
 		 * Call all init-related functions to start the software up.
