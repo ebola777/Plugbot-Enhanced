@@ -117,6 +117,7 @@ Go to Installation section
 ### Version History
 Version | Release Date | Changes
 --------|--------------|--------
+1.06 | 26 JULY 2013 | <ul><li>Merged code from PlugBot v1.2</li> <li>Updates userlist when queue state changes</li> </ul>
 1.05 | 22 JULY 2013 | <ul><li>Fixed userlist icons are not correctly displayed</li></ul>
 1.04 | 21 JULY 2013 | <ul><li>Fixed userlist is not refreshing when plud.dj page focus is switched on</li> <li>Fixed re-positioning emoticons dialog when pressing chat expand button</li> <li>Makes PlugBot UI unselectable, so you won't select the text when quickly clicking button on PlugBot UI</li> <li>Detects room joining, it can woot! and auto-queue when changing room</li> </ul>
 1.03 | 20 JULY 2013 | <ul><li>Fix breakdown due to new version of plug.dj</li></ul>
