@@ -14,4 +14,5 @@ such as emoticons are not included yet. I will add them back soon.
 ## License
 
 Copyright (c) 2013  Shawn
+
 See the LICENSE file for license rights and limitations (MIT).
