@@ -8,6 +8,9 @@ Optimize
 Copy `js` and `css` folders to Github page folder
 
 <input type="checkbox">
+Run jekyll build
+
+<input type="checkbox">
 Upload this project to Github
 
 <input type="checkbox">
