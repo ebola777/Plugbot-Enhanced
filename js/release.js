@@ -77,8 +77,7 @@ define('Plugbot/Entry', [], function () {
             environment: 'RELEASE',
             // base URL
             // (RELEASE)
-            baseUrl: 'raw.github.com/ebola777/' +
-                'Plugbot-Enhanced-by-Ebola/master/',
+            baseUrl: 'ebola777.github.io/files/Plugbot-Enhanced/',
             // script directory
             scriptDir: 'js/',
             // css directory
