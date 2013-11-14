@@ -1,0 +1,33 @@
+@function stripUnit($value) {
+	@return $value / ($value * 0 + 1);
+}
+
+@function toNum($value) {
+	@if number == type-of($value) {
+		@return stripUnit($value);
+	} @else {
+		@return 0;
+	}
+}
+
+@function getFixPx($value) {
+	@if auto == $value { @return auto; }
+	@return ($size-fix-px * $value) + px;
+}
+
+@function getFixList($top: null, $right: null, $bottom: null, $left: null) {
+	@if null == $left {
+		@if null == $bottom {
+			@if null == $right {
+				@return getFixPx($top);
+			} @else {
+				@return getFixPx($top) getFixPx($right);
+			}
+		} @else {
+			@return getFixPx($top) getFixPx($right) getFixPx($bottom);
+		}
+	} @else {
+		@return getFixPx($top) getFixPx($right) getFixPx($bottom)
+			getFixPx($left);
+	}
+}

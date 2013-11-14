@@ -1,0 +1,14 @@
+# Codeblocks files
+#####
+*.depend
+*.layout
+app/*
+
+# Project files
+#####
+data/output/*
+
+# Compiled sources
+#####
+*.o
+*.exe

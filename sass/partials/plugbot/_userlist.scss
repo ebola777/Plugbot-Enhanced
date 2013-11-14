@@ -1,0 +1,67 @@
+/**
+ * Dynamic
+ */
+@for $i from 1 through length($schemes) {
+.scheme-#{nth($schemes, $i)}-plugbot-userlist {
+    .head {
+        color: nth($color-title, $i);
+    }
+
+    .wrap-list {
+        border-color: nth($color-border-users, $i) !important;
+    }
+}
+}
+
+/**
+ * Consistent
+ */
+.plugbot-userlist {
+    h1 {
+        @include resetWebkitMargin;
+    }
+
+    .head {
+        @include fixList(margin, 2);
+
+        h1 {
+            @include fixList(margin, 1, 0);
+            font-size: 15px;
+            font-variant: small-caps;
+        }
+    }
+
+    .wrap-list {
+        @include absPos(1, 2, 3, 2);
+        border: 4px solid;
+        border-radius: 4px;
+        overflow: auto;
+    }
+
+    .list {
+        margin: 0;
+        @include fixList(padding, 1, 2);
+        list-style-type: none;
+
+        li {
+            white-space: nowrap;
+            @include fixList(margin, auto, auto, 1);
+        }
+
+        .userlist-item {
+            cursor: pointer;
+        }
+
+        .item-woot {
+            color: lawngreen;
+        }
+
+        .item-meh {
+            color: red;
+        }
+
+        .item-undecided {
+            color: white;
+        }
+    }
+}

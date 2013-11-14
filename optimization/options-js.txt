@@ -1,0 +1,1 @@
+-o "release.min.js" --source-map "release.min.js.map" --comments -m -c
