@@ -386,7 +386,7 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
                     href: url
                 });
 
-                $(document.head).prepend(link);
+                $(document.head).append(link);
             },
             /**
              * Check if a file has been loaded
