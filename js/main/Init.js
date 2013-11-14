@@ -12,7 +12,7 @@ define('Plugbot/main/Init', [
         /**
          * #1: Utilities
          */
-            // read and apply settings
+        // read and apply settings
         LocalStorage.readSettings();
 
         // init handlebars helpers
@@ -26,13 +26,13 @@ define('Plugbot/main/Init', [
         /**
          * #2: Events
          */
-            // init dispatcher
+        // init dispatcher
         SiteEvents.initDispatcher();
 
         /**
          * #3: UIs
          */
-            // init UIs
+        // init UIs
         initUis();
 
         // notify that PlugBot has been initialized

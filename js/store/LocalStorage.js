@@ -9,7 +9,7 @@ define('Plugbot/store/LocalStorage', [
     var rootName = 'PlugbotEnhanced',
         // default settings
         defaultSettings = {
-            version: '1.0.0pa',
+            version: '1.0.1pa',
             // override old settings if it's different version
             overrideOldSettings: true,
             windows: {
@@ -59,8 +59,7 @@ define('Plugbot/store/LocalStorage', [
             ui: {
                 autoWoot: true,
                 autoQueue: false,
-                hideVideo: false,
-                skipVideo: false
+                hideVideo: false
             }
         };
 

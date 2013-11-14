@@ -1,6 +1,14 @@
 Publish
 =====
 
+## Scripts
+<input type="checkbox">
+LocalStorage -> version
+
+<input type="checkbox">
+WebStorm watcher -> Compass Release
+
+## Files
 <input type="checkbox">
 Optimize
 

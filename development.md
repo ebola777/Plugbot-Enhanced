@@ -21,7 +21,7 @@ Development
 1. Open "bookmarks/PlugBot Enhanced LOCAL DEBUG.html" in browser and drag the
 	link to bookmark bar
 2. Open HTTP File Server, drag GitHub project root folder
-	(ex. C:/Users/MyUserName/Documents/GitHub/Plugbot-Enhanced-by-Ebola)
+	(ex. C:/Users/MyUserName/Documents/GitHub/Plugbot-Enhanced)
 	to HTTP File Server, choose Real folder
 3. Enter a plug.dj room, click the bookmark "PlugBot Enhanced LOCAL DEBUG"
 

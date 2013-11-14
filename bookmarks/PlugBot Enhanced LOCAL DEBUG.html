@@ -17,6 +17,13 @@
             <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
         <![endif]-->
 
-        <a href="javascript: (function () { var jsCode = document.createElement('script'); jsCode.setAttribute('id', 'plugbot-js'); jsCode.setAttribute('src', 'http://localhost/Plugbot-Enhanced-by-Ebola/js/debug.js'); document.body.appendChild(jsCode); }());">PlugBot Enhanced LOCAL DEBUG</a>
+        <a href="javascript: (function () {
+            var jsCode = document.createElement('script'),
+                baseUrl = 'localhost/Plugbot-Enhanced/',
+                script = 'js/debug.js';
+            jsCode.setAttribute('id', 'plugbot-js');
+            jsCode.setAttribute('src', 'http://' + baseUrl + script);
+            document.body.appendChild(jsCode); }());">
+            PlugBot Enhanced LOCAL DEBUG</a>
     </body>
 </html>

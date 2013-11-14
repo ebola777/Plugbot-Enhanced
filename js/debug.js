@@ -109,7 +109,7 @@ define('Plugbot/Entry', [], function () {
             environment: 'DEBUG',
             // base URL
             // (RELEASE)
-            baseUrl: 'localhost/Plugbot-Enhanced-by-Ebola/',
+            baseUrl: 'localhost/Plugbot-Enhanced/',
             // script directory
             scriptDir: 'js/',
             // css directory
