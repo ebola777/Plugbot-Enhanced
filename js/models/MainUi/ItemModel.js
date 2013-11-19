@@ -6,9 +6,7 @@ define('Plugbot/models/MainUi/ItemModel', [], function () {
             return {
                 id: undefined,
                 text: undefined,
-                enabled: false,
-                settingsObj: undefined,
-                settingsKey: undefined
+                enabled: false
             };
         },
         initialize: function () {
@@ -17,10 +15,15 @@ define('Plugbot/models/MainUi/ItemModel', [], function () {
             this.listenTo(this, 'change:enabled', this.setSettings);
         },
         setSettings: function () {
-            var settingsObj = this.get('settingsObj');
+            var en = this.get('enabled');
 
-            if (undefined !== settingsObj) {
-                settingsObj[this.get('settingsKey')] = this.get('enabled');
+            switch (this.get('id')) {
+            case 'plugbot-btn-woot':
+                Plugbot.settings.ui.autoWoot = en;
+                break;
+            case 'plugbot-btn-queue':
+                Plugbot.settings.ui.autoQueue = en;
+                break;
             }
         }
     });

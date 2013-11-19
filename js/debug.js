@@ -3,7 +3,6 @@
 // TODO emoticons
 // TODO selectable sort method
 // TODO group users by accordion
-// TODO detect css loading failure
 // TODO refactor dialog paths
 // TODO make userlist render like taskbar
 // TODO comparatpr sort by mutiple fields -> more convenient way
@@ -11,6 +10,7 @@
 // TODO refactor Watcher & Countdown -> use id
 // TODO menu in taskbar
 // TODO try to resume volume at the beginning of the vid
+// TODO video/sound stream on/off
 
 /**
  * (DEBUG)
@@ -261,14 +261,14 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
                 this.loadedFiles = {};
                 this.aborted = false;
 
-                // load core scripts
+                // push core scripts
                 // (DEBUG)
                 for (i = 0; i !== Entry.scripts.length; i += 1) {
                     listScripts.push(Entry.getScriptUrl(Entry.scripts[i]));
                     numFiles += 1;
                 }
 
-                // load reference scripts
+                // push reference scripts
                 for (i = 0; i !== Entry.refScriptsUrl.length; i += 1) {
                     listScripts.push(
                         Entry.getRefScriptUrl(Entry.refScriptsUrl[i])
@@ -276,19 +276,19 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
                     numFiles += 1;
                 }
 
-                // load css files
+                // push css files
                 for (i = 0; i !== Entry.cssUrl.length; i += 1) {
                     listCss.push(Entry.getCssUrl(Entry.cssUrl[i]));
                     numFiles += 1;
                 }
 
-                // load reference css files
+                // push reference css files
                 for (i = 0; i !== Entry.refCssUrl.length; i += 1) {
                     listCss.push(Entry.getRefCssUrl(Entry.refCssUrl[i]));
                     numFiles += 1;
                 }
 
-                // load dependencies directly if there is nothing to load
+                // push dependencies directly if there is nothing to load
                 if (0 === numFiles) {
                     that.loadDep();
                     return;
@@ -297,11 +297,12 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
                 // record number of files
                 that.numFiles = numFiles;
 
-                // load all scripts & css files
+                // load all css files
                 for (i = 0; i !== listCss.length; i += 1) {
                     that.loadCss(listCss[i]);
                 }
 
+                // load all scripts
                 for (i = 0; i !== listScripts.length; i += 1) {
                     that.loadScript(listScripts[i], 0);
                 }
@@ -349,90 +350,144 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
                 }
             },
             /**
-             * When a script failed to load after many retries
+             * When a file failed to load after many retries
              * @param {String} url          Script URL
+             * @param {Object} options      Options
              */
-            scriptFail: function (url) {
+            fileFail: function (url, options) {
                 if (that.aborted) { return; }
                 that.aborted = true;
+
+                _.defaults(options, {
+                    textStatus: 'Unknown'
+                });
+
                 alert('Failed to load PlugBot file, stopping now.\n' +
                     '\n' +
                     'File: ' + url + '\n' +
-                    'Error: Timeout'
+                    'Error: ' + options.textError
                      );
                 Plugbot.simpleRemove();
             },
             /**
              * Load a script
-             * @param {String} url                      Script URL
-             * @param {Number|undefined} numRetry     Number of retries
+             * @param {String} url                  URL
+             * @param {Number|undefined} numRetry   Number of retries
              */
             loadScript: function (url, numRetry) {
-                var idTimeout;
-
                 // check if current action has been aborted
                 if (that.aborted) { return; }
 
-                // check retry argument
-                numRetry  = numRetry || 0;
+                // get script
+                that.getScript(url, {
+                    timeout: that.timeoutLoading
+                }, function fnDone() {
+                    if (that.aborted) { return; }
 
-                idTimeout = setTimeout(function () {
+                    that.fileDone(url);
+                }, function fnFail(jqXHR) {
+                    if (that.aborted) { return; }
+
+                    numRetry  = numRetry || 0;
                     numRetry += 1;
 
                     // check retry times
                     if (numRetry === that.maxNumRetry) {
-                        that.scriptFail(url);
+                        that.fileFail(url, {
+                            textError: jqXHR.status
+                        });
+
                         return;
                     }
 
-                    // retry
                     setTimeout(function () {
                         if (that.aborted) { return; }
                         if (!that.isFileLoaded(url)) {
                             that.loadScript(url, numRetry);
                         }
                     }, that.intervalRetry);
-                }, that.timeoutLoading);
-
-                // get script
-                that.getScript(url, function () {
-                    if (that.aborted) { return; }
-                    clearTimeout(idTimeout);
-                    that.fileDone(url);
                 });
             },
             /**
-             * Load css file
-             * @param {String} url       CSS file
+             * Load a css file
+             * @param {String} url                  URL
+             * @param {Number|undefined} numRetry   Number of retries
              */
-            loadCss: function (url) {
-                that.getCss(Entry.cssClassname, url);
-                that.fileDone(url);
+            loadCss: function (url, numRetry) {
+                // check if current action has been aborted
+                if (that.aborted) { return; }
+
+                that.getCss(url, {
+                    timeout: that.timeoutLoading,
+                    classname: Entry.cssClassname
+                }, function fnDone() {
+                    if (that.aborted) { return; }
+
+                    that.fileDone(url);
+                }, function fnFail() {
+                    if (that.aborted) { return; }
+
+                    numRetry  = numRetry || 0;
+                    numRetry += 1;
+
+                    // check retry times
+                    if (numRetry === that.maxNumRetry) {
+                        that.fileFail(url, {
+                            textError: 'Timeout'
+                        });
+
+                        return;
+                    }
+
+                    setTimeout(function () {
+                        if (that.aborted) { return; }
+                        if (!that.isFileLoaded(url)) {
+                            that.loadCss(url, numRetry);
+                        }
+                    }, that.intervalRetry);
+                });
             },
             /**
              * Get a script core function
-             * @param {String} url          Script URL
-             * @param {Function} callback   Callback function
+             * @param {String} url      URL
+             * @param {Object} options  Options
+             * @param {Function} fnDone Function callback when it's done
+             * @param {Function} fnFail Function callback when failure occurs
              */
-            getScript: function (url, callback) {
+            getScript: function (url, options, fnDone, fnFail) {
                 $.ajax({
-                    type: 'GET',
                     url: url,
                     dataType: 'script',
                     crossDomain: true,
+                    timeout: options.timeout,
                     // (RELEASE)
                     cache: true
-                }).done(callback);
+                })
+                    .done(fnDone)
+                    .fail(fnFail);
             },
-            getCss: function (classname, url) {
-                var link;
+            /**
+             * Get a css core function
+             * @param {String} url      URL
+             * @param {Object} options  Options
+             * @param {Function} fnDone Function callback when it's done
+             * @param {Function} fnFail Function callback when failure occurs
+             */
+            getCss: function (url, options, fnDone, fnFail) {
+                var link, idTimeout;
 
                 link = $(document.createElement('link')).prop({
-                    'class': classname,
+                    'class': options.classname,
                     rel: 'stylesheet',
                     type: 'text/css',
                     href: url
                 });
+
+                idTimeout = setTimeout(fnFail, options.timeout);
+                link[0].onload = function () {
+                    clearTimeout(idTimeout);
+                    fnDone();
+                };
 
                 $(document.head).append(link);
             },

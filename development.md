@@ -1,5 +1,4 @@
-Development
-=====
+# Development
 
 ## Required software
 - A modern browser
