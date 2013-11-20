@@ -11,6 +11,7 @@
 // TODO menu in taskbar
 // TODO try to resume volume at the beginning of the vid
 // TODO video/sound stream on/off
+// TODO localStorage settings
 
 /**
  * (DEBUG)
@@ -351,7 +352,7 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
             },
             /**
              * When a file failed to load after many retries
-             * @param {String} url          Script URL
+             * @param {String} url          URL
              * @param {Object} options      Options
              */
             fileFail: function (url, options) {
@@ -509,7 +510,7 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
 
 /**
  * (DEBUG)
- * ex. req('app/base/Class', 'BaseClass');
+ * Add a module as variable to window for debugging
  * @param {String} module   Module name
  * @param {String} name     Debug symbol
  */

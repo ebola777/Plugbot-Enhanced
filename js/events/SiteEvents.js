@@ -1,34 +1,40 @@
-define('Plugbot/events/SiteEvents', [], function () {
+define('Plugbot/events/SiteEvents', [
+    'Plugbot/events/BaseEvents'
+], function (BaseEvents) {
     'use strict';
 
     //region VARIABLES =====
         // dispatcher
     var dispatcher = {
-            LAYOUT: {
-                RESIZE: 'layout:resize'
-            }
+            RESIZE: 'resize'
         };
 
     //endregion
 
 
-    // region PUBLIC FUNCTIONS =====
-    function initDispatcher() {
-        _.extend(dispatcher, Backbone.Events);
+    //region CONTRUCTORS =====
+    (function () {
+        _.extend(dispatcher, BaseEvents);
+    }());
 
-        require([
-            'app/utils/Layout'
-        ], function (
-            Layout
-        ) {
-            dispatcher.listenTo(Layout, 'resize', function (e) {
-                dispatcher.trigger(dispatcher.LAYOUT.RESIZE, e);
-            });
-        });
+    //endregion
+
+
+    //region PUBLIC FUNCTIONS =====
+    function initDispatcher() {
+        $(window).on('resize', onWindowResize);
     }
 
     function removeDispatcher() {
-        dispatcher.stopListening();
+        $(window).off('resize', onWindowResize);
+    }
+
+    //endregion
+
+
+    //region PRIVATE FUNCTIONS =====
+    function onWindowResize(e) {
+        dispatcher.dispatch('RESIZE', [e]);
     }
 
     //endregion

@@ -47,7 +47,7 @@
 
     // Check dependencies
     if (undefined === window.require ||
-        undefined === window.API) {
+            undefined === window.API) {
         Plugbot.simpleRemove();
         return;
     }
@@ -302,7 +302,7 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
             },
             /**
              * When a file failed to load after many retries
-             * @param {String} url          Script URL
+             * @param {String} url          URL
              * @param {Object} options      Options
              */
             fileFail: function (url, options) {
@@ -317,7 +317,7 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
                     '\n' +
                     'File: ' + url + '\n' +
                     'Error: ' + options.textError
-                );
+                    );
                 Plugbot.simpleRemove();
             },
             /**

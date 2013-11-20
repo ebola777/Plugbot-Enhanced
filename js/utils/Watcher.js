@@ -79,10 +79,14 @@ define('Plugbot/utils/Watcher', [], function () {
                 if (opt.exitValue === ret) {
                     isExitValue = true;
                 } else {
+                    isExitValue = false;
+
                     // check max number of calls
                     if (0 !== opt.maxNumCall &&
                             numCall > opt.maxNumCall) {
                         isMaxCall = true;
+                    } else {
+                        isMaxCall = false;
                     }
                 }
 

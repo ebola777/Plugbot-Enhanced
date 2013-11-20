@@ -9,7 +9,7 @@ define('Plugbot/store/LocalStorage', [
     var rootName = 'PlugbotEnhanced',
         // default settings
         defaultSettings = {
-            version: '1.0.2.pre',
+            version: '1.0.3.pre',
             // override old settings if it's different version
             overrideOldSettings: true,
             windows: {

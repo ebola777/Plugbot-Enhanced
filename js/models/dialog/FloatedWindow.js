@@ -21,7 +21,8 @@ define('Plugbot/models/dialog/FloatedWindow', [], function () {
                 narrowAction: 'hidden',
                 title: 'Untitled',
                 callsign: 'AAA',
-                zIndex: 0,
+                zIndex: undefined,
+                oldZIndex: undefined,
                 resizable: false,
                 draggable: false,
                 /**
@@ -29,6 +30,8 @@ define('Plugbot/models/dialog/FloatedWindow', [], function () {
                  */
                 x: 0,
                 y: 0,
+                oldX: 0,
+                oldY: 0,
                 /**
                  * Size
                  */

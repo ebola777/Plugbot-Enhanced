@@ -101,6 +101,7 @@ define('Plugbot/main/Dispose', [
 
         // remove utilities
         Plugbot.ticker.close();
+        Plugbot.watcher.close();
 
         /**
          * #2: Events
@@ -157,6 +158,7 @@ define('Plugbot/main/Dispose', [
     function removeUis() {
         WindowManager.removeTaskbar();
         WindowManager.removeWindows();
+        WindowManager.removeEvents();
     }
 
     //endregion

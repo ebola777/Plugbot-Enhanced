@@ -30,6 +30,10 @@
 3. Copy cpp/app/bin/Debug/Refactor-Debug.exe to optimization/ folder
 4. Run optimization/build.bat
 
+## Beautifying
+1. Install js-beautify
+2. Run any bat file under beautifying/ folder
+
 ## C++ projects
 - Refactor-Debug <br>
 Refactors debug.js to release.js. release.js will be merged with other scripts

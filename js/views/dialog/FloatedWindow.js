@@ -158,7 +158,7 @@ define('Plugbot/views/dialog/FloatedWindow', [
             this.bindUiEvents();
 
             // set up afterRender
-            (new Watcher()).add(function () {
+            Plugbot.watcher.add(function () {
                 var ret;
 
                 if (that.$el.is(':visible')) {

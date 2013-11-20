@@ -3,8 +3,10 @@ define('Plugbot/main/Init', [
     'Plugbot/store/LocalStorage',
     'Plugbot/utils/Helpers',
     'Plugbot/utils/Ticker',
+    'Plugbot/utils/Watcher',
     'Plugbot/events/SiteEvents'
-], function (WindowManager, LocalStorage, Helpers, Ticker, SiteEvents) {
+], function (WindowManager, LocalStorage, Helpers, Ticker, Watcher,
+             SiteEvents) {
     'use strict';
 
     //region PUBLIC FUNCTIONS =====
@@ -18,9 +20,14 @@ define('Plugbot/main/Init', [
         // init handlebars helpers
         Helpers.initHandlebarsHelpers();
 
-        // create a new ticker
+        // create a new public ticker
         Plugbot.ticker = new Ticker({
             interval: Plugbot.tickerInterval.defaults
+        });
+
+        // create a new public watcher
+        Plugbot.watcher = new Watcher({
+            exitWhenNoCall: false
         });
 
         /**
@@ -49,6 +56,7 @@ define('Plugbot/main/Init', [
     function initUis() {
         WindowManager.initTaskbar();
         WindowManager.initWindows();
+        WindowManager.initEvents();
         WindowManager.initPublicMethods();
     }
 

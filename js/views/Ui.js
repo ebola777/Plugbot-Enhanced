@@ -1,6 +1,4 @@
-define('Plugbot/views/Ui', [
-    'app/utils/Layout'
-], function (AppLayout) {
+define('Plugbot/views/Ui', [], function () {
     'use strict';
 
     //region VARIABLES =====
@@ -13,13 +11,7 @@ define('Plugbot/views/Ui', [
             playback: '#playback',
             playlistPanel: '#playlist-panel',
             chatInputField: '#chat-input-field',
-            woot: '#woot',
-            /**
-             * Layout
-             */
-            LAYOUT: {
-                BAR_HEIGHT: AppLayout.BAR_HEIGHT
-            }
+            woot: '#woot'
         },
         plugbot = {
             /**

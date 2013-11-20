@@ -13,12 +13,40 @@ define('Plugbot/main/WindowManager', [
     'use strict';
 
     //region PUBLIC FUNCTIONS =====
+    function initPublicMethods() {
+        var fnSwitchVisibility = function (en) {
+            var key, windows = Plugbot.windows,
+                action = (en ? 'removeClass' : 'addClass');
+
+            // taskbar
+            Plugbot.taskbar.$el[action]('plugbot-taskbar-hidden');
+
+            // each window
+            for (key in windows) {
+                if (windows.hasOwnProperty(key)) {
+                    windows[key]
+                        .$el[action]('plugbot-floated-window-hidden');
+                }
+            }
+        };
+
+        Plugbot.hide = function () {
+            fnSwitchVisibility(false);
+            return this;
+        };
+
+        Plugbot.show = function () {
+            fnSwitchVisibility(true);
+            return this;
+        };
+    }
+
     function initTaskbar() {
         var taskbarModel, taskbarView;
 
         taskbarModel = new Taskbar({
             windows: Plugbot.settings.windows,
-            windowTop: Ui.plugdj.LAYOUT.BAR_HEIGHT
+            windowTop: $(Ui.plugdj.header).height()
         });
         taskbarView = new TaskbarView({
             model: taskbarModel
@@ -26,11 +54,7 @@ define('Plugbot/main/WindowManager', [
         $(document.body).append(taskbarView.render().el);
         Plugbot.taskbar = taskbarView;
 
-        updateTaskbarPosSize(taskbarView,
-            Ui.plugdj.LAYOUT.BAR_HEIGHT - $(window).scrollTop(),
-            $(Ui.plugdj.room).height());
-        listenEventsTaskbar(taskbarView);
-        bindUiEventsTaskbar(taskbarView);
+        updateTaskbarPosSize();
     }
 
     function initWindows() {
@@ -52,43 +76,22 @@ define('Plugbot/main/WindowManager', [
                 $(document.body).append(windowView.render().el);
                 Plugbot.windows[key] = windowView;
 
-                listenEventsWindow(windowView);
-                watchActivitesWindow(windowView);
+                listenToWindowEvents(windowView);
             }
         }
     }
 
-    function initPublicMethods() {
-        var fnSwitchVisibility = function (en) {
-                var key, windows = Plugbot.windows,
-                    action = (en ? 'removeClass' : 'addClass');
+    function initEvents() {
+        bindUiEvents();
+        watchActivites();
+        listenToSiteEvents();
+    }
 
-                // taskbar
-                Plugbot.taskbar.$el[action]('plugbot-taskbar-hidden');
-
-                // each window
-                for (key in windows) {
-                    if (windows.hasOwnProperty(key)) {
-                        windows[key]
-                            .$el[action]('plugbot-floated-window-hidden');
-                    }
-                }
-            };
-
-        Plugbot.hide = function () {
-            fnSwitchVisibility(false);
-            return this;
-        };
-
-        Plugbot.show = function () {
-            fnSwitchVisibility(true);
-            return this;
-        };
+    function removeEvents() {
+        unbindUiEvents();
     }
 
     function removeTaskbar() {
-        unbindUiEventsTaskbar();
-
         Plugbot.taskbar.close();
     }
 
@@ -104,57 +107,85 @@ define('Plugbot/main/WindowManager', [
 
     //endregion
 
+
     //region PRIVATE FUNCTIONS =====
-    function listenEventsTaskbar(taskbar) {
-        var listener = {},
-            dispatcherSite = SiteEvents.dispatcher;
-
-        _.extend(listener, Backbone.Events);
-
-        // site events
-        listener.listenTo(dispatcherSite,
-            dispatcherSite.LAYOUT.RESIZE, function (e) {
-                var barHeight = Ui.plugdj.LAYOUT.BAR_HEIGHT;
-
-                updateTaskbarPosSize(taskbar,
-                    barHeight - $(window).scrollTop(),
-                    e.height - 2 * barHeight);
-            });
-    }
-
-    function bindUiEventsTaskbar(taskbar) {
-        $(window).on('scroll', {taskbar: taskbar}, onScrollTaskbar);
-    }
-
-    function onScrollTaskbar(e) {
-        var taskbar = e.data.taskbar;
-
-        updateTaskbarPosSize(taskbar,
-            Ui.plugdj.LAYOUT.BAR_HEIGHT - $(window).scrollTop(),
-            undefined);
-    }
-
-    function listenEventsWindow(window) {
+    function listenToSiteEvents() {
         var listener = {},
             dispatcherSite = SiteEvents.dispatcher,
-            dispatcherWindow = window.options.dispatcher,
             uiRoom = $(Ui.plugdj.room),
-            lastWidth = uiRoom.width();
+            lastRoomWidth = uiRoom.width();
 
         _.extend(listener, Backbone.Events);
 
         // site events
         listener.listenTo(dispatcherSite,
-            dispatcherSite.LAYOUT.RESIZE, function (e) {
-                if (window.model.get('visible')) {
-                    window.model.set('x',
-                        window.model.get('x') * (e.availWidth / lastWidth));
-                    lastWidth = e.availWidth;
+            dispatcherSite.RESIZE, function () {
+                var roomWidth = uiRoom.width(),
+                    ratio = roomWidth / lastRoomWidth,
+                    windows = Plugbot.windows,
+                    key,
+                    window;
+
+                // taskbar
+                updateTaskbarPosSize();
+
+                // windows
+                for (key in windows) {
+                    if (windows.hasOwnProperty(key)) {
+                        window = windows[key];
+
+                        window.model.set('x',
+                            window.model.get('x') * ratio);
+                        window.model.set('oldX',
+                            window.model.get('oldX') * ratio);
+                    }
                 }
+
+                // store last room width
+                lastRoomWidth = roomWidth;
             });
+    }
+
+    function bindUiEvents() {
+        $(window).on('scroll', onScrollTaskbar);
+    }
+
+    function unbindUiEvents() {
+        $(window).off('scroll', onScrollTaskbar);
+    }
+
+    function onScrollTaskbar() {
+        updateTaskbarPosSize();
+    }
+
+    function watchActivites() {
+        var uiPlaylistPanel = $(Ui.plugdj.playlistPanel),
+            isVisible = true;
+
+        Plugbot.watcher.add(function () {
+            if (uiPlaylistPanel.is(':visible')) {
+                if (isVisible) {
+                    Plugbot.hide();
+                    isVisible = false;
+                }
+            } else {
+                if (!isVisible) {
+                    Plugbot.show();
+                    isVisible = true;
+                }
+            }
+        });
+    }
+
+    function listenToWindowEvents(window) {
+        var listener = {},
+            dispatcherWindow = window.options.dispatcher;
+
+        _.extend(listener, Backbone.Events);
 
         // window events
         listener
+            // save settings
             .listenTo(dispatcherWindow,
                 dispatcherWindow.CHANGEANY_MODEL, function () {
                     var windowName = window.model.get('name'),
@@ -193,29 +224,10 @@ define('Plugbot/main/WindowManager', [
                 });
     }
 
-    function watchActivitesWindow(window) {
-        var lastZIndex = -1,
-            uiPlaylistPanel = $(Ui.plugdj.playlistPanel);
-
-        (new Watcher()).add(function () {
-            if (uiPlaylistPanel.is(':visible')) {
-                if (-1 === lastZIndex) {
-                    lastZIndex = window.model.get('zIndex');
-                    window.model.set('zIndex', 2);
-                }
-            } else {
-                if (-1 !== lastZIndex) {
-                    window.model.set('zIndex', lastZIndex);
-                    lastZIndex = -1;
-                }
-            }
-        });
-    }
-
-    function updateTaskbarPosSize(taskbar, top, height) {
-        taskbar.$el.css({
-            top: top,
-            height: height
+    function updateTaskbarPosSize() {
+        Plugbot.taskbar.$el.css({
+            top: $(Ui.plugdj.header).height() - $(window).scrollTop(),
+            height: $(Ui.plugdj.room).height()
         });
     }
 
@@ -279,16 +291,14 @@ define('Plugbot/main/WindowManager', [
         }));
     }
 
-    function unbindUiEventsTaskbar() {
-        $(window).off('scroll', onScrollTaskbar);
-    }
-
     //endregion
 
     return {
+        initPublicMethods: initPublicMethods,
         initTaskbar: initTaskbar,
         initWindows: initWindows,
-        initPublicMethods: initPublicMethods,
+        initEvents: initEvents,
+        removeEvents: removeEvents,
         removeTaskbar: removeTaskbar,
         removeWindows: removeWindows
     };
