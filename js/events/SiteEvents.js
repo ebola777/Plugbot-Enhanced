@@ -1,5 +1,5 @@
 define('Plugbot/events/SiteEvents', [
-    'Plugbot/events/BaseEvents'
+    'Plugbot/base/Events'
 ], function (BaseEvents) {
     'use strict';
 
@@ -12,7 +12,7 @@ define('Plugbot/events/SiteEvents', [
     //endregion
 
 
-    //region CONTRUCTORS =====
+    //region INIT =====
     (function () {
         _.extend(dispatcher, BaseEvents);
     }());
@@ -40,8 +40,10 @@ define('Plugbot/events/SiteEvents', [
     //endregion
 
     return {
+        // variables
+        dispatcher: dispatcher,
+        // functions
         initDispatcher: initDispatcher,
-        removeDispatcher: removeDispatcher,
-        dispatcher: dispatcher
+        removeDispatcher: removeDispatcher
     };
 });

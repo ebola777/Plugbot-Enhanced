@@ -192,107 +192,6 @@ define('Plugbot/views/utils/UiHelpers', [
         }
     }
 
-    function autoResize(elem, parent) {
-        var attr = {
-                ori: {},
-                now: {}
-            },
-            updateAttr = function (key) {
-                attr[key] = {
-                    pos: elem.position(),
-                    size: {
-                        width: elem.width(),
-                        height: elem.height()
-                    },
-                    parentSize: {
-                        width: parent.width(),
-                        height: parent.height()
-                    }
-                };
-            },
-            watcher = new Watcher(),
-            fnCheck = function () {
-                var pos,
-                    size,
-                    parentSize,
-                    newParentSize;
-
-                // check if element is removed
-                if (0 === parent.parent().length) {
-                    watcher.close();
-                    return 0;
-                }
-
-                // check if element has been rendered
-                if (0 === elem.length) {
-                    return 1;
-                }
-
-                // get layout info before modifing
-                pos = elem.position();
-                size = {
-                    width: elem.width(),
-                    height: elem.height()
-                };
-                parentSize = {
-                    width: parent.width(),
-                    height: parent.height()
-                };
-
-                // X
-                if (pos.left !== attr.now.pos.left ||
-                        parentSize.width !== attr.now.parentSize.width) {
-                    // update element width
-                    elem.width(attr.ori.size.width +
-                        attr.ori.pos.left - pos.left +
-                        parentSize.width - attr.ori.parentSize.width);
-                }
-
-                // Y
-                if (pos.top !== attr.now.pos.top ||
-                        parentSize.height !== attr.now.parentSize.height) {
-                    // update element height
-                    elem.height(attr.ori.size.height +
-                        attr.ori.pos.top - pos.top +
-                        parentSize.height - attr.ori.parentSize.height);
-                }
-
-                // check parent size in case it is being enlarged by the
-                // element
-                newParentSize = {
-                    width: parent.width(),
-                    height: parent.height()
-                };
-
-                if (newParentSize.width !== parentSize.width ||
-                        newParentSize.height !== parentSize.height) {
-                    elem.width(size.width);
-                    elem.height(size.height);
-                }
-
-                // store attributes
-                attr.now = {
-                    pos: pos,
-                    size: size,
-                    parentSize: parentSize
-                };
-
-                return 1;
-            };
-
-        updateAttr('ori');
-        updateAttr('now');
-
-        watcher.add(fnCheck);
-
-        return watcher;
-    }
-
-    function removeAutoResize(obj) {
-        obj.invoke();
-        obj.close();
-    }
-
     function iframeFix(iframe) {
         var oriPointerEvents = iframe.css('pointer-events'),
             watcher = new Watcher(),
@@ -305,8 +204,9 @@ define('Plugbot/views/utils/UiHelpers', [
                 return 1;
             };
 
-        watcher.add(fix, {
-            args: iframe
+        watcher.add('iframe-fix', {
+            call: fix,
+            args: [iframe]
         });
 
         fix(iframe);
@@ -336,8 +236,6 @@ define('Plugbot/views/utils/UiHelpers', [
         fitElement: fitElement,
         detach: detach,
         reattach: reattach,
-        autoResize: autoResize,
-        removeAutoResize: removeAutoResize,
         iframeFix: iframeFix,
         removeIframeFix: removeIframeFix
     };

@@ -1,10 +1,10 @@
 define('Plugbot/events/dialog/TaskbarItemEvents', [
-    'Plugbot/events/BaseEvents'
+    'Plugbot/base/Events'
 ], function (BaseEvents) {
     'use strict';
 
     //region VARIABLES =====
-    var Events = {
+    var events = {
         MOUSE_ENTER: 'mouse-enter',
         MOUSE_LEAVE: 'mouse-leave'
     };
@@ -12,12 +12,12 @@ define('Plugbot/events/dialog/TaskbarItemEvents', [
     //endregion
 
 
-    //region CONSTRUCTORS =====
+    //region INIT =====
     (function () {
-        _.extend(Events, BaseEvents);
+        _.extend(events, BaseEvents);
     }());
 
     //endregion
 
-    return Events;
+    return events;
 });

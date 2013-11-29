@@ -1,10 +1,10 @@
 define('Plugbot/events/dialog/FloatedWindowEvents', [
-    'Plugbot/events/BaseEvents'
+    'Plugbot/base/Events'
 ], function (BaseEvents) {
     'use strict';
 
     //region VARIABLES =====
-    var Events = {
+    var events = {
         CHANGEANY_MODEL: 'change-any:model',
         AFTER_RENDER: 'after:render',
         SHOW: 'show',
@@ -25,12 +25,12 @@ define('Plugbot/events/dialog/FloatedWindowEvents', [
     //endregion
 
 
-    //region CONSTRUCTORS =====
+    //region INIT =====
     (function () {
-        _.extend(Events, BaseEvents);
+        _.extend(events, BaseEvents);
     }());
 
     //endregion
 
-    return Events;
+    return events;
 });

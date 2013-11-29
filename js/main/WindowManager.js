@@ -1,15 +1,15 @@
 define('Plugbot/main/WindowManager', [
-    'Plugbot/utils/Watcher',
-    'Plugbot/main/Settings',
     'Plugbot/events/SiteEvents',
-    'Plugbot/views/Ui',
+    'Plugbot/main/Settings',
     'Plugbot/models/dialog/FloatedWindow',
-    'Plugbot/views/dialog/FloatedWindow',
     'Plugbot/models/dialog/Taskbar',
+    'Plugbot/models/dialog/TaskbarItemModel',
+    'Plugbot/utils/Watcher',
+    'Plugbot/views/dialog/FloatedWindow',
     'Plugbot/views/dialog/Taskbar',
-    'Plugbot/models/dialog/TaskbarItemModel'
-], function (Watcher, Settings, SiteEvents, Ui, FloatedWindow,
-             FloatedWindowView, Taskbar, TaskbarView, TaskbarItemModel) {
+    'Plugbot/views/utils/Ui'
+], function (SiteEvents, Settings, FloatedWindow, Taskbar, TaskbarItemModel,
+             Watcher, FloatedWindowView, TaskbarView, Ui) {
     'use strict';
 
     //region PUBLIC FUNCTIONS =====
@@ -162,7 +162,7 @@ define('Plugbot/main/WindowManager', [
         var uiPlaylistPanel = $(Ui.plugdj.playlistPanel),
             isVisible = true;
 
-        Plugbot.watcher.add(function () {
+        Plugbot.watcher.addFn(function () {
             if (uiPlaylistPanel.is(':visible')) {
                 if (isVisible) {
                     Plugbot.hide();
@@ -188,15 +188,13 @@ define('Plugbot/main/WindowManager', [
             // save settings
             .listenTo(dispatcherWindow,
                 dispatcherWindow.CHANGEANY_MODEL, function () {
-                    var windowName = window.model.get('name'),
-                        attr = _.clone(window.model.attributes);
+                    Plugbot.ticker.add(function () {
+                        Plugbot.settings.windows[window.model.get('name')] =
+                            window.model.attributes;
 
-                    // filter attributes
-                    delete attr.tableLayout;
-
-                    // save settings
-                    Plugbot.settings.windows[windowName] = attr;
-                    Settings.saveSettingsDelay();
+                        // save settings
+                        Settings.saveSettings();
+                    });
                 })
             .listenTo(dispatcherWindow,
                 dispatcherWindow.AFTER_RENDER, function () {

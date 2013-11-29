@@ -4,7 +4,7 @@
  */
 
 /**
- * Constructor
+ * Init
  */
 (function () {
     'use strict';
@@ -21,7 +21,7 @@
     if (!window.hasOwnProperty('Plugbot')) {
         window.Plugbot = {};
     } else {
-        if (Plugbot.hasOwnProperty('reload')) {
+        if (undefined !== Plugbot.reload) {
             Plugbot.reload();
         }
 
@@ -45,14 +45,8 @@
         delete Plugbot.simpleRemove;
     };
 
-    // Check dependencies
-    if (undefined === window.require ||
-            undefined === window.API) {
-        Plugbot.simpleRemove();
-        return;
-    }
-
-    if (!requirejs.specified('room')) {
+    // Check site dependencies
+    if (undefined === window.API || !requirejs.specified('room')) {
         Plugbot.simpleRemove();
         return;
     }
@@ -70,7 +64,7 @@
 define('Plugbot/Entry', [], function () {
     'use strict';
 
-    var Entry = (function () {
+    var entry = (function () {
         var that = {
             // build environment
             // (RELEASE)
@@ -84,30 +78,48 @@ define('Plugbot/Entry', [], function () {
             cssDir: 'css/',
             // all scripts
             scripts: [
+                // base
+                'Plugbot/base/Events',
+                'Plugbot/base/Timer',
+
+                // events
+                'Plugbot/events/dialog/FloatedWindowEvents',
+                'Plugbot/events/dialog/TaskbarItemEvents',
+                'Plugbot/events/SiteEvents',
+
                 // main
-                'Plugbot/main/Init',
                 'Plugbot/main/Dispose',
+                'Plugbot/main/Init',
                 'Plugbot/main/Settings',
                 'Plugbot/main/WindowManager',
 
                 // models
-                'Plugbot/models/dialog/Taskbar',
-                'Plugbot/models/dialog/TaskbarItemModel',
-                'Plugbot/models/dialog/TaskbarCollection',
                 'Plugbot/models/dialog/FloatedWindow',
-                'Plugbot/models/MainUi/Model',
-                'Plugbot/models/MainUi/ItemModel',
+                'Plugbot/models/dialog/Taskbar',
+                'Plugbot/models/dialog/TaskbarCollection',
+                'Plugbot/models/dialog/TaskbarItemModel',
                 'Plugbot/models/MainUi/ItemCollection',
-                'Plugbot/models/Userlist/Model',
-                'Plugbot/models/Userlist/ItemModel',
+                'Plugbot/models/MainUi/ItemModel',
+                'Plugbot/models/MainUi/Model',
                 'Plugbot/models/Userlist/ItemCollection',
+                'Plugbot/models/Userlist/ItemModel',
+                'Plugbot/models/Userlist/Model',
+
+                // store
+                'Plugbot/store/LocalStorage',
+
+                // utilities
+                'Plugbot/utils/API',
+                'Plugbot/utils/APIBuffer',
+                'Plugbot/utils/Countdown',
+                'Plugbot/utils/Helpers',
+                'Plugbot/utils/Ticker',
+                'Plugbot/utils/Watcher',
 
                 // views
-                'Plugbot/views/utils/UiHelpers',
-                'Plugbot/views/Ui',
+                'Plugbot/views/dialog/FloatedWindow',
                 'Plugbot/views/dialog/Taskbar',
                 'Plugbot/views/dialog/TaskbarItemView',
-                'Plugbot/views/dialog/FloatedWindow',
                 'Plugbot/views/layout/TableLayout',
                 'Plugbot/views/MainUi/ItemView',
                 'Plugbot/views/MainUi/View',
@@ -115,22 +127,8 @@ define('Plugbot/Entry', [], function () {
                 'Plugbot/views/Userlist/UsersItemView',
                 'Plugbot/views/Userlist/UsersView',
                 'Plugbot/views/Userlist/View',
-
-                // events
-                'Plugbot/events/BaseEvents',
-                'Plugbot/events/SiteEvents',
-                'Plugbot/events/dialog/FloatedWindowEvents',
-                'Plugbot/events/dialog/TaskbarItemEvents',
-
-                // utilities
-                'Plugbot/utils/APIBuffer',
-                'Plugbot/utils/Helpers',
-                'Plugbot/utils/Ticker',
-                'Plugbot/utils/Watcher',
-                'Plugbot/utils/Countdown',
-
-                // storage
-                'Plugbot/store/LocalStorage'
+                'Plugbot/views/utils/Ui',
+                'Plugbot/views/utils/UiHelpers'
             ],
             // script dependencies order
             scriptDep: [
@@ -174,17 +172,17 @@ define('Plugbot/Entry', [], function () {
         return that;
     }());
 
-    return Entry;
+    return entry;
 });
 
 /**
  * PlugBot loader
- * initialize => loadScript, loadCss => fileDone => loadDep
+ * order: initialize -> loadScript, loadCss -> fileDone -> loadDep
  */
 define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
     'use strict';
 
-    var Loader = (function () {
+    var loader = (function () {
         var that = {
             /**
              * Constants
@@ -197,7 +195,7 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
             maxNumRetry: 2,
 
             /**
-             * Defined at runtime
+             * Runtime
              */
             // number of files
             numFiles: undefined,
@@ -211,18 +209,16 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
              * Load scripts and css files
              */
             initialize: function () {
-                that = this;
-
                 var i,
                     numFiles = 0,
                     listScripts = [],
                     listCss = [];
 
                 // init attributes
-                this.numFiles = 0;
-                this.numLoadedFiles = 0;
-                this.loadedFiles = {};
-                this.aborted = false;
+                that.numFiles = 0;
+                that.numLoadedFiles = 0;
+                that.loadedFiles = {};
+                that.aborted = false;
 
                 // push reference scripts
                 for (i = 0; i !== Entry.refScriptsUrl.length; i += 1) {
@@ -310,14 +306,13 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
                 that.aborted = true;
 
                 _.defaults(options, {
-                    textStatus: 'Unknown'
+                    textError: 'Unknown'
                 });
 
                 alert('Failed to load PlugBot file, stopping now.\n' +
                     '\n' +
                     'File: ' + url + '\n' +
-                    'Error: ' + options.textError
-                    );
+                    'Error: ' + options.textError);
                 Plugbot.simpleRemove();
             },
             /**
@@ -455,5 +450,5 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
         return that;
     }());
 
-    return Loader;
+    return loader;
 });

@@ -1,12 +1,12 @@
 define('Plugbot/views/dialog/FloatedWindow', [
     'handlebars',
-    'Plugbot/utils/Watcher',
     'Plugbot/events/dialog/FloatedWindowEvents',
     'Plugbot/models/dialog/FloatedWindow',
-    'Plugbot/views/Ui',
+    'Plugbot/utils/Watcher',
+    'Plugbot/views/utils/Ui',
     'Plugbot/views/utils/UiHelpers'
-], function (Handlebars, Watcher, FloatedWindowEvents,
-             FloatedWindow, Ui, UiHelpers) {
+], function (Handlebars, FloatedWindowEvents, FloatedWindow, Watcher,
+             Ui, UiHelpers) {
     'use strict';
 
     var View = Backbone.View.extend({
@@ -158,7 +158,7 @@ define('Plugbot/views/dialog/FloatedWindow', [
             this.bindUiEvents();
 
             // set up afterRender
-            Plugbot.watcher.add(function () {
+            Plugbot.watcher.addFn(function () {
                 var ret;
 
                 if (that.$el.is(':visible')) {
@@ -346,7 +346,7 @@ define('Plugbot/views/dialog/FloatedWindow', [
                         // resize table layout if it exists
                         if (undefined !== that.model.get('tableLayout')) {
                             watcherTableLayout = new Watcher();
-                            watcherTableLayout.add(that.resizeTableLayout);
+                            watcherTableLayout.addFn(that.resizeTableLayout);
                         }
 
                         that.options.dispatcher.dispatch('RESIZE_START',
@@ -370,7 +370,7 @@ define('Plugbot/views/dialog/FloatedWindow', [
                             watcherTableLayout.close();
                         }
 
-                        // record size
+                        // record the size
                         that.model.set({
                             width: ui.size.width,
                             height: ui.size.height

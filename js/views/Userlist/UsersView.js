@@ -1,8 +1,8 @@
 define('Plugbot/views/Userlist/UsersView', [
-    'Plugbot/views/Ui',
     'Plugbot/models/Userlist/ItemCollection',
-    'Plugbot/views/Userlist/UsersItemView'
-], function (Ui, UserlistItemCollection, UsersItemView) {
+    'Plugbot/views/Userlist/UsersItemView',
+    'Plugbot/views/utils/Ui'
+], function (UserlistItemCollection, UsersItemView, Ui) {
     'use strict';
 
     var View = Backbone.View.extend({

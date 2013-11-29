@@ -1,8 +1,8 @@
-define('Plugbot/events/BaseEvents', [], function () {
+define('Plugbot/base/Events', [], function () {
     'use strict';
 
     //region VARIABLES =====
-    var Events = {
+    var events = {
         dispatch: function (event, options) {
             var eventItem = this[event];
 
@@ -17,12 +17,12 @@ define('Plugbot/events/BaseEvents', [], function () {
     //endregion
 
 
-    //region CONSTRUCTORS =====
+    //region INIT =====
     (function () {
-        _.extend(Events, Backbone.Events);
+        _.extend(events, Backbone.Events);
     }());
 
     //endregion
 
-    return Events;
+    return events;
 });

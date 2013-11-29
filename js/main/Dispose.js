@@ -1,11 +1,11 @@
 define('Plugbot/main/Dispose', [
     'Plugbot/Entry',
     'Plugbot/Loader',
-    'Plugbot/store/LocalStorage',
-    'Plugbot/utils/Helpers',
     'Plugbot/events/SiteEvents',
-    'Plugbot/main/WindowManager'
-], function (Entry, Loader, LocalStorage, Helpers, SiteEvents, WindowManager) {
+    'Plugbot/main/Settings',
+    'Plugbot/main/WindowManager',
+    'Plugbot/utils/Helpers'
+], function (Entry, Loader, SiteEvents, Settings, WindowManager, Helpers) {
     'use strict';
 
     //region PUBLIC FUNCTIONS =====
@@ -14,7 +14,7 @@ define('Plugbot/main/Dispose', [
          * Dispose resources and close
          */
         Plugbot.disposeAndClose = function () {
-            LocalStorage.clearSettings();
+            Settings.clearSettings();
 
             Plugbot.close({saveSettings: false});
         };
@@ -23,7 +23,7 @@ define('Plugbot/main/Dispose', [
          * Dispose resources and reload
          */
         Plugbot.disposeAndReload = function () {
-            LocalStorage.clearSettings();
+            Settings.clearSettings();
 
             Plugbot.reload({saveSettings: false});
         };
@@ -44,7 +44,6 @@ define('Plugbot/main/Dispose', [
         Plugbot.reload = function (options) {
             var i,
                 preserveFunctions = [
-                    'simpleRemove',
                     'initDone'
                 ],
                 tmp = {};
@@ -93,7 +92,7 @@ define('Plugbot/main/Dispose', [
          */
         // save settings
         if (options.saveSettings) {
-            LocalStorage.saveSettings();
+            Settings.saveSettings();
         }
 
         // remove handlebars helpers

@@ -28,43 +28,43 @@
  */
 .plugbot-floated-window {
 	@include absPos($left: 0, $top: 0);
-    display: none;
-    border: 4px solid;
+	display: none;
+	border: 4px solid;
 	border-radius: 4px;
 
 	.header {
-        overflow: hidden;
-        @include fixList(padding, 0.3, 1);
+		overflow: hidden;
+		@include fixList(padding, 0.3, 1);
 		border-bottom: 1px solid;
-        white-space: nowrap;
+		white-space: nowrap;
 		cursor: move;
-        @include user-select(none);
+		@include user-select(none);
 	}
 
-    .title {
-        float: left;
-        margin: 0;
-        font-family: $font-text;
-        font-size: 15px;
-    }
+	.title {
+		float: left;
+		margin: 0;
+		font-family: $font-text;
+		font-size: 15px;
+	}
 
-    .control-box {
-        float: right;
-        margin-left: getFixPx(1);
+	.control-box {
+		float: right;
+		margin-left: getFixPx(1);
 
-        button {
-            width: 1.6em;
-            height: 1.2em;
-            margin-left: 3px;
-        }
-    }
+		button {
+			width: 1.6em;
+			height: 1.2em;
+			margin-left: 3px;
+		}
+	}
 
 	.body {
 		border: 2px solid;
-        overflow: hidden;
+		overflow: hidden;
 	}
 }
 
 .plugbot-floated-window-hidden {
-    visibility: hidden;
+	visibility: hidden;
 }

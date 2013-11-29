@@ -1,6 +1,7 @@
 define('Plugbot/views/Userlist/UsersItemView', [
-    'handlebars'
-], function (Handlebars) {
+    'handlebars',
+    'Plugbot/utils/API'
+], function (Handlebars, UtilsAPI) {
     'use strict';
 
     var View = Backbone.View.extend({
@@ -23,17 +24,17 @@ define('Plugbot/views/Userlist/UsersItemView', [
             return this;
         },
         getClass: function (vote) {
-            var ret;
+            var ret, VOTE = UtilsAPI.USER.VOTE;
 
             switch (vote) {
-            case 1:
+            case VOTE.WOOT:
                 ret = 'item-woot';
                 break;
-            case -1:
-                ret = 'item-meh';
-                break;
-            case 0:
+            case VOTE.UNDECIDED:
                 ret = 'item-undecided';
+                break;
+            case VOTE.MEH:
+                ret = 'item-meh';
                 break;
             }
 

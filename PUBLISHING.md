@@ -2,7 +2,7 @@
 
 ## Scripts
 <input type="checkbox">
-LocalStorage -> version
+Settings -> version, min compatible version
 
 <input type="checkbox">
 WebStorm watcher -> Compass Release -> Rebuild

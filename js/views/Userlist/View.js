@@ -1,11 +1,11 @@
 define('Plugbot/views/Userlist/View', [
     'handlebars',
+    'Plugbot/models/Userlist/Model',
     'Plugbot/utils/APIBuffer',
     'Plugbot/views/layout/TableLayout',
-    'Plugbot/models/Userlist/Model',
     'Plugbot/views/Userlist/HeadView',
     'Plugbot/views/Userlist/UsersView'
-], function (Handlebars, APIBuffer, TableLayout, UserlistModel,
+], function (Handlebars, UserlistModel, APIBuffer, TableLayout,
              UserlistHeadView, UserlistUsersView) {
     'use strict';
 

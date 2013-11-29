@@ -1,4 +1,4 @@
-define('Plugbot/views/Ui', [], function () {
+define('Plugbot/views/utils/Ui', [], function () {
     'use strict';
 
     //region VARIABLES =====
@@ -24,7 +24,7 @@ define('Plugbot/views/Ui', [], function () {
     //endregion
 
     return {
-        // names
+        // variables
         plugdj: plugdj,
         plugbot: plugbot
     };

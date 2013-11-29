@@ -11,40 +11,40 @@ $widthHandle: 1.5;
  * Consistent
  */
 .plugbot-taskbar {
-    z-index: 100;
-    position: fixed;
-    // fix Chrome fixed position issue
-    @include translateZ(0);
-    top: 54px;
-    height: 100%;
-    background: $v-dark-mb-blue;
+	z-index: 100;
+	position: fixed;
+	// fix Chrome fixed position issue
+	@include translateZ(0);
+	top: 54px;
+	height: 100%;
+	background: $v-dark-mb-blue;
 
-    .content {
-        float: left;
-        @include fixSize($widthTotal - $widthHandle, auto);
-        height: 100%;
-    }
+	.content {
+		float: left;
+		@include fixSize($widthTotal - $widthHandle, auto);
+		height: 100%;
+	}
 
-    .handle {
-        float: left;
-        @include fixSize($widthHandle, auto);
-        height: 100%;
-        background: $v-dark-grayish-blue;
-    }
+	.handle {
+		float: left;
+		@include fixSize($widthHandle, auto);
+		height: 100%;
+		background: $v-dark-grayish-blue;
+	}
 
-    .container {
-        list-style-type: none;
-        @include fixList(margin, 0);
-        @include fixList(padding, 2, 0, 0, 2.5);
+	.container {
+		list-style-type: none;
+		@include fixList(margin, 0);
+		@include fixList(padding, 2, 0, 0, 2.5);
 
-        .task {
-            cursor: pointer;
-            @include fixList(padding, 1);
-            font-size: 15px;
-        }
-    }
+		.task {
+			cursor: pointer;
+			@include fixList(padding, 1);
+			font-size: 15px;
+		}
+	}
 }
 
 .plugbot-taskbar-hidden {
-    visibility: hidden;
+	visibility: hidden;
 }

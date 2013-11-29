@@ -1,61 +1,37 @@
-define('Plugbot/utils/Countdown', [], function () {
+define('Plugbot/utils/Countdown', [
+    'Plugbot/base/Timer',
+    'Plugbot/utils/Helpers'
+], function (BaseTimer, Helpers) {
     'use strict';
 
-    var Model = Backbone.Model.extend({
+    var Model = BaseTimer.extend({
         defaults: function () {
             return {
                 /**
-                 * Default, public
-                 */
-                interval: 'optimal',
-                optimalHz: 12,
-                autoStart: true,
-                exitWhenNoCall: false,
-                /**
                  * Default, single object options
                  */
-                call: undefined,
-                countdown: 0,
+                defaultOptions: {
+                    call: undefined,
+                    countdown: 0
+                },
                 /**
                  * Default, single object runtime
                  */
-                elapsed: 0,
-                suspended: false,
-                waitCallbacks: [],
-                /**
-                 * Runtime
-                 */
-                enabled: false,
-                items: {},
-                idInterval: undefined,
-                suspendedAll: false
+                defaultRuntime: {
+                    suspended: false,
+                    elapsed: 0,
+                    waitCallbacks: []
+                }
             };
         },
         initialize: function () {
             _.bindAll(this);
-
-            // extend attributes to this
-            _.defaults(this, this.attributes);
+            this.parent = BaseTimer.prototype;
+            this.parent.initialize.call(this);
 
             // extend defaults to this
-            _.defaults(this, this.defaults());
-        },
-        start: function () {
-            // set interval
-            if (this.interval === 'optimal') {
-                this.interval = Math.round(1000 / this.optimalHz);
-            } else if (this.interval.substr(-2) === 'hz') {
-                this.interval = Math.round(1000 /
-                    +this.interval.substr(0, this.interval.length - 2));
-            }
-
-            // start
-            this.idInterval =
-                window.setInterval(this.fnTick, +this.interval);
-
-            this.enabled = true;
-
-            return this;
+            _.defaults(this, this.parent.defaults());
+            Helpers.defaultsDeep(this.defaults(), this);
         },
         fnTick: function () {
             var i, items, isEmpty, id, item, options, runtime;
@@ -69,13 +45,14 @@ define('Plugbot/utils/Countdown', [], function () {
                     isEmpty = false;
 
                     item = items[id];
-
-                    options = item.options;
                     runtime = item.runtime;
 
                     if (!runtime.suspended) {
+                        options = item.options;
+
                         runtime.elapsed += this.interval;
 
+                        // check to remove the id
                         if (runtime.elapsed >= options.countdown) {
                             if (undefined !== options.call) {
                                 options.call();
@@ -98,36 +75,29 @@ define('Plugbot/utils/Countdown', [], function () {
                 this.close();
             }
         },
-        invoke: function () {
-            this.fnTick();
-            return this;
-        },
-        suspendAll: function () {
-            this.suspendedAll = true;
-            return this;
-        },
-        resumeAll: function () {
-            this.suspendedAll = false;
-            return this;
-        },
         add: function (id, options) {
+            var defOptions, defRuntime;
+
             // check repetition
             if (undefined !== this.items[id]) { return this; }
+
+            defOptions = this.defaultOptions;
+            defRuntime = this.defaultRuntime;
 
             // use default attributes if parameters are not defined
             options = options || {};
             _.defaults(options, {
-                call: this.call,
-                countdown: this.countdown
+                call: defOptions.call,
+                countdown: defOptions.countdown
             });
 
             // push new item
             this.items[id] = {
                 options: options,
                 runtime: {
-                    elapsed: this.elapsed,
-                    suspended: this.suspended,
-                    waitCallbacks: this.waitCallbacks
+                    suspended: defRuntime.suspended,
+                    elapsed: defRuntime.elapsed,
+                    waitCallbacks: defRuntime.waitCallbacks
                 }
             };
 
@@ -142,23 +112,12 @@ define('Plugbot/utils/Countdown', [], function () {
         },
         remove: function (id) {
             if (undefined === this.items[id]) { return this; }
-
             delete this.items[id];
+
             return this;
-        },
-        hasId: function (id) {
-            return (undefined !== this.items[id]);
         },
         wait: function (id, callback) {
             this.items[id].runtime.waitCallbacks.push(callback);
-        },
-        setOptions: function (id, options) {
-            this.items[id].options = options;
-            return this;
-        },
-        setRuntime: function (id, runtime) {
-            this.items[id].runtime = runtime;
-            return this;
         },
         suspend: function (id) {
             this.items[id].runtime.suspended = true;
@@ -193,15 +152,6 @@ define('Plugbot/utils/Countdown', [], function () {
         forward: function (id, time) {
             this.items[id].runtime.elapsed += time;
             return this;
-        },
-        clear: function () {
-            this.items = {};
-            return this;
-        },
-        close: function () {
-            clearInterval(this.idInterval);
-
-            this.clear();
         }
     });
 

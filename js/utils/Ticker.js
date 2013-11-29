@@ -40,7 +40,6 @@ define('Plugbot/utils/Ticker', [], function () {
         add: function (fn, options) {
             var that = this,
                 interval,
-                currentTick,
                 remainingTime;
 
             // check if the function has been included
@@ -58,8 +57,7 @@ define('Plugbot/utils/Ticker', [], function () {
             this.calls.push(fn);
 
             // set variables
-            currentTick = (new Date()).getTime();
-            remainingTime = interval - (currentTick % interval);
+            remainingTime = interval - (Date.now() % interval);
 
             setTimeout(function () {
                 var ind;

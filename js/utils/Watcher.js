@@ -3,185 +3,156 @@
  * Unlike Ticker, interval is set when it is instantiated.
  */
 
-define('Plugbot/utils/Watcher', [], function () {
+define('Plugbot/utils/Watcher', [
+    'Plugbot/base/Timer',
+    'Plugbot/utils/Helpers'
+], function (BaseTimer, Helpers) {
     'use strict';
 
-    var Model = Backbone.Model.extend({
+    var Model = BaseTimer.extend({
         defaults: function () {
             return {
                 /**
-                 * Default, public
+                 * Default, single object options
                  */
-                interval: 'optimal',
-                optimalHz: 12,
-                autoStart: true,
-                exitWhenNoCall: true,
+                defaultOptions: {
+                    call: undefined,
+                    args: undefined,
+                    exitValue: 0,
+                    exitCall: undefined,
+                    maxNumCall: 0
+                },
                 /**
-                 * Default, single object overridable
+                 * Default, single object runtime
                  */
-                exitValue: 0,
-                exitCall: null,
-                maxNumCall: 0,
-                /**
-                 * Runtime
-                 */
-                watching: false,
-                call: [],
-                // number of calls that have been done
-                numCall: [],
-                // individual option
-                options: [],
-                // id returned from setInterval
-                idInterval: undefined,
-                // suspended or not
-                isSuspended: false
+                defaultRuntime: {
+                    suspended: false,
+                    numCall: 0
+                }
             };
         },
         initialize: function () {
             _.bindAll(this);
-
-            // extend attributes to this
-            _.defaults(this, this.attributes);
+            this.parent = BaseTimer.prototype;
+            this.parent.initialize.call(this);
 
             // extend defaults to this
-            _.defaults(this, this.defaults());
+            _.defaults(this, this.parent.defaults());
+            Helpers.defaultsDeep(this.defaults(), this);
         },
-        watch: function () {
-            // set interval
-            if (this.interval === 'optimal') {
-                this.interval = Math.round(1000 / this.optimalHz);
-            } else if (this.interval.substr(-2) === 'hz') {
-                this.interval = Math.round(1000 /
-                    +this.interval.substr(0, this.interval.length - 2));
-            }
+        fnTick: function () {
+            var items, isEmpty, id, item, options, runtime, ret, enMaxNumCall;
 
-            this.watching = true;
+            if (this.suspendedAll) { return; }
 
-            this.idInterval =
-                window.setInterval(this.fnWatch, +this.interval);
-        },
-        fnWatch: function () {
-            var i, ret, opt, numCall,
-                isExitValue, isMaxCall;
+            isEmpty = true;
+            items = this.items;
+            for (id in items) {
+                if (items.hasOwnProperty(id)) {
+                    isEmpty = false;
 
-            // by setInterval
-            if (this.isSuspended) { return; }
+                    item = items[id];
+                    runtime = item.runtime;
 
-            i = 0;
-            while (i < this.call.length) {
-                numCall = this.numCall[i];
-                opt = this.options[i];
+                    if (!runtime.suspended) {
+                        options = item.options;
 
-                ret = this.call[i](opt.args);
-                numCall += 1;
+                        enMaxNumCall = (0 !== options.maxNumCall);
 
-                // check exit value
-                if (opt.exitValue === ret) {
-                    isExitValue = true;
-                } else {
-                    isExitValue = false;
+                        // call function and get return value
+                        ret = options.call.apply(null, options.args);
 
-                    // check max number of calls
-                    if (0 !== opt.maxNumCall &&
-                            numCall > opt.maxNumCall) {
-                        isMaxCall = true;
-                    } else {
-                        isMaxCall = false;
+                        // increase number of calls
+                        if (enMaxNumCall) {
+                            runtime.numCall += 1;
+                        }
+
+                        // check to remove the id (exit value & max num call)
+                        if ((ret === options.exitValue) ||
+                                (enMaxNumCall &&
+                                runtime.numCall > options.maxNumCall)) {
+                            if (options.exitCall) {
+                                options.exitCall();
+                            }
+
+                            this.remove(id);
+                        } else {
+                            this.items[id].runtime = runtime;
+                        }
                     }
-                }
-
-                if (isExitValue || isMaxCall) {
-                    if (null !== opt.exitCall) {
-                        opt.exitCall();
-                    }
-
-                    this.call.splice(i, 1);
-                    this.numCall.splice(i, 1);
-                    this.options.splice(i, 1);
-
-                    if (0 === this.call.length &&
-                            this.exitWhenNoCall) {
-                        this.close();
-                        return;
-                    }
-                } else {
-                    if (0 !== opt.maxNumCall) {
-                        this.numCall[i] = numCall;
-                    }
-
-                    i += 1;
                 }
             }
 
-            if (0 === i && this.exitWhenNoCall) {
+            if (isEmpty && this.exitWhenNoCall) {
                 this.close();
             }
         },
         /**
+         * Add a call. But cannot be removed later
+         * @param {Function} fn     Function call
+         */
+        addFn: function (fn) {
+            this.add(Date.now(), {
+                call: fn
+            });
+        },
+        /**
          * Add a call. The watcher will start automatically once a function
          * is added.
-         * @param {Function} fn       Function to be called (No parameters)
-         * @param {Object|undefined} options     Options (exitValue,
-         *      maxNumCall)
+         * @param {Number|String} id   ID
+         * @param {Object|undefined} options    Options
          */
-        add: function (fn, options) {
-            // check if the function has been included
-            if (-1 !== this.call.indexOf(fn)) { return; }
+        add: function (id, options) {
+            var defOptions, defRuntime;
+
+            // check repetition
+            if (undefined !== this.items[id]) { return this; }
+
+            defOptions = this.defaultOptions;
+            defRuntime = this.defaultRuntime;
 
             // use default attributes if parameters are not defined
             options = options || {};
             _.defaults(options, {
-                exitValue: this.exitValue,
-                exitCall: this.exitCall,
-                maxNumCall: this.maxNumCall
+                call: defOptions.call,
+                exitValue: defOptions.exitValue,
+                exitCall: defOptions.exitCall,
+                maxNumCall: defOptions.maxNumCall
             });
 
-            // include the function
-            this.call.push(fn);
-            this.numCall.push(0);
-            this.options.push(options);
+            // push new item
+            this.items[id] = {
+                options: options,
+                runtime: {
+                    suspended: defRuntime.suspended,
+                    numCall: defRuntime.numCall
+                }
+            };
 
-            // check to start watching
-            if (!this.watching) {
+            // check to start
+            if (!this.enabled) {
                 if (this.autoStart) {
-                    this.watch();
+                    this.start();
                 }
             }
         },
         /**
          * Remove a call
-         * @param {Function} fn   Function to be removed (No parameters)
+         * @param {Function} id   Function to be removed (No parameters)
          */
-        remove: function (fn) {
-            var ind = this.call.indexOf(fn);
+        remove: function (id) {
+            if (undefined === this.items[id]) { return this; }
+            delete this.items[id];
 
-            if (-1 !== ind) {
-                this.call.splice(ind, 1);
-                this.numCall.splice(ind, 1);
-                this.options.splice(ind, 1);
-            }
+            return this;
         },
-        invoke: function () {
-            this.fnWatch();
+        suspend: function (id) {
+            this.items[id].runtime.suspended = true;
+            return this;
         },
-        suspend: function () {
-            this.isSuspended = true;
-        },
-        resume: function () {
-            this.isSuspended = false;
-        },
-        /**
-         * Clear all calls
-         */
-        clear: function () {
-            this.call = [];
-            this.numCall = [];
-            this.options = [];
-        },
-        close: function () {
-            clearInterval(this.idInterval);
-
-            this.clear();
+        resume: function (id) {
+            this.items[id].runtime.suspended = false;
+            return this;
         }
     });
 

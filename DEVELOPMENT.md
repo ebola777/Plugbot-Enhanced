@@ -2,6 +2,7 @@
 
 ## Required software
 - A modern browser
+    - ex. Chrome
 - A home network file server
 	- ex. HTTP File Server
 - A text editor
@@ -12,6 +13,7 @@
 - A C++ IDE
 	- Codeblocks
 - A Sass compiler
+    - Compass
 - Code compressors
 	- UglifyJs2
 	- CSSTidy
@@ -24,11 +26,14 @@
 	to HTTP File Server, choose Real folder
 3. Enter a plug.dj room, click the bookmark "PlugBot Enhanced LOCAL DEBUG"
 
-## How to release
+## How to optimize
 1. Install UglifyJs2
 2. Download CSSTidy and copy csstidy.exe to optimization/ folder
 3. Copy cpp/app/bin/Debug/Refactor-Debug.exe to optimization/ folder
 4. Run optimization/build.bat
+
+## How to release
+1. Follow checklist PUBLISHING.md
 
 ## Beautifying
 1. Install js-beautify

@@ -1,4 +1,5 @@
 @echo off
+@setLocal EnableExtensions EnableDelayedExpansion
 
 :: Input script
 set FILE_INPUT=input/room.js
@@ -11,7 +12,7 @@ set FILE_OPTIONS_JS=options-room.js.txt
 echo # Beautifying js...
 set /p options=<"%FILE_OPTIONS_JS%"
 echo Options: %options%
-js-beautify -f %FILE_INPUT% -o %FILE_OUTPUT% %options%
+call js-beautify -f %FILE_INPUT% -o %FILE_OUTPUT% %options%
 echo.
 
 echo.

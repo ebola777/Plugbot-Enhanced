@@ -1,12 +1,12 @@
 define('Plugbot/views/dialog/Taskbar', [
     'handlebars',
-    'Plugbot/utils/Countdown',
-    'Plugbot/views/utils/UiHelpers',
     'Plugbot/models/dialog/Taskbar',
     'Plugbot/models/dialog/TaskbarCollection',
-    'Plugbot/views/dialog/TaskbarItemView'
-], function (Handlebars, Countdown, UiHelpers, Taskbar, TaskbarCollection,
-             TaskbarItemView) {
+    'Plugbot/utils/Countdown',
+    'Plugbot/views/dialog/TaskbarItemView',
+    'Plugbot/views/utils/UiHelpers'
+], function (Handlebars, Taskbar, TaskbarCollection, Countdown,
+             TaskbarItemView, UiHelpers) {
     'use strict';
 
     var View = Backbone.View.extend({

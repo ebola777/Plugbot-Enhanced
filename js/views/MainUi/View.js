@@ -1,14 +1,15 @@
 define('Plugbot/views/MainUi/View', [
     'handlebars',
+    'Plugbot/models/MainUi/ItemCollection',
+    'Plugbot/models/MainUi/ItemModel',
+    'Plugbot/models/MainUi/Model',
+    'Plugbot/utils/API',
     'Plugbot/utils/APIBuffer',
     'Plugbot/utils/Watcher',
-    'Plugbot/views/Ui',
-    'Plugbot/models/MainUi/Model',
-    'Plugbot/models/MainUi/ItemModel',
-    'Plugbot/models/MainUi/ItemCollection',
-    'Plugbot/views/MainUi/ItemView'
-], function (Handlebars, APIBuffer, Watcher, Ui, MainUiModel, MainUiItemModel,
-             MainUiItemCollection, MainUiItemView) {
+    'Plugbot/views/MainUi/ItemView',
+    'Plugbot/views/utils/Ui'
+], function (Handlebars, MainUiItemCollection, MainUiItemModel, MainUiModel,
+             UtilsAPI, APIBuffer, Watcher, MainUiItemView, Ui) {
     'use strict';
 
     var View = Backbone.View.extend({
@@ -19,14 +20,10 @@ define('Plugbot/views/MainUi/View', [
                  */
                 dispatcherWindow: undefined,
                 watcherAutoQueue: new Watcher({
-                    interval: '2 hz',
-                    exitWhenNoCall: false
+                    interval: '1 hz'
                 }),
                 watcherSkipVideo: new Watcher({
-                    interval: '1 hz',
-                    exitWhenNoCall: false,
-                    exitValue: true,
-                    exitCall: this.disableSkipVideo
+                    interval: '1 hz'
                 }),
                 /**
                  * Runtime
@@ -63,13 +60,13 @@ define('Plugbot/views/MainUi/View', [
         },
         el: Ui.plugbot.mainUi,
         templateDialogAsk: Handlebars.compile(
-            '    <div title="Exit PlugBot">' +
-                '    <p>Exit PlugBot?' +
+            '    <div title="Exit">' +
+                '    <p>Exit Plugbot Enhanced?' +
                 '    <\/p>' +
                 '<\/div>'
         ),
         events: {
-            'click': 'onClick'
+            'click p': 'onClick'
         },
         render: function () {
             var i, newModel, data = this.model.get('data');
@@ -94,7 +91,8 @@ define('Plugbot/views/MainUi/View', [
             this.$el.append(newView.render().el);
         },
         listenToAPI: function () {
-            var cid = this.model.cid;
+            var that = this,
+                cid = this.model.cid;
 
             APIBuffer.addListening('auto-woot-' + cid, this, [
                 API.DJ_ADVANCE
@@ -115,6 +113,39 @@ define('Plugbot/views/MainUi/View', [
                 },
                 callback: this.enableAutoQueue
             });
+
+            APIBuffer.addListening('skip-video-' + cid, this, [
+                API.DJ_ADVANCE
+            ], {
+                fnCheck: function () {
+                    that.options.watcherSkipVideo.remove('skip-video');
+
+                    return that.collection.get('plugbot-btn-skip-video')
+                        .get('enabled');
+                },
+                callback: function () {
+                    var lastVolume = that.options.lastPlaybackVolume;
+
+                    that.disableSkipVideo();
+
+                    API.setVolume(0);
+
+                    that.options.watcherSkipVideo.add('skip-video', {
+                        call: function (lastVolume) {
+                            var ret, volume = API.getVolume();
+
+                            if (0 === volume || volume === lastVolume) {
+                                API.setVolume(lastVolume);
+                            } else {
+                                ret = 0;
+                            }
+
+                            return ret;
+                        },
+                        args: [lastVolume]
+                    });
+                }
+            });
         },
         listenToWindow: function () {
             var dispatcherWindow = this.options.dispatcherWindow;
@@ -122,6 +153,8 @@ define('Plugbot/views/MainUi/View', [
             this.listenTo(dispatcherWindow,
                 dispatcherWindow.CONTROLBOX_CLOSE, function (options) {
                     options.enabledCallback = true;
+
+                    // show dialog
                     this.options.elemDialogAsk.dialog({
                         modal: true,
                         draggable: false,
@@ -159,8 +192,13 @@ define('Plugbot/views/MainUi/View', [
                 break;
             }
         },
-        onClickWoot: function () {
-            // not used
+        onClickWoot: function (en) {
+            if (en) {
+                if (UtilsAPI.USER.VOTE.UNDECIDED === API.getUser().vote) {
+                    $(Ui.plugdj.woot).click();
+                }
+            }
+
             return this;
         },
         onClickQueue: function (en) {
@@ -185,17 +223,20 @@ define('Plugbot/views/MainUi/View', [
             var ret = API.djJoin();
 
             if (0 !== ret) {
-                this.options.watcherAutoQueue.add(this.fnWatcherAutoQueue);
+                this.options.watcherAutoQueue.add('auto-queue', {
+                    call: function () {
+                        return API.djJoin();
+                    }
+                });
             }
         },
         disableAutoQueue: function () {
-            this.options.watcherAutoQueue.remove(this.fnWatcherAutoQueue);
+            this.options.watcherAutoQueue.remove('auto-queue');
         },
         enableSkipVideo: function () {
+            this.options.watcherSkipVideo.remove('skip-video');
             this.options.lastPlaybackVolume = API.getVolume();
             API.setVolume(0);
-
-            this.options.watcherSkipVideo.add(this.fnWatcherSkipVideo);
         },
         disableSkipVideo: function () {
             var module;
@@ -204,17 +245,11 @@ define('Plugbot/views/MainUi/View', [
                 module = this.collection.get('plugbot-btn-skip-video');
                 module.set('enabled', false);
 
-                API.setVolume(this.options.lastPlaybackVolume);
-                this.options.lastPlaybackVolume = undefined;
+                if (0 === API.getVolume()) {
+                    API.setVolume(this.options.lastPlaybackVolume);
+                    this.options.lastPlaybackVolume = undefined;
+                }
             }
-
-            this.options.watcherSkipVideo.remove(this.fnWatcherSkipVideo);
-        },
-        fnWatcherAutoQueue: function () {
-            return API.djJoin();
-        },
-        fnWatcherSkipVideo: function () {
-            return API.getTimeRemaining() <= 1;
         },
         close: function () {
             var key, views = this.options.views;

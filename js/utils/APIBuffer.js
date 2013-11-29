@@ -1,23 +1,5 @@
-define('Plugbot/utils/APIBuffer', [
-    'Plugbot/events/BaseEvents'
-], function (BaseEvents) {
+define('Plugbot/utils/APIBuffer', [], function () {
     'use strict';
-
-    //region VARIABLES =====
-    var Events = {};
-
-    //endregion
-
-
-    //region CONSTRUCTORS =====
-    (function () {
-        _.extend(Events, BaseEvents);
-
-        addAPIEvents();
-    }());
-
-    //endregion
-
 
     //region PUBLIC FUNCTIONS =====
     function addListening(id, listener, events, options) {
@@ -49,25 +31,17 @@ define('Plugbot/utils/APIBuffer', [
         }
     }
 
-    function stopListening(listener) {
-        listener.stopListening(API);
-    }
+    function stopListening(listener, events) {
+        var i,
+            fnStopListenTo = function (event) {
+                listener.stopListening(API, event);
+            };
 
-    //endregion
-
-
-    //region PRIVATE FUNCTIONS =====
-    function addAPIEvents() {
-        var key, item;
-
-        for (key in API) {
-            if (API.hasOwnProperty(key)) {
-                item = API[key];
-
-                if ('string' === typeof item) {
-                    // add event to this event
-                    Events[key] = item;
-                }
+        if (undefined === events) {
+            listener.stopListening(API);
+        } else {
+            for (i = 0; i !== events.length; i += 1) {
+                fnStopListenTo(events[i]);
             }
         }
     }
@@ -75,10 +49,6 @@ define('Plugbot/utils/APIBuffer', [
     //endregion
 
     return {
-        // events
-        Events: Events,
-
-        // methods
         addListening: addListening,
         stopListening: stopListening
     };

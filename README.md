@@ -1,5 +1,5 @@
-# PlugBot Enhanced
-PlugBot Enhanced is a bot for plug.dj.
+# Plugbot Enhanced
+Plugbot Enhanced is a bot for plug.dj.
 
 It is a brand new design but still a pre-alpha version, many old features
 such as emoticons are not included yet. I will add them back soon.
@@ -13,7 +13,7 @@ See instructions [here](http://ebola777.github.io/)
 - Skip video
 
 ## Version
-1.0.3.pre (11/20/2013)
+1.0.4.pre (11/29/2013)
 
 ## Author
 Shawn

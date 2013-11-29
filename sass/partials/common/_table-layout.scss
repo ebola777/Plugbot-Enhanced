@@ -1,29 +1,29 @@
 .plugbot-table-layout {
-    > div {
-        position: relative;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        @if not $DEBUG {
-            border: 0;
-        } @else {
-            border: 3px solid white;
-        }
-    }
+	> div {
+		position: relative;
+		margin: 0;
+		padding: 0;
+		overflow: hidden;
+		@if not $DEBUG {
+			border: 0;
+		} @else {
+			border: 3px solid white;
+		}
+	}
 
-    > .row {
-        width: 100%;
-        @if $DEBUG {
-            padding: 3px;
-            background: gray;
-        }
-    }
+	> .row {
+		width: 100%;
+		@if $DEBUG {
+			padding: 3px;
+			background: gray;
+		}
+	}
 
-    > .col {
-        height: 100%;
-        @if $DEBUG {
-            padding: 3px;
-            background: black;
-        }
-    }
+	> .col {
+		height: 100%;
+		@if $DEBUG {
+			padding: 3px;
+			background: black;
+		}
+	}
 }

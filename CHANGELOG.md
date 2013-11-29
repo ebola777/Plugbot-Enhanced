@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.4.pre (11/29/2013)
+- [NEW] When clicking auto-woot, woot automatically if the vote is undecided
+- [IMPROVED] When skip-video is enabled, resume the volume when next song
+starts
+
 ## 1.0.3.pre (11/20/2013)
 - [IMPROVED] Plugbot completely hides when playlist extends
 - [FIXED] Compatibility issues
