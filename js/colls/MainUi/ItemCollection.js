@@ -1,4 +1,4 @@
-define('Plugbot/models/MainUi/ItemCollection', [
+define('Plugbot/colls/MainUi/ItemCollection', [
     'Plugbot/models/MainUi/ItemModel'
 ], function (MainUiModel) {
     'use strict';

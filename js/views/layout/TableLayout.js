@@ -13,14 +13,19 @@ define('Plugbot/views/layout/TableLayout', [
                 classes: [],
                 values: [],
                 styles: [],
-                grows: []
+                grows: [],
+                /**
+                 * Runtime
+                 */
+                cached: false,
+                elCached: []
             };
         },
         initialize: function () {
             _.bindAll(this);
 
             // pull options from defaults
-            _.defaults(this.options, this.defaults);
+            _.defaults(this.options, this.defaults());
         },
         elTableLayout: '.plugbot-table-layout',
         render: function () {
@@ -32,10 +37,10 @@ define('Plugbot/views/layout/TableLayout', [
         },
         resize: function () {
             var i,
-                size = ('row' === this.options.display ?
-                        'width' : 'height'),
-                outerSize = ('row' === this.options.display ?
-                        'outerWidth' : 'outerHeight'),
+                ind,
+                size = ('row' === this.options.display ? 'width' : 'height'),
+                outerSize = ('row' === this.options.display ? 'outerWidth' :
+                        'outerHeight'),
                 elemWrap,
                 value,
                 style,
@@ -44,11 +49,15 @@ define('Plugbot/views/layout/TableLayout', [
                 total,
                 arrRemain;
 
+            if (!this.cached) {
+                this.cacheElements();
+            }
+
             total = this.$el[size]();
             arrRemain = [];
             weight = 0;
             for (i = 0; i !== this.options.classes.length; i += 1) {
-                elemWrap = this.$('.' + this.options.classes[i]);
+                elemWrap = this.options.elCached[i];
                 value = this.options.values[i];
                 style = this.options.styles[i];
                 grow = this.options.grows[i];
@@ -74,12 +83,13 @@ define('Plugbot/views/layout/TableLayout', [
                 }
             }
 
+            // resize '?' style
             if (0 !== weight) {
                 total /= weight;
                 for (i = 0; i !== arrRemain.length; i += 1) {
-                    elemWrap =
-                        this.$('.' + this.options.classes[arrRemain[i]]);
-                    grow = this.options.grows[arrRemain[i]];
+                    ind = arrRemain[i];
+                    elemWrap = this.options.elCached[ind];
+                    grow = this.options.grows[ind];
 
                     elemWrap.css(size, (total * grow) -
                         (elemWrap[outerSize](true) - elemWrap[size]()) +
@@ -87,7 +97,18 @@ define('Plugbot/views/layout/TableLayout', [
                 }
             }
         },
+        cacheElements: function () {
+            var i;
+
+            for (i = 0; i !== this.options.classes.length; i += 1) {
+                this.options.elCached[i] =
+                    this.$('.' + this.options.classes[i]);
+            }
+
+            this.cached = true;
+        },
         close: function () {
+            // not used
         }
     });
 

@@ -1,25 +1,34 @@
 define('Plugbot/views/Userlist/UsersItemView', [
-    'handlebars',
+    'Plugbot/tmpls/Userlist/UsersItemView',
     'Plugbot/utils/API'
-], function (Handlebars, UtilsAPI) {
+], function (UserlistUsersItemViewTemplate, UtilsAPI) {
     'use strict';
 
     var View = Backbone.View.extend({
+        defaults: function () {
+            return {
+                /**
+                 * Runtime
+                 */
+                template: undefined
+            };
+        },
+        TEMPLATE: UserlistUsersItemViewTemplate,
         initialize: function () {
             _.bindAll(this);
+            _.defaults(this, this.defaults());
+
+            // init template
+            this.options.template = new this.TEMPLATE({view: this});
         },
-        template: Handlebars.compile(
-            '    <li class="userlist-item {{classVote}}" data-id="{{id}}">' +
-                '{{text}}<\/li>'
-        ),
         render: function () {
             var user = this.model.get('user');
 
-            this.setElement(this.template({
+            this.options.template.setSelf({
                 id: this.model.get('id'),
                 classVote: this.getClass(+user.vote),
                 text: user.username
-            }));
+            });
 
             return this;
         },

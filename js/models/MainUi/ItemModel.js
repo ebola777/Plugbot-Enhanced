@@ -1,4 +1,6 @@
-define('Plugbot/models/MainUi/ItemModel', [], function () {
+define('Plugbot/models/MainUi/ItemModel', [
+    'Plugbot/main/Settings'
+], function (Settings) {
     'use strict';
 
     var Model = Backbone.Model.extend({
@@ -19,12 +21,14 @@ define('Plugbot/models/MainUi/ItemModel', [], function () {
 
             switch (this.get('id')) {
             case 'plugbot-btn-woot':
-                Plugbot.settings.ui.autoWoot = en;
+                Plugbot.settings.mainUi.autoWoot = en;
                 break;
-            case 'plugbot-btn-queue':
-                Plugbot.settings.ui.autoQueue = en;
+            case 'plugbot-btn-join':
+                Plugbot.settings.mainUi.autoJoin = en;
                 break;
             }
+
+            Settings.saveSettings();
         }
     });
 

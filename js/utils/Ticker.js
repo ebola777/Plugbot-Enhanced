@@ -1,9 +1,6 @@
 /**
  * Ticker queues functions and calls them later,
- * ex. interval is set to 5sec, Ticker will call them at the next closest
- * time of 0sec, 5sec, 10sec, ... 60sec. If a function is added at 3sec, it
- * will be called at 5sec.
- * All function calls are removed after they have been called.
+ * like underscore throttle function
  */
 
 define('Plugbot/utils/Ticker', [], function () {
@@ -15,12 +12,13 @@ define('Plugbot/utils/Ticker', [], function () {
                 /**
                  * Default
                  */
-                interval: 1000,
+                interval: 'optimal',
+                defaultHz: 1,
                 /**
                  * Runtime
                  */
-                // functions waiting to be called
-                calls: []
+                // IDs (key: id, value: id of setTimeout)
+                ids: {}
             };
         },
         initialize: function () {
@@ -33,60 +31,19 @@ define('Plugbot/utils/Ticker', [], function () {
             _.defaults(this, this.defaults());
         },
         /**
-         * Add a function call
-         * @param {Function} fn       Function to be called (No parameters)
-         * @param {Object|undefined} options     Options
-         */
-        add: function (fn, options) {
-            var that = this,
-                interval,
-                remainingTime;
-
-            // check if the function has been included
-            if (-1 !== this.calls.indexOf(fn)) { return; }
-
-            // apply default settings
-            options = options || {};
-            _.defaults(options, {
-                interval: this.interval
-            });
-
-            interval = options.interval;
-
-            // include the function
-            this.calls.push(fn);
-
-            // set variables
-            remainingTime = interval - (Date.now() % interval);
-
-            setTimeout(function () {
-                var ind;
-
-                // check if the function still exists
-                ind = that.calls.indexOf(fn);
-                if (-1 === ind) { return; }
-
-                // invoke
-                fn();
-
-                // remove function from list
-                that.calls.splice(ind, 1);
-            }, remainingTime);
-        },
-        /**
          * Add a function call by id
-         * @param {Number|String} id    Id
-         * @param {Function} fn         Function to be called (No parameters)
-         * @param {Object|undefined} options    Options
+         * @param {number|String} id    Id
+         * @param {function} fn         Function to be called (No parameters)
+         * @param {Object=} options    Options
          */
-        addId: function (id, fn, options) {
+        add: function (id, fn, options) {
             var that = this,
                 interval,
                 currentTick,
                 remainingTime;
 
             // check if the function has been included
-            if (-1 !== this.calls.indexOf(id)) { return; }
+            if (undefined !== this.ids[id]) { return this; }
 
             // apply default settings
             options = options || {};
@@ -94,52 +51,55 @@ define('Plugbot/utils/Ticker', [], function () {
                 interval: this.interval
             });
 
+            // set remaining time
             interval = options.interval;
 
-            // include the id and function
-            this.calls.push(id);
+            if (interval === 'optimal') {
+                interval = Math.round(1000 / this.optimalHz);
+            } else if (this.interval.substr(-2) === 'hz') {
+                interval = Math.round(1000 /
+                    +interval.substr(0, interval.length - 2));
+            }
 
-            // set variables
             currentTick = (new Date()).getTime();
             remainingTime = interval - (currentTick % interval);
 
-            setTimeout(function () {
-                var ind;
-
-                // check if the id still exists
-                ind = that.calls.indexOf(id);
-                if (-1 === ind) { return; }
-
+            this.ids[id] = setTimeout(function () {
                 // invoke
-                fn();
+                fn.call(that);
 
-                // remove function from list
-                that.calls.splice(ind, 1);
+                // remove this key
+                delete that.ids[id];
             }, remainingTime);
-        },
-        /**
-         * Remove a call
-         * @param {Function} fn   Function to be removed (No parameters)
-         */
-        remove: function (fn) {
-            var ind = this.calls.indexOf(fn);
 
-            if (-1 !== ind) {
-                this.calls.splice(ind, 1);
-            }
+            return this;
         },
         /**
          * Remove an id
-         * @param {Number|String} id   Id
+         * @param {number|string} id   Id
          */
-        removeId: function (id) {
-            this.remove(id);
+        remove: function (id) {
+            clearInterval(this.ids[id]);
+            delete this.ids[id];
+
+            return this;
+        },
+        has: function (id) {
+            return (undefined !== this.ids[id]);
         },
         /**
          * Clear all calls
          */
         clear: function () {
-            this.calls = [];
+            var ids = this.ids, key;
+
+            for (key in ids) {
+                if (ids.hasOwnProperty(key)) {
+                    this.remove(ids[key]);
+                }
+            }
+
+            return this;
         },
         close: function () {
             this.clear();

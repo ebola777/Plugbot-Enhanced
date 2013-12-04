@@ -1,11 +1,10 @@
-define('Plugbot/views/dialog/Taskbar', [
-    'handlebars',
-    'Plugbot/models/dialog/Taskbar',
-    'Plugbot/models/dialog/TaskbarCollection',
+define('Plugbot/views/Taskbar/View', [
+    'Plugbot/colls/Taskbar/ItemCollection',
+    'Plugbot/tmpls/Taskbar/View',
     'Plugbot/utils/Countdown',
-    'Plugbot/views/dialog/TaskbarItemView',
+    'Plugbot/views/Taskbar/ItemView',
     'Plugbot/views/utils/UiHelpers'
-], function (Handlebars, Taskbar, TaskbarCollection, Countdown,
+], function (TaskbarItemCollection, TaskbarViewTemplate, Countdown,
              TaskbarItemView, UiHelpers) {
     'use strict';
 
@@ -15,6 +14,7 @@ define('Plugbot/views/dialog/Taskbar', [
                 /**
                  * Runtime
                  */
+                template: undefined,
                 views: {},
                 countdownSlide: (new Countdown()),
                 countdownTask: (new Countdown()),
@@ -25,37 +25,26 @@ define('Plugbot/views/dialog/Taskbar', [
             'mouseenter': 'onMouseEnter',
             'mouseleave': 'onMouseLeave'
         },
+        TEMPLATE: TaskbarViewTemplate,
         initialize: function () {
             _.bindAll(this);
-
-            // pull defaults to options
             _.defaults(this.options, this.defaults());
 
-            this.collection = new TaskbarCollection();
+            // init template
+            this.options.template = new this.TEMPLATE({view: this});
+
+            this.collection = new TaskbarItemCollection();
 
             this.listenTo(this.collection, 'add', this.addOne);
             this.listenTo(this.collection, 'remove', this.removeOne);
 
             this.bindUiEvents();
         },
-        elContent: '.content',
-        elHandle: '.handle',
-        elContainer: '.container',
-        template: Handlebars.compile(
-            '    <div class="plugbot-taskbar">' +
-                '    <div class="{{getName classContent}}">' +
-                '        <ul class="{{getName classContainer}}"><\/ul>' +
-                '    <\/div>' +
-                '    <div class="{{getName classHandle}}"><\/div>' +
-                '<\/div>'
-        ),
         render: function () {
-            // set element
-            this.setElement(this.template({
-                classContent: this.elContent,
-                classHandle: this.elHandle,
-                classContainer: this.elContainer
-            }));
+            // render
+            this.options.template
+                .setSelf()
+                .cacheElements();
 
             this.$el.trigger('mouseleave');
 
@@ -65,14 +54,13 @@ define('Plugbot/views/dialog/Taskbar', [
             var newView = new TaskbarItemView({
                     model: mod
                 }),
-                elemContainer = this.$(this.elContainer),
                 indMod;
 
             this.options.views[mod.cid] = newView;
 
             // add element
             indMod = this.collection.indexOf(mod);
-            UiHelpers.insertAt(newView.render().el, elemContainer, indMod);
+            UiHelpers.insertAt(newView.render().el, this.$elContainer, indMod);
 
             // listen to child events
             this.listenToItem(newView);
@@ -184,10 +172,8 @@ define('Plugbot/views/dialog/Taskbar', [
             }, 200);
         },
         collapse: function () {
-            var elemContent = this.$(this.elContent);
-
             this.$el.animate({
-                left: -elemContent.width()
+                left: -this.$elContent.width()
             }, 200);
         },
         bindUiEvents: function () {

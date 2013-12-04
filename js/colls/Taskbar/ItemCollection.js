@@ -1,5 +1,5 @@
-define('Plugbot/models/dialog/TaskbarCollection', [
-    'Plugbot/models/dialog/TaskbarItemModel'
+define('Plugbot/colls/Taskbar/ItemCollection', [
+    'Plugbot/models/Taskbar/ItemModel'
 ], function (TaskbarItemModel) {
     'use strict';
 

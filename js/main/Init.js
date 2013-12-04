@@ -19,16 +19,14 @@ define('Plugbot/main/Init', [
         // init handlebars helpers
         Helpers.initHandlebarsHelpers();
 
-        // create a new public ticker
-        Plugbot.ticker = new Ticker();
-
-        // create a new public watcher
-        Plugbot.watcher = new Watcher();
+        // init watchers and tickers
+        initWatchers();
+        initTickers();
 
         /**
          * #2: Events
          */
-        // init dispatcher
+        // init site dispatcher
         SiteEvents.initDispatcher();
 
         /**
@@ -37,6 +35,9 @@ define('Plugbot/main/Init', [
         // init UIs
         initUis();
 
+        /**
+         * #4: Notification
+         */
         // notify that PlugBot has been initialized
         Plugbot.initDone();
     }
@@ -49,10 +50,75 @@ define('Plugbot/main/Init', [
      * Init UIs
      */
     function initUis() {
-        WindowManager.initTaskbar();
-        WindowManager.initWindows();
-        WindowManager.initEvents();
-        WindowManager.initPublicMethods();
+        waitAPIEnabled(function () {
+            WindowManager.initTaskbar();
+            WindowManager.initWindows();
+            WindowManager.initEvents();
+            WindowManager.initPublicMethods();
+        });
+    }
+
+    /**
+     * Wait API till it's enabled
+     * @param {function} callback   Callback when done
+     */
+    function waitAPIEnabled(callback) {
+        var watcher = new Watcher({
+            interval: '1 hz',
+            exitWhenNoCall: true,
+            defaultOptions: {
+                exitValue: true,
+                exitCall: callback
+            }
+        });
+
+        watcher
+            .addFn(function () {
+                return API.enabled;
+            })
+            .invoke();
+    }
+
+    function initWatchers() {
+        Plugbot.watcher = new Watcher();
+    }
+
+    function initTickers() {
+        // the 'keyId' must be in Plugbot.settings.tickerIds list in case of
+        //      typo
+        Plugbot.ticker = (function () {
+            return {
+                _ticker: new Ticker(),
+                add: function (keyId, fn, options) {
+                    var id = this.getId(keyId);
+
+                    this._ticker.add(id, fn, options);
+                },
+                remove: function (keyId) {
+                    var id = this.getId(keyId);
+
+                    this._ticker.remove(id);
+                },
+                clear: function () {
+                    this._ticker.clear();
+                },
+                getId: function (keyId) {
+                    var ret,
+                        id = Plugbot.settings.tickerIds[keyId];
+
+                    if (undefined !== id) {
+                        ret = id;
+                    } else {
+                        throw 'ticker key ' + keyId + ' not found';
+                    }
+
+                    return ret;
+                },
+                close: function () {
+                    this._ticker.close();
+                }
+            };
+        }());
     }
 
     //endregion

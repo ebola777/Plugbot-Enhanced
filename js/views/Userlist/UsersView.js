@@ -1,5 +1,5 @@
 define('Plugbot/views/Userlist/UsersView', [
-    'Plugbot/models/Userlist/ItemCollection',
+    'Plugbot/colls/Userlist/ItemCollection',
     'Plugbot/views/Userlist/UsersItemView',
     'Plugbot/views/utils/Ui'
 ], function (UserlistItemCollection, UsersItemView, Ui) {

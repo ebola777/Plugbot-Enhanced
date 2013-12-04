@@ -1,23 +1,33 @@
 define('Plugbot/views/Userlist/HeadView', [
-    'handlebars'
-], function (Handlebars) {
+    'Plugbot/tmpls/Userlist/HeadView'
+], function (UserlistHeadViewTemplate) {
     'use strict';
 
     var View = Backbone.View.extend({
+        defaults: function () {
+            return {
+                /**
+                 * Runtime
+                 */
+                template: undefined
+            };
+        },
+        TEMPLATE: UserlistHeadViewTemplate,
         initialize: function () {
             _.bindAll(this);
+            _.defaults(this, this.defaults());
+
+            // init template
+            this.options.template = new this.TEMPLATE({view: this});
         },
-        template: Handlebars.compile(
-            '   <h1 class="userlist-queuespot">{{textQueueSpot}}<\/h1>'
-        ),
         render: function () {
             var waitListPos = this.model.get('waitListPos');
 
-            this.$el.html(this.template({
-                textQueueSpot: 'Waitlist: ' +
-                    (-1 === waitListPos ? '-' : waitListPos) + ' / ' +
+            this.options.template.setHtml({
+                textWaitListPos: 'Waitlist: ' +
+                    (-1 === waitListPos ? '-' : waitListPos + 1) + ' / ' +
                     this.model.get('waitListNum')
-            }));
+            });
 
             return this;
         },

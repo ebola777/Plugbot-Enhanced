@@ -1,12 +1,12 @@
-define('Plugbot/views/dialog/FloatedWindow', [
-    'handlebars',
-    'Plugbot/events/dialog/FloatedWindowEvents',
-    'Plugbot/models/dialog/FloatedWindow',
+define('Plugbot/views/FloatedWindow/View', [
+    'Plugbot/events/FloatedWindow/Events',
+    'Plugbot/models/FloatedWindow/Model',
+    'Plugbot/tmpls/FloatedWindow/View',
     'Plugbot/utils/Watcher',
     'Plugbot/views/utils/Ui',
     'Plugbot/views/utils/UiHelpers'
-], function (Handlebars, FloatedWindowEvents, FloatedWindow, Watcher,
-             Ui, UiHelpers) {
+], function (FloatedWindowEvents, FloatedWindowModel,
+             FloatedWindowViewTemplate, Watcher, Ui, UiHelpers) {
     'use strict';
 
     var View = Backbone.View.extend({
@@ -19,6 +19,8 @@ define('Plugbot/views/dialog/FloatedWindow', [
                 /**
                  * Runtime
                  */
+                template: undefined,
+                // if window has been rendered
                 hasRenderedWindow: false,
                 // if body has been rendered
                 hasRenderedBody: false,
@@ -34,11 +36,13 @@ define('Plugbot/views/dialog/FloatedWindow', [
             'mouseenter': 'onMouseEnter',
             'mouseleave': 'onMouseLeave'
         },
+        TEMPLATE: FloatedWindowViewTemplate,
         initialize: function () {
             _.bindAll(this);
-
-            // pull defaults to options
             _.defaults(this.options, this.defaults());
+
+            // init template
+            this.options.template = new this.TEMPLATE({view: this});
 
             // bind events
             this.listenTo(this.model, 'change', this.onChangeAll);
@@ -55,8 +59,8 @@ define('Plugbot/views/dialog/FloatedWindow', [
             // hide
             this.hide();
         },
-        NarrowActions: FloatedWindow.prototype.NarrowActions,
-        Status: FloatedWindow.prototype.Status,
+        NarrowActions: FloatedWindowModel.prototype.NarrowActions,
+        Status: FloatedWindowModel.prototype.Status,
         minWidth: 8 * 20,
         minHeight: 8 * 5,
         buttonClasses: [
@@ -69,59 +73,28 @@ define('Plugbot/views/dialog/FloatedWindow', [
             'maximize',
             'close'
         ],
-        elHeader: '.header',
-        elTitle: '.title',
-        elControlBox: '.control-box',
-        elMinimize: '.minimize',
-        elMaximize: '.maximize',
-        elClose: '.close',
-        elBody: '.body',
-        template: Handlebars.compile(
-            '    <div class="plugbot-floated-window">' +
-                '    <div class="{{getName classHeader}}">' +
-                '        <h1 class="{{getName classTitle}}">{{textTitle}}' +
-                '<\/h1>' +
-                '        <div class="{{getName classControlBox}}">' +
-                '            <button class="{{getName classMinimize}}"' +
-                ' title="Minimize"><\/button>' +
-                '            <button class="{{getName classMaximize}}"' +
-                ' title="Restore"><\/button>' +
-                '            <button class="{{getName classClose}}"' +
-                ' title="Close"><\/button>' +
-                '        <\/div>' +
-                '    <\/div>' +
-                '    <div class="{{getName classBody}}"><\/div>' +
-                '<\/div>'
-        ),
+        FIXED_ACCURACY: 2,
         render: function () {
             var that = this,
                 i,
-                elemControlBox,
-                elemBody;
+                elemControlBox;
 
-            // render self
-            this.setElement(this.template({
-                textTitle: this.model.get('title'),
-                classHeader: this.elHeader,
-                classTitle: this.elTitle,
-                classControlBox: this.elControlBox,
-                classMinimize: this.elMinimize,
-                classMaximize: this.elMaximize,
-                classClose: this.elClose,
-                classBody: this.elBody
-            }));
+            // render
+            this.options.template
+                .setSelf({
+                    textTitle: this.model.get('title')
+                })
+                .cacheElements();
 
             // set scheme
-            this.$el
-                .addClass('scheme-default-plugbot-floated-window');
+            this.$el.addClass('scheme-default-plugbot-floated-window');
 
             // get elements
             elemControlBox = [
-                this.$(this.elMinimize),
-                this.$(this.elMaximize),
-                this.$(this.elClose)
+                this.$elMinimize,
+                this.$elMaximize,
+                this.$elClose
             ];
-            elemBody = this.$(this.elBody);
 
             // make buttons
             for (i = 0; i !== elemControlBox.length; i += 1) {
@@ -140,7 +113,7 @@ define('Plugbot/views/dialog/FloatedWindow', [
             }
 
             // set up body classname
-            elemBody.addClass(this.model.get('bodyClass'));
+            this.$elBody.addClass(this.model.get('bodyClass'));
 
             // set up window attributes
             this.$el.css({
@@ -173,7 +146,7 @@ define('Plugbot/views/dialog/FloatedWindow', [
             // render body view
             require([this.model.get('view')], function (View) {
                 that.options.bodyView = new View({
-                    el: elemBody,
+                    el: that.$elBody,
                     modWindow: that.model,
                     dispatcherWindow: that.options.dispatcher
                 });
@@ -211,23 +184,16 @@ define('Plugbot/views/dialog/FloatedWindow', [
             return this.options.bodyView;
         },
         getRemainingHeaderSpace: function (safeDistance) {
-            var elemHeader = this.$(this.elHeader),
-                elemTitle = this.$(this.elTitle),
-                elemControlBox = this.$(this.elControlBox);
-
-            return elemHeader.width() -
-                elemTitle.outerWidth(true) -
-                elemControlBox.outerWidth(true) -
+            return this.$elHeader.width() -
+                this.$elTitle.outerWidth(true) -
+                this.$elControlBox.outerWidth(true) -
                 safeDistance;
         },
         resizeBody: function () {
-            var elemBody = this.$(this.elBody),
-                elemHeader = this.$(this.elHeader);
-
             if (this.model.get('visible')) {
                 // fit body to parent
-                UiHelpers.fitElement(elemBody, this.$el, 'both',
-                    0, -elemHeader.outerHeight(true));
+                UiHelpers.fitElement(this.$elBody, this.$el, 'both',
+                    0, -this.$elHeader.outerHeight(true));
             }
         },
         resizeTableLayout: function () {
@@ -238,8 +204,7 @@ define('Plugbot/views/dialog/FloatedWindow', [
             }
         },
         updateTitle: function () {
-            var elemTitle = this.$(this.elTitle),
-                NarrowActions = this.NarrowActions,
+            var NarrowActions = this.NarrowActions,
                 narrowAction = NarrowActions[this.model.get('narrowAction')],
                 title = this.model.get('title'),
                 callsign = this.model.get('callsign'),
@@ -259,12 +224,12 @@ define('Plugbot/views/dialog/FloatedWindow', [
 
                         break;
                     case NarrowActions.hidden:
-                        elemTitle.hide();
+                        this.$elTitle.hide();
                         this.options.nowNarrowAction = NarrowActions.hidden;
 
                         break;
                     case NarrowActions.callsign:
-                        elemTitle.text('<' + callsign + '>');
+                        this.$elTitle.text('<' + callsign + '>');
                         this.options.nowNarrowAction = NarrowActions.callsign;
 
                         break;
@@ -277,25 +242,24 @@ define('Plugbot/views/dialog/FloatedWindow', [
 
                 break;
             case NarrowActions.hidden:
-                elemTitle.text(title);
-                elemTitle.show();
+                this.$elTitle.text(title).show();
                 remainingWidth = this.getRemainingHeaderSpace(safeDistance);
 
                 if (remainingWidth >= 0) {
                     this.options.nowNarrowAction = NarrowActions.expanded;
                 } else {
-                    elemTitle.hide();
+                    this.$elTitle.hide();
                 }
 
                 break;
             case NarrowActions.callsign:
-                elemTitle.text(title);
+                this.$elTitle.text(title);
                 remainingWidth = this.getRemainingHeaderSpace(safeDistance);
 
                 if (remainingWidth >= 0) {
                     this.options.nowNarrowAction = NarrowActions.expanded;
                 } else {
-                    elemTitle.text('<' + callsign + '>');
+                    this.$elTitle.text('<' + callsign + '>');
                 }
 
                 break;
@@ -372,8 +336,8 @@ define('Plugbot/views/dialog/FloatedWindow', [
 
                         // record the size
                         that.model.set({
-                            width: ui.size.width,
-                            height: ui.size.height
+                            width: that._getFixed(ui.size.width),
+                            height: that._getFixed(ui.size.height)
                         });
 
                         that.options.dispatcher.dispatch('RESIZE_STOP',
@@ -427,20 +391,18 @@ define('Plugbot/views/dialog/FloatedWindow', [
                         ui.position.top -= diffOfs.Y;
 
                         // event handler, not a part of the fix
-                        that.options.dispatcher.dispatch('DRAG_NOW',
-                            [e, ui]);
+                        that.options.dispatcher.dispatch('DRAG_NOW', [e, ui]);
                     },
                     stop: function (e, ui) {
                         UiHelpers.removeIframeFix(iframeFixObj);
 
                         // record size
                         that.model.set({
-                            x: ui.position.left,
-                            y: ui.position.top
+                            x: that._getFixed(ui.position.left),
+                            y: that._getFixed(ui.position.top)
                         });
 
-                        that.options.dispatcher.dispatch('DRAG_STOP',
-                            [e, ui]);
+                        that.options.dispatcher.dispatch('DRAG_STOP', [e, ui]);
                     }
                 });
             }
@@ -511,6 +473,9 @@ define('Plugbot/views/dialog/FloatedWindow', [
         },
         onChangeAll: function () {
             this.options.dispatcher.dispatch('CHANGEANY_MODEL');
+        },
+        _getFixed: function (num) {
+            return +num.toFixed(this.FIXED_ACCURACY);
         },
         close: function () {
             this.remove();

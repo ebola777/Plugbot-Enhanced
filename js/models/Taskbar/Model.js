@@ -1,4 +1,4 @@
-define('Plugbot/models/dialog/Taskbar', [], function () {
+define('Plugbot/models/Taskbar/Model', [], function () {
     'use strict';
 
     var Model = Backbone.Model.extend({

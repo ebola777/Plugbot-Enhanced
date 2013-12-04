@@ -1,4 +1,6 @@
-define('Plugbot/store/LocalStorage', [], function () {
+define('Plugbot/store/LocalStorage', [
+    'Plugbot/store/LZString'
+], function (LZString) {
     'use strict';
 
     //region VARIABLES =====
@@ -9,12 +11,20 @@ define('Plugbot/store/LocalStorage', [], function () {
 
 
     //region PUBLIC FUNCTIONS =====
+    /**
+     * Read settings
+     * @return {Object}     Settings
+     */
     function readSettings() {
-        var settings = {};
+        var settings = {},
+            compressed,
+            decompressed;
 
         // get settings from local storage
         try {
-            settings = JSON.parse(localStorage.getItem(rootName)) || {};
+            compressed = localStorage.getItem(rootName);
+            decompressed = LZString.decompressFromUTF16(compressed) || '{}';
+            settings = JSON.parse(decompressed);
         } catch (ex) {
             settings = {};
         }
@@ -24,9 +34,13 @@ define('Plugbot/store/LocalStorage', [], function () {
 
     /**
      * Save settings
+     * @param {Object} settings     Settings
      */
     function saveSettings(settings) {
-        localStorage.setItem(rootName, JSON.stringify(settings));
+        var compressed =
+            _.compose(LZString.compressToUTF16, JSON.stringify)(settings);
+
+        localStorage.setItem(rootName, compressed);
     }
 
     /**

@@ -1,15 +1,14 @@
 define('Plugbot/main/WindowManager', [
     'Plugbot/events/SiteEvents',
     'Plugbot/main/Settings',
-    'Plugbot/models/dialog/FloatedWindow',
-    'Plugbot/models/dialog/Taskbar',
-    'Plugbot/models/dialog/TaskbarItemModel',
-    'Plugbot/utils/Watcher',
-    'Plugbot/views/dialog/FloatedWindow',
-    'Plugbot/views/dialog/Taskbar',
+    'Plugbot/models/FloatedWindow/Model',
+    'Plugbot/models/Taskbar/Model',
+    'Plugbot/models/Taskbar/ItemModel',
+    'Plugbot/views/FloatedWindow/View',
+    'Plugbot/views/Taskbar/View',
     'Plugbot/views/utils/Ui'
-], function (SiteEvents, Settings, FloatedWindow, Taskbar, TaskbarItemModel,
-             Watcher, FloatedWindowView, TaskbarView, Ui) {
+], function (SiteEvents, Settings, FloatedWindowModel, TaskbarModel,
+             TaskbarItemModel, FloatedWindowView, TaskbarView, Ui) {
     'use strict';
 
     //region PUBLIC FUNCTIONS =====
@@ -44,7 +43,7 @@ define('Plugbot/main/WindowManager', [
     function initTaskbar() {
         var taskbarModel, taskbarView;
 
-        taskbarModel = new Taskbar({
+        taskbarModel = new TaskbarModel({
             windows: Plugbot.settings.windows,
             windowTop: $(Ui.plugdj.header).height()
         });
@@ -69,7 +68,7 @@ define('Plugbot/main/WindowManager', [
             if (windows.hasOwnProperty(key)) {
                 // show floated windows
                 windowSettings = windows[key];
-                windowModel = new FloatedWindow(windowSettings);
+                windowModel = new FloatedWindowModel(windowSettings);
                 windowView = new FloatedWindowView({
                     model: windowModel
                 });
@@ -134,8 +133,7 @@ define('Plugbot/main/WindowManager', [
                     if (windows.hasOwnProperty(key)) {
                         window = windows[key];
 
-                        window.model.set('x',
-                            window.model.get('x') * ratio);
+                        window.model.set('x', window.model.get('x') * ratio);
                         window.model.set('oldX',
                             window.model.get('oldX') * ratio);
                     }
@@ -188,7 +186,8 @@ define('Plugbot/main/WindowManager', [
             // save settings
             .listenTo(dispatcherWindow,
                 dispatcherWindow.CHANGEANY_MODEL, function () {
-                    Plugbot.ticker.add(function () {
+                    Plugbot.ticker.add('saveWindow', function () {
+                        // copy to global settings
                         Plugbot.settings.windows[window.model.get('name')] =
                             window.model.attributes;
 
