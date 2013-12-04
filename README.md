@@ -13,7 +13,7 @@ See instructions [here](http://ebola777.github.io/)
 - Skip video
 
 ## Version
-1.0.5.pre (12/4/2013)
+1.0.6.pre (12/5/2013)
 
 ## Author
 Shawn

@@ -36,8 +36,7 @@ define('Plugbot/views/MainUi/ItemView', [
             return this;
         },
         render2: function () {
-            this.$el.prop('class',
-                this.getClass(this.model.get('enabled')));
+            this.$el.prop('class', this.getClass(this.model.get('enabled')));
 
             return this;
         },

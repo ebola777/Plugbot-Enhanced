@@ -95,7 +95,7 @@ define('Plugbot/utils/Ticker', [], function () {
 
             for (key in ids) {
                 if (ids.hasOwnProperty(key)) {
-                    this.remove(ids[key]);
+                    this.remove(key);
                 }
             }
 

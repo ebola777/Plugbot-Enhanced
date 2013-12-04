@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.6.pre (12/5/2013)
+- [FIXED] minor bugs
+
 ## 1.0.5.pre (12/4/2013)
 - [IMPROVED] performance
 - [FIXED] queue spot not showing correctly

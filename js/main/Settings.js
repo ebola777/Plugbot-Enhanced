@@ -8,7 +8,7 @@ define('Plugbot/main/Settings', [
 
     //region VARIABLES =====
         // min compatible version, empty: not compatible with any older version
-    var minCompatibleVersion = '',
+    var minCompatibleVersion = '1.0.5.pre',
         // read-only settings
         settingsReadOnly = {
             tickerIds: {
@@ -51,7 +51,7 @@ define('Plugbot/main/Settings', [
         },
         // default settings
         settingsDefault = {
-            version: '1.0.5.pre',
+            version: '1.0.6.pre',
             windows: {
                 MainUi: {
                     status: 'normal',
