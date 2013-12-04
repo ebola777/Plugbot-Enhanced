@@ -1,7 +1,7 @@
-define('Plugbot/views/dialog/TaskbarItemView', [
-    'handlebars',
-    'Plugbot/events/dialog/TaskbarItemEvents'
-], function (Handlebars, TaskbarItemEvents) {
+define('Plugbot/views/Taskbar/ItemView', [
+    'Plugbot/events/Taskbar/ItemEvents',
+    'Plugbot/tmpls/Taskbar/ItemView'
+], function (TaskbarItemEvents, TaskbarItemViewTemplate) {
     'use strict';
 
     var View = Backbone.View.extend({
@@ -10,26 +10,29 @@ define('Plugbot/views/dialog/TaskbarItemView', [
                 /**
                  * Options
                  */
-                dispatcher: _.clone(TaskbarItemEvents)
+                dispatcher: _.clone(TaskbarItemEvents),
+                /**
+                 * Runtime
+                 */
+                template: undefined
             };
         },
         events: {
             'mouseenter': 'onMouseEnter',
             'mouseleave': 'onMouseLeave'
         },
+        TEMPLATE: TaskbarItemViewTemplate,
         initialize: function () {
             _.bindAll(this);
-
-            // pull defaults to options
             _.defaults(this.options, this.defaults());
+
+            // init template
+            this.options.template = new this.TEMPLATE({view: this});
         },
-        template: Handlebars.compile(
-            '    <li class="task">{{title}}<\/li>'
-        ),
         render: function () {
-            this.setElement(this.template({
+            this.options.template.setSelf({
                 title: this.model.get('title')
-            }));
+            });
 
             return this;
         },

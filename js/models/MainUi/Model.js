@@ -7,10 +7,10 @@ define('Plugbot/models/MainUi/Model', [], function () {
                 data: [
                     {id: 'plugbot-btn-woot',
                         text: 'auto-woot',
-                        enabled: Plugbot.settings.ui.autoWoot},
-                    {id: 'plugbot-btn-queue',
-                        text: 'auto-queue',
-                        enabled: Plugbot.settings.ui.autoQueue},
+                        enabled: Plugbot.settings.mainUi.autoWoot},
+                    {id: 'plugbot-btn-join',
+                        text: 'auto-join',
+                        enabled: Plugbot.settings.mainUi.autoJoin},
                     {id: 'plugbot-btn-skip-video',
                         text: 'skip video',
                         enabled: false}

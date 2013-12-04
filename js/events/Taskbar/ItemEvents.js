@@ -1,4 +1,4 @@
-define('Plugbot/events/dialog/TaskbarItemEvents', [
+define('Plugbot/events/Taskbar/ItemEvents', [
     'Plugbot/base/Events'
 ], function (BaseEvents) {
     'use strict';

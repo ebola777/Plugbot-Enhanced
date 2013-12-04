@@ -1,4 +1,4 @@
-define('Plugbot/models/Userlist/ItemCollection', [
+define('Plugbot/colls/Userlist/ItemCollection', [
     'Plugbot/models/Userlist/ItemModel'
 ], function (UserlistItemModel) {
     'use strict';

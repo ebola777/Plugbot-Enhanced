@@ -1,4 +1,4 @@
-define('Plugbot/models/dialog/FloatedWindow', [], function () {
+define('Plugbot/models/FloatedWindow/Model', [], function () {
     'use strict';
 
     var Model = Backbone.Model.extend({

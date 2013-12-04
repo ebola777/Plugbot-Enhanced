@@ -139,11 +139,11 @@ define('Plugbot/views/utils/UiHelpers', [
 
     /**
      * Fit child element to parent element
-     * @param {Array} child         Child element
-     * @param {Array} parent        Parent element
-     * @param {String} size         width, height, both
-     * @param {undefined|Number} addW         Add width how much
-     * @param {undefined|Number} addH         Add height how much
+     * @param {Array.<Object(element)>} child         Child element
+     * @param {Array.<Object(element)>} parent        Parent element
+     * @param {string} size         width, height, both
+     * @param {number=} addW         Add width how much
+     * @param {number=} addH         Add height how much
      */
     function fitElement(child, parent, size, addW, addH) {
         var outerW = child.outerWidth(true) - child.width(),

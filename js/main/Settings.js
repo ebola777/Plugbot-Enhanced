@@ -8,9 +8,18 @@ define('Plugbot/main/Settings', [
 
     //region VARIABLES =====
         // min compatible version, empty: not compatible with any older version
-    var minCompatibleVersion = '1.0.3.pre',
+    var minCompatibleVersion = '',
         // read-only settings
         settingsReadOnly = {
+            tickerIds: {
+                saveSettings: 'save-settings',
+                saveWindow: 'save-window'
+            },
+            tickerInterval: {
+                defaults: 1000,
+                APICallback: 3000,
+                saveSettings: 5000
+            },
             windows: {
                 MainUi: {
                     name: 'MainUi',
@@ -42,7 +51,7 @@ define('Plugbot/main/Settings', [
         },
         // default settings
         settingsDefault = {
-            version: '1.0.4.pre',
+            version: '1.0.5.pre',
             windows: {
                 MainUi: {
                     status: 'normal',
@@ -65,9 +74,9 @@ define('Plugbot/main/Settings', [
                     height: 8 * 50
                 }
             },
-            ui: {
+            mainUi: {
                 autoWoot: true,
-                autoQueue: false
+                autoJoin: false
             }
         };
 
@@ -77,8 +86,6 @@ define('Plugbot/main/Settings', [
     //region PUBLIC FUNCTIONS =====
     function initialize() {
         Plugbot.settings = Plugbot.settings || {};
-
-        initTickerInterval();
     }
 
     /**
@@ -142,16 +149,22 @@ define('Plugbot/main/Settings', [
     /**
      * Save settings
      */
-    function saveSettings() {
-        var obj = _.clone(settingsDefault);
-
-        // use ticker to delay action
-        Plugbot.ticker.add(function () {
-            Helpers.applyDeep(Plugbot.settings, obj);
-            LocalStorage.saveSettings(obj);
-        }, {
-            interval: Plugbot.tickerInterval.saveSettings
+    function saveSettings(options) {
+        options = options || {};
+        _.defaults(options, {
+            immediate: false
         });
+
+        if (options.immediate) {
+            saveSettingsImmediate();
+        } else {
+            // use ticker to delay action
+            Plugbot.ticker.add('saveSettings', function () {
+                saveSettingsImmediate();
+            }, {
+                interval: Plugbot.settings.tickerInterval.saveSettings
+            });
+        }
     }
 
     function clearSettings() {
@@ -161,15 +174,12 @@ define('Plugbot/main/Settings', [
     //endregion
 
 
-    //region PRIVATE FUNCTIONS =====
-    function initTickerInterval() {
-        Plugbot.tickerInterval = Plugbot.tickerInterval || {};
+    //region PRIVATE FUNCTIONS
+    function saveSettingsImmediate() {
+        var obj = _.clone(settingsDefault);
 
-        _.defaults(Plugbot.tickerInterval, {
-            defaults: 1000,
-            APICallback: 3000,
-            saveSettings: 5000
-        });
+        Helpers.applyDeep(Plugbot.settings, obj);
+        LocalStorage.saveSettings(obj);
     }
 
     //endregion

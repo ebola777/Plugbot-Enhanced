@@ -55,7 +55,7 @@ define('Plugbot/utils/Countdown', [
                         // check to remove the id
                         if (runtime.elapsed >= options.countdown) {
                             if (undefined !== options.call) {
-                                options.call();
+                                options.call.apply(this);
 
                                 for (i = 0; i < runtime.waitCallbacks.length;
                                         i += 1) {
@@ -118,6 +118,7 @@ define('Plugbot/utils/Countdown', [
         },
         wait: function (id, callback) {
             this.items[id].runtime.waitCallbacks.push(callback);
+            return this;
         },
         suspend: function (id) {
             this.items[id].runtime.suspended = true;

@@ -1,6 +1,6 @@
 define('Plugbot/views/MainUi/View', [
     'handlebars',
-    'Plugbot/models/MainUi/ItemCollection',
+    'Plugbot/colls/MainUi/ItemCollection',
     'Plugbot/models/MainUi/ItemModel',
     'Plugbot/models/MainUi/Model',
     'Plugbot/utils/API',
@@ -19,7 +19,7 @@ define('Plugbot/views/MainUi/View', [
                  * Options
                  */
                 dispatcherWindow: undefined,
-                watcherAutoQueue: new Watcher({
+                watcherAutoJoin: new Watcher({
                     interval: '1 hz'
                 }),
                 watcherSkipVideo: new Watcher({
@@ -54,8 +54,8 @@ define('Plugbot/views/MainUi/View', [
 
             // trigger button actions
             this
-                .onClickWoot(Plugbot.settings.ui.autoWoot)
-                .onClickQueue(Plugbot.settings.ui.autoQueue)
+                .onClickAutoWoot(Plugbot.settings.mainUi.autoWoot)
+                .onClickAutoJoin(Plugbot.settings.mainUi.autoJoin)
                 .onClickSkipVideo(false);
         },
         el: Ui.plugbot.mainUi,
@@ -98,20 +98,20 @@ define('Plugbot/views/MainUi/View', [
                 API.DJ_ADVANCE
             ], {
                 fnCheck: function () {
-                    return Plugbot.settings.ui.autoWoot;
+                    return Plugbot.settings.mainUi.autoWoot;
                 },
                 callback: function () {
                     $(Ui.plugdj.woot).click();
                 }
             });
 
-            APIBuffer.addListening('auto-queue-' + cid, this, [
+            APIBuffer.addListening('auto-join-' + cid, this, [
                 API.WAIT_LIST_UPDATE
             ], {
                 fnCheck: function () {
-                    return Plugbot.settings.ui.autoQueue;
+                    return Plugbot.settings.mainUi.autoJoin;
                 },
-                callback: this.enableAutoQueue
+                callback: this.enableAutoJoin
             });
 
             APIBuffer.addListening('skip-video-' + cid, this, [
@@ -124,25 +124,30 @@ define('Plugbot/views/MainUi/View', [
                         .get('enabled');
                 },
                 callback: function () {
-                    var lastVolume = that.options.lastPlaybackVolume;
+                    var lastVolume = that.options.lastPlaybackVolume,
+                        nearbyVolume;
+
+                    if (100 === nearbyVolume) {
+                        nearbyVolume = 99;
+                    } else {
+                        nearbyVolume = lastVolume + 1;
+                    }
 
                     that.disableSkipVideo();
 
-                    API.setVolume(0);
-
                     that.options.watcherSkipVideo.add('skip-video', {
-                        call: function (lastVolume) {
+                        call: function () {
                             var ret, volume = API.getVolume();
 
-                            if (0 === volume || volume === lastVolume) {
+                            if (volume === lastVolume) {
+                                API.setVolume(nearbyVolume);
                                 API.setVolume(lastVolume);
                             } else {
                                 ret = 0;
                             }
 
                             return ret;
-                        },
-                        args: [lastVolume]
+                        }
                     });
                 }
             });
@@ -182,17 +187,17 @@ define('Plugbot/views/MainUi/View', [
             // handle what to do
             switch (id) {
             case 'plugbot-btn-woot':
-                this.onClickWoot(enabled);
+                this.onClickAutoWoot(enabled);
                 break;
-            case 'plugbot-btn-queue':
-                this.onClickQueue(enabled);
+            case 'plugbot-btn-join':
+                this.onClickAutoJoin(enabled);
                 break;
             case 'plugbot-btn-skip-video':
                 this.onClickSkipVideo(enabled);
                 break;
             }
         },
-        onClickWoot: function (en) {
+        onClickAutoWoot: function (en) {
             if (en) {
                 if (UtilsAPI.USER.VOTE.UNDECIDED === API.getUser().vote) {
                     $(Ui.plugdj.woot).click();
@@ -201,11 +206,11 @@ define('Plugbot/views/MainUi/View', [
 
             return this;
         },
-        onClickQueue: function (en) {
+        onClickAutoJoin: function (en) {
             if (en) {
-                this.enableAutoQueue();
+                this.enableAutoJoin();
             } else {
-                this.disableAutoQueue();
+                this.disableAutoJoin();
             }
 
             return this;
@@ -219,19 +224,19 @@ define('Plugbot/views/MainUi/View', [
 
             return this;
         },
-        enableAutoQueue: function () {
+        enableAutoJoin: function () {
             var ret = API.djJoin();
 
             if (0 !== ret) {
-                this.options.watcherAutoQueue.add('auto-queue', {
+                this.options.watcherAutoJoin.add('auto-join', {
                     call: function () {
                         return API.djJoin();
                     }
                 });
             }
         },
-        disableAutoQueue: function () {
-            this.options.watcherAutoQueue.remove('auto-queue');
+        disableAutoJoin: function () {
+            this.options.watcherAutoJoin.remove('auto-join');
         },
         enableSkipVideo: function () {
             this.options.watcherSkipVideo.remove('skip-video');
@@ -267,7 +272,7 @@ define('Plugbot/views/MainUi/View', [
             }
 
             // close watchers
-            this.options.watcherAutoQueue.close();
+            this.options.watcherAutoJoin.close();
             this.options.watcherSkipVideo.close();
         }
     });

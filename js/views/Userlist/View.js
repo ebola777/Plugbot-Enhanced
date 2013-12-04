@@ -1,12 +1,13 @@
 define('Plugbot/views/Userlist/View', [
-    'handlebars',
     'Plugbot/models/Userlist/Model',
+    'Plugbot/tmpls/Userlist/View',
     'Plugbot/utils/APIBuffer',
+    'Plugbot/utils/Ticker',
     'Plugbot/views/layout/TableLayout',
     'Plugbot/views/Userlist/HeadView',
     'Plugbot/views/Userlist/UsersView'
-], function (Handlebars, UserlistModel, APIBuffer, TableLayout,
-             UserlistHeadView, UserlistUsersView) {
+], function (UserlistModel, UserlistViewTemplate, APIBuffer, Ticker,
+             TableLayout, UserlistHeadView, UserlistUsersView) {
     'use strict';
 
     var View = Backbone.View.extend({
@@ -18,9 +19,11 @@ define('Plugbot/views/Userlist/View', [
                 modWindow: undefined,
                 dispatcherWindow: undefined,
                 renderOverElapsed: 5,
+                ticker: new Ticker({interval: '12 hz'}),
                 /**
                  * Runtime
                  */
+                template: undefined,
                 pendingRenderHead: false,
                 pendingRenderList: false,
                 tableLayout: undefined,
@@ -29,46 +32,24 @@ define('Plugbot/views/Userlist/View', [
             };
         },
         model: new UserlistModel(),
+        TEMPLATE: UserlistViewTemplate,
         initialize: function () {
             _.bindAll(this);
-
-            // pull defaults to options
             _.defaults(this.options, this.defaults());
+
+            // init template
+            this.options.template = new this.TEMPLATE({view: this});
 
             // listen to API
             this.listenToAPI();
         },
-        /**
-         * Element names
-         */
-        elHead: '.head',
-        elWrapList: '.wrap-list',
-        elList: '.list',
-        /**
-         * Template
-         */
-        template: Handlebars.compile(
-            '    <div class="row-head">' +
-                '    <div class="{{getName classHead}}"><\/div>' +
-                '<\/div>' +
-                '<div class="row-list">' +
-                '    <div class="{{getName classWrapList}}">' +
-                '        <ul class="{{getName classList}}"><\/ul>' +
-                '    <\/div>' +
-                '<\/div>'
-        ),
-        /**
-         * Rendering
-         */
         render: function () {
             this.model.updateAll();
 
-            // main structure
-            this.$el.html(this.template({
-                classHead: this.elHead,
-                classWrapList: this.elWrapList,
-                classList: this.elList
-            }));
+            // render
+            this.options.template
+                .setHtml()
+                .cacheElements();
 
             // set scheme
             this.$el
@@ -103,11 +84,11 @@ define('Plugbot/views/Userlist/View', [
             // init views
             this.options.viewHead = new UserlistHeadView({
                 model: this.model,
-                el: this.$(this.elHead)
+                el: this.$elHead
             });
             this.options.viewList = new UserlistUsersView({
                 model: this.model,
-                el: this.$(this.elList)
+                el: this.$elList
             });
 
             // table layout
@@ -225,11 +206,12 @@ define('Plugbot/views/Userlist/View', [
                     });
         },
         updateUsersRearSpace: function () {
-            var elemWrapList = this.$(this.elWrapList),
-                elemList = this.$(this.elList);
+            var that = this;
 
-            elemList.css('padding-bottom',
-                0.5 * elemWrapList.height());
+            this.options.ticker.add('update-users-rear-space', function () {
+                that.$elList.css('padding-bottom',
+                    0.5 * that.$elWrapList.height());
+            });
         },
         /**
          * Disposing
@@ -241,6 +223,9 @@ define('Plugbot/views/Userlist/View', [
             this.options.tableLayout.close();
             this.options.viewHead.close();
             this.options.viewList.close();
+
+            // close utilities
+            this.options.ticker.close();
         }
     });
 

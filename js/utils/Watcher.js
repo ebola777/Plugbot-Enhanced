@@ -60,7 +60,7 @@ define('Plugbot/utils/Watcher', [
                         enMaxNumCall = (0 !== options.maxNumCall);
 
                         // call function and get return value
-                        ret = options.call.apply(null, options.args);
+                        ret = options.call.apply(this, options.args);
 
                         // increase number of calls
                         if (enMaxNumCall) {
@@ -89,18 +89,20 @@ define('Plugbot/utils/Watcher', [
         },
         /**
          * Add a call. But cannot be removed later
-         * @param {Function} fn     Function call
+         * @param {function} fn     Function call
          */
         addFn: function (fn) {
             this.add(Date.now(), {
                 call: fn
             });
+
+            return this;
         },
         /**
          * Add a call. The watcher will start automatically once a function
          * is added.
-         * @param {Number|String} id   ID
-         * @param {Object|undefined} options    Options
+         * @param {number|string} id   ID
+         * @param {Object=} options    Options
          */
         add: function (id, options) {
             var defOptions, defRuntime;
@@ -135,10 +137,12 @@ define('Plugbot/utils/Watcher', [
                     this.start();
                 }
             }
+
+            return this;
         },
         /**
          * Remove a call
-         * @param {Function} id   Function to be removed (No parameters)
+         * @param {function} id   Function to be removed (No parameters)
          */
         remove: function (id) {
             if (undefined === this.items[id]) { return this; }

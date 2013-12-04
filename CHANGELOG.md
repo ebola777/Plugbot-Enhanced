@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.5.pre (12/4/2013)
+- [IMPROVED] performance
+- [FIXED] queue spot not showing correctly
+- [FIXED] skip-video problem
+
 ## 1.0.4.pre (11/29/2013)
 - [NEW] When clicking auto-woot, woot automatically if the vote is undecided
 - [IMPROVED] When skip-video is enabled, resume the volume when next song

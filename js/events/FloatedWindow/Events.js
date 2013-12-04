@@ -1,4 +1,4 @@
-define('Plugbot/events/dialog/FloatedWindowEvents', [
+define('Plugbot/events/FloatedWindow/Events', [
     'Plugbot/base/Events'
 ], function (BaseEvents) {
     'use strict';

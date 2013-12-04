@@ -4,8 +4,10 @@ define('Plugbot/main/Dispose', [
     'Plugbot/events/SiteEvents',
     'Plugbot/main/Settings',
     'Plugbot/main/WindowManager',
+    'Plugbot/utils/APIBuffer',
     'Plugbot/utils/Helpers'
-], function (Entry, Loader, SiteEvents, Settings, WindowManager, Helpers) {
+], function (Entry, Loader, SiteEvents, Settings, WindowManager, APIBuffer,
+             Helpers) {
     'use strict';
 
     //region PUBLIC FUNCTIONS =====
@@ -50,7 +52,7 @@ define('Plugbot/main/Dispose', [
 
             // override options
             options = options || {};
-            options.removeEntryLoader = false;
+            options.removeEntryAndLoader = false;
 
             close(options);
 
@@ -84,7 +86,7 @@ define('Plugbot/main/Dispose', [
         options = options || {};
         _.defaults(options, {
             saveSettings: true,
-            removeEntryLoader: true
+            removeEntryAndLoader: true
         });
 
         /**
@@ -92,15 +94,18 @@ define('Plugbot/main/Dispose', [
          */
         // save settings
         if (options.saveSettings) {
-            Settings.saveSettings();
+            Settings.saveSettings({immediate: true});
         }
 
         // remove handlebars helpers
         Helpers.removeHandlebarsHelpers();
 
         // remove utilities
-        Plugbot.ticker.close();
         Plugbot.watcher.close();
+        Plugbot.ticker.close();
+
+        // close APIBuffer
+        APIBuffer.close();
 
         /**
          * #2: Events
@@ -118,7 +123,7 @@ define('Plugbot/main/Dispose', [
          * #4: Libraries, Loader, Entry
          */
         // remove IDs from RequireJS
-        removeDefs(options.removeEntryLoader);
+        removeDefs(options.removeEntryAndLoader);
 
         // remove css files
         removeCssFiles();
@@ -127,11 +132,11 @@ define('Plugbot/main/Dispose', [
     /**
      * Remove definitions from RequireJS
      */
-    function removeDefs(removeEntryLoader) {
+    function removeDefs(removeEntryAndLoader) {
         var i;
 
         // entry & loader
-        if (removeEntryLoader) {
+        if (removeEntryAndLoader) {
             requirejs.undef('Plugbot/Entry');
             requirejs.undef('Plugbot/Loader');
         }
