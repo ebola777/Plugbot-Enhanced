@@ -1,7 +1,6 @@
 /**
  * This class tracks sub-views, renders or closes them as needed.
- * A class inherited from this class can have one parent and multiple
- * sub-views.
+ * A class inherited from this class can have multiple sub-views.
  */
 
 define('Plugbot/base/SubView', [], function () {
@@ -81,7 +80,9 @@ define('Plugbot/base/SubView', [], function () {
                     subView = subViews[key];
 
                     // parent options
-                    subView.options.optionsParent = options;
+                    if (undefined !== options) {
+                        subView.options.optionsParent = options;
+                    }
                 }
             }
         }

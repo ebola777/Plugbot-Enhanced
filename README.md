@@ -17,7 +17,7 @@ See instructions [here](http://ebola777.github.io/)
 
 ## Version
 
-1.0.7.pre (12/14/2013)
+1.0.8.pre (12/14/2013)
 
 ## Author
 

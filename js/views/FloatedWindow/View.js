@@ -170,9 +170,20 @@ define('Plugbot/views/FloatedWindow/View', [
             this.dispatcher.dispatch('HIDE');
         },
         resizeBody: function () {
+            var that = this,
+                fnFit = function (dir) {
+                    UiHelpers.fitElement(that.$elBody, that.$el, dir, 0,
+                        -that.$elHeader.outerHeight(true));
+                };
+
             // fit body to parent
-            UiHelpers.fitElement(this.$elBody, this.$el, 'both', 0,
-                -this.$elHeader.outerHeight(true));
+            if ('auto' !== this.model.get('width')) {
+                fnFit('width');
+            }
+
+            if ('auto' !== this.model.get('height')) {
+                fnFit('height');
+            }
         },
         resizeTableLayout: function () {
             var tableLayout = this.model.get('tableLayout');
@@ -384,7 +395,7 @@ define('Plugbot/views/FloatedWindow/View', [
             this.listenTo(disprSite, disprSite.RESIZE, function (options) {
                 var ratio = options.ratio;
 
-                if (this.model.get('visible')) {
+                if (that.model.get('visible')) {
                     that.resizeBody();
 
                     that.model.set('x', that.model.get('x') * ratio.width);
