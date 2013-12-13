@@ -1,5 +1,5 @@
 define('Plugbot/main/WindowManager', [
-    'Plugbot/events/SiteEvents',
+    'Plugbot/events/site/Events',
     'Plugbot/main/Settings',
     'Plugbot/models/FloatedWindow/Model',
     'Plugbot/models/Taskbar/Model',
@@ -45,15 +45,13 @@ define('Plugbot/main/WindowManager', [
 
         taskbarModel = new TaskbarModel({
             windows: Plugbot.settings.windows,
-            windowTop: $(Ui.plugdj.header).height()
+            windowTop: Ui.plugdj.$header.height()
         });
         taskbarView = new TaskbarView({
             model: taskbarModel
         });
         $(document.body).append(taskbarView.render().el);
         Plugbot.taskbar = taskbarView;
-
-        updateTaskbarPosSize();
     }
 
     function initWindows() {
@@ -81,13 +79,11 @@ define('Plugbot/main/WindowManager', [
     }
 
     function initEvents() {
-        bindUiEvents();
-        watchActivites();
-        listenToSiteEvents();
+        watchActivities();
     }
 
     function removeEvents() {
-        unbindUiEvents();
+        unwatchActivities();
     }
 
     function removeTaskbar() {
@@ -108,59 +104,11 @@ define('Plugbot/main/WindowManager', [
 
 
     //region PRIVATE FUNCTIONS =====
-    function listenToSiteEvents() {
-        var listener = {},
-            dispatcherSite = SiteEvents.dispatcher,
-            uiRoom = $(Ui.plugdj.room),
-            lastRoomWidth = uiRoom.width();
-
-        _.extend(listener, Backbone.Events);
-
-        // site events
-        listener.listenTo(dispatcherSite,
-            dispatcherSite.RESIZE, function () {
-                var roomWidth = uiRoom.width(),
-                    ratio = roomWidth / lastRoomWidth,
-                    windows = Plugbot.windows,
-                    key,
-                    window;
-
-                // taskbar
-                updateTaskbarPosSize();
-
-                // windows
-                for (key in windows) {
-                    if (windows.hasOwnProperty(key)) {
-                        window = windows[key];
-
-                        window.model.set('x', window.model.get('x') * ratio);
-                        window.model.set('oldX',
-                            window.model.get('oldX') * ratio);
-                    }
-                }
-
-                // store last room width
-                lastRoomWidth = roomWidth;
-            });
-    }
-
-    function bindUiEvents() {
-        $(window).on('scroll', onScrollTaskbar);
-    }
-
-    function unbindUiEvents() {
-        $(window).off('scroll', onScrollTaskbar);
-    }
-
-    function onScrollTaskbar() {
-        updateTaskbarPosSize();
-    }
-
-    function watchActivites() {
-        var uiPlaylistPanel = $(Ui.plugdj.playlistPanel),
+    function watchActivities() {
+        var uiPlaylistPanel = Ui.plugdj.$playlistPanel,
             isVisible = true;
 
-        Plugbot.watcher.addFn(function () {
+        Plugbot.watcher.add('playlistVisible', function () {
             if (uiPlaylistPanel.is(':visible')) {
                 if (isVisible) {
                     Plugbot.hide();
@@ -175,57 +123,40 @@ define('Plugbot/main/WindowManager', [
         });
     }
 
-    function listenToWindowEvents(window) {
-        var listener = {},
-            dispatcherWindow = window.options.dispatcher;
+    function unwatchActivities() {
+        Plugbot.watcher.remove('playlistVisible');
+    }
 
-        _.extend(listener, Backbone.Events);
+    function listenToWindowEvents(window) {
+        var listener = _.clone(Backbone.Events),
+            disprWindow = window.dispatcher;
 
         // window events
         listener
-            // save settings
-            .listenTo(dispatcherWindow,
-                dispatcherWindow.CHANGEANY_MODEL, function () {
-                    Plugbot.ticker.add('saveWindow', function () {
-                        // copy to global settings
-                        Plugbot.settings.windows[window.model.get('name')] =
-                            window.model.attributes;
-
-                        // save settings
-                        Settings.saveSettings();
-                    });
-                })
-            .listenTo(dispatcherWindow,
-                dispatcherWindow.AFTER_RENDER, function () {
+            .listenTo(disprWindow,
+                disprWindow.AFTER_RENDER, function () {
                     var status = window.model.get('status');
 
                     if ('minimized' === status) {
                         minimizeWindow(window, {recordOldPos: false});
                     }
                 })
-            .listenTo(dispatcherWindow,
-                dispatcherWindow.CONTROLBOX_MINIMIZE, function () {
+            .listenTo(disprWindow,
+                disprWindow.CONTROLBOX_MINIMIZE, function () {
                     var status = window.model.get('status');
 
                     if ('minimized' !== status) {
                         minimizeWindow(window);
                     }
                 })
-            .listenTo(dispatcherWindow,
-                dispatcherWindow.CONTROLBOX_MAXIMIZE, function () {
+            .listenTo(disprWindow,
+                disprWindow.CONTROLBOX_MAXIMIZE, function () {
                     var status = window.model.get('status');
 
                     if ('minimized' === status) {
                         restoreWindow(window);
                     }
                 });
-    }
-
-    function updateTaskbarPosSize() {
-        Plugbot.taskbar.$el.css({
-            top: $(Ui.plugdj.header).height() - $(window).scrollTop(),
-            height: $(Ui.plugdj.room).height()
-        });
     }
 
     function minimizeWindow(window, options) {

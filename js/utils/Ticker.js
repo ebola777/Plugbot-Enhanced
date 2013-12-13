@@ -10,36 +10,28 @@ define('Plugbot/utils/Ticker', [], function () {
         defaults: function () {
             return {
                 /**
-                 * Default
+                 * Default, read-only
                  */
                 interval: 'optimal',
-                defaultHz: 1,
-                /**
-                 * Runtime
-                 */
-                // IDs (key: id, value: id of setTimeout)
-                ids: {}
+                optimalHz: 1
             };
         },
         initialize: function () {
-            _.bindAll(this);
-
-            // extend attributes to this
-            _.defaults(this, this.attributes);
-
-            // extend defaults to this
-            _.defaults(this, this.defaults());
+            /**
+             * Runtime options
+             */
+            // IDs (key: id, value: id of setTimeout)
+            this.ids = {};
         },
         /**
          * Add a function call by id
-         * @param {number|String} id    Id
+         * @param {(number|string)} id  Id
          * @param {function} fn         Function to be called (No parameters)
-         * @param {Object=} options    Options
+         * @param {Object=} options     Options
          */
         add: function (id, fn, options) {
             var that = this,
                 interval,
-                currentTick,
                 remainingTime;
 
             // check if the function has been included
@@ -48,21 +40,22 @@ define('Plugbot/utils/Ticker', [], function () {
             // apply default settings
             options = options || {};
             _.defaults(options, {
-                interval: this.interval
+                interval: this.get('interval')
             });
 
             // set remaining time
             interval = options.interval;
 
-            if (interval === 'optimal') {
-                interval = Math.round(1000 / this.optimalHz);
-            } else if (this.interval.substr(-2) === 'hz') {
-                interval = Math.round(1000 /
-                    +interval.substr(0, interval.length - 2));
+            if (!_.isNumber(interval)) {
+                if ('optimal' === interval) {
+                    interval = Math.round(1000 / this.get('optimalHz'));
+                } else if ('hz' === interval.substr(-2)) {
+                    interval = Math.round(1000 /
+                        +interval.substr(0, interval.length - 2));
+                }
             }
 
-            currentTick = (new Date()).getTime();
-            remainingTime = interval - (currentTick % interval);
+            remainingTime = interval - (Date.now() % interval);
 
             this.ids[id] = setTimeout(function () {
                 // invoke
@@ -76,7 +69,7 @@ define('Plugbot/utils/Ticker', [], function () {
         },
         /**
          * Remove an id
-         * @param {number|string} id   Id
+         * @param {(number|string)} id   Id
          */
         remove: function (id) {
             clearInterval(this.ids[id]);

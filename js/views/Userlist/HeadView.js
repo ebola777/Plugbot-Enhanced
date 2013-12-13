@@ -1,29 +1,27 @@
 define('Plugbot/views/Userlist/HeadView', [
+    'Plugbot/models/Userlist/HeadModel',
     'Plugbot/tmpls/Userlist/HeadView'
-], function (UserlistHeadViewTemplate) {
+], function (UserlistHeadModel, UserlistHeadTemplate) {
     'use strict';
 
     var View = Backbone.View.extend({
-        defaults: function () {
-            return {
-                /**
-                 * Runtime
-                 */
-                template: undefined
-            };
-        },
-        TEMPLATE: UserlistHeadViewTemplate,
         initialize: function () {
-            _.bindAll(this);
-            _.defaults(this, this.defaults());
+            // set model
+            this.model = new UserlistHeadModel();
 
-            // init template
-            this.options.template = new this.TEMPLATE({view: this});
+            // runtime options
+            this.template = new UserlistHeadTemplate({view: this});
+
+            // model events
+            this.listenTo(this.model, 'change', this.render);
+        },
+        renderFromParent: function () {
+            this.model.update();
         },
         render: function () {
             var waitListPos = this.model.get('waitListPos');
 
-            this.options.template.setHtml({
+            this.template.setHtml({
                 textWaitListPos: 'Waitlist: ' +
                     (-1 === waitListPos ? '-' : waitListPos + 1) + ' / ' +
                     this.model.get('waitListNum')

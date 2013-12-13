@@ -1,40 +1,28 @@
 define('Plugbot/utils/Countdown', [
-    'Plugbot/base/Timer',
-    'Plugbot/utils/Helpers'
-], function (BaseTimer, Helpers) {
+    'Plugbot/base/Timer'
+], function (BaseTimer) {
     'use strict';
 
     var Model = BaseTimer.extend({
         defaults: function () {
             return {
                 /**
-                 * Default, single object options
+                 * Default, read-only
                  */
-                defaultOptions: {
-                    call: undefined,
-                    countdown: 0
-                },
-                /**
-                 * Default, single object runtime
-                 */
-                defaultRuntime: {
-                    suspended: false,
-                    elapsed: 0,
-                    waitCallbacks: []
-                }
+                call: undefined,
+                countdown: 0
             };
         },
         initialize: function () {
-            _.bindAll(this);
             this.parent = BaseTimer.prototype;
             this.parent.initialize.call(this);
 
-            // extend defaults to this
-            _.defaults(this, this.parent.defaults());
-            Helpers.defaultsDeep(this.defaults(), this);
+            // extend parent defaults
+            _.defaults(this.attributes, this.parent.defaults());
         },
         fnTick: function () {
-            var i, items, isEmpty, id, item, options, runtime;
+            var i, items, isEmpty, id, item, options, runtime,
+                interval = this.interval;
 
             if (this.suspendedAll) { return; }
 
@@ -50,7 +38,7 @@ define('Plugbot/utils/Countdown', [
                     if (!runtime.suspended) {
                         options = item.options;
 
-                        runtime.elapsed += this.interval;
+                        runtime.elapsed += interval;
 
                         // check to remove the id
                         if (runtime.elapsed >= options.countdown) {
@@ -71,39 +59,34 @@ define('Plugbot/utils/Countdown', [
                 }
             }
 
-            if (isEmpty && this.exitWhenNoCall) {
+            if (isEmpty && this.get('exitWhenNoCall')) {
                 this.close();
             }
         },
-        add: function (id, options) {
-            var defOptions, defRuntime;
-
+        add: function (id, fn, options) {
             // check repetition
             if (undefined !== this.items[id]) { return this; }
-
-            defOptions = this.defaultOptions;
-            defRuntime = this.defaultRuntime;
 
             // use default attributes if parameters are not defined
             options = options || {};
             _.defaults(options, {
-                call: defOptions.call,
-                countdown: defOptions.countdown
+                call: fn,
+                countdown: this.get('countdown')
             });
 
             // push new item
             this.items[id] = {
                 options: options,
                 runtime: {
-                    suspended: defRuntime.suspended,
-                    elapsed: defRuntime.elapsed,
-                    waitCallbacks: defRuntime.waitCallbacks
+                    suspended: false,
+                    elapsed: 0,
+                    waitCallbacks: []
                 }
             };
 
             // check to start
             if (!this.enabled) {
-                if (this.autoStart) {
+                if (this.get('autoStart')) {
                     this.start();
                 }
             }
@@ -115,6 +98,13 @@ define('Plugbot/utils/Countdown', [
             delete this.items[id];
 
             return this;
+        },
+        restart: function (id, fn, options) {
+            if (undefined !== this.items[id]) {
+                this.resetElapsed(id);
+            } else {
+                this.add(id, fn, options);
+            }
         },
         wait: function (id, callback) {
             this.items[id].runtime.waitCallbacks.push(callback);

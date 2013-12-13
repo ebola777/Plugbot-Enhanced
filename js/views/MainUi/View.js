@@ -1,130 +1,126 @@
 define('Plugbot/views/MainUi/View', [
     'handlebars',
-    'Plugbot/colls/MainUi/ItemCollection',
-    'Plugbot/models/MainUi/ItemModel',
     'Plugbot/models/MainUi/Model',
+    'Plugbot/tmpls/MainUi/View',
     'Plugbot/utils/API',
     'Plugbot/utils/APIBuffer',
     'Plugbot/utils/Watcher',
-    'Plugbot/views/MainUi/ItemView',
     'Plugbot/views/utils/Ui'
-], function (Handlebars, MainUiItemCollection, MainUiItemModel, MainUiModel,
-             UtilsAPI, APIBuffer, Watcher, MainUiItemView, Ui) {
+], function (Handlebars, MainUiModel, MainUiTemplate, UtilsAPI, APIBuffer,
+             Watcher, Ui) {
     'use strict';
 
     var View = Backbone.View.extend({
-        defaults: function () {
+        options: function () {
             return {
-                /**
-                 * Options
-                 */
-                dispatcherWindow: undefined,
-                watcherAutoJoin: new Watcher({
-                    interval: '1 hz'
-                }),
-                watcherSkipVideo: new Watcher({
-                    interval: '1 hz'
-                }),
-                /**
-                 * Runtime
-                 */
-                views: {},
-                elemDialogAsk: undefined,
-                lastPlaybackVolume: undefined
+                moduleWindow: undefined,
+                dispatcherWindow: undefined
             };
         },
-        model: new MainUiModel(),
         initialize: function () {
-            _.bindAll(this);
+            _.bindAll(this, 'enableAutoWoot', 'disableAutoWoot',
+                'enableAutoJoin', 'disableAutoJoin', 'enableSkipVideo',
+                'disableSkipVideo');
 
-            // pull defaults to options
-            _.defaults(this.options, this.defaults());
+            // model
+            this.model = new MainUiModel();
 
-            // set model collection
-            this.collection = new MainUiItemCollection();
+            // runtime options
+            this.lastVolume = undefined;
+            this.watcher = new Watcher({interval: '1 hz'});
+            this.pendingUpdate = false;
+            this.elemDialogAsk = undefined;
+            this.templateDialogAsk = Handlebars.compile(
+                '    <div title="Exit">' +
+                    '    <p>Exit Plugbot Enhanced?' +
+                    '    <\/p>' +
+                    '<\/div>'
+            );
+            this.template = new MainUiTemplate({view: this});
 
-            // bind events
-            this.listenTo(this.collection, 'add', this.addOne);
+            // bind model events
+            this.listenTo(this.model, 'change', this.onChangeAny);
 
             // listen to window events
             this.listenToWindow();
 
             // listen to API
             this.listenToAPI();
+        },
+        el: Ui.plugbot.mainUi,
+        render: function () {
+            // render dialog
+            this.elemDialogAsk = $(this.templateDialogAsk());
+
+            // render template
+            this.template
+                .setHtml()
+                .cacheElements()
+                .delegateEvents()
+                .setElementIds();
+
+            // update model
+            this.model.update();
 
             // trigger button actions
             this
-                .onClickAutoWoot(Plugbot.settings.mainUi.autoWoot)
-                .onClickAutoJoin(Plugbot.settings.mainUi.autoJoin)
-                .onClickSkipVideo(false);
-        },
-        el: Ui.plugbot.mainUi,
-        templateDialogAsk: Handlebars.compile(
-            '    <div title="Exit">' +
-                '    <p>Exit Plugbot Enhanced?' +
-                '    <\/p>' +
-                '<\/div>'
-        ),
-        events: {
-            'click p': 'onClick'
-        },
-        render: function () {
-            var i, newModel, data = this.model.get('data');
-
-            this.options.elemDialogAsk = $(this.templateDialogAsk());
-
-            for (i = 0; i !== data.length; i += 1) {
-                // generate models
-                newModel = new MainUiItemModel(data[i]);
-                this.collection.add(newModel);
-            }
+                .onClickAutoWoot(this.model.get('autoWoot'))
+                .onClickAutoJoin(this.model.get('autoJoin'))
+                .onClickSkipVideo(this.model.get('skipVideo'));
 
             return this;
         },
-        addOne: function (mod) {
-            var newView = new MainUiItemView({
-                model: mod
-            });
+        update: function () {
+            var classEnabled = this.template.getClass('enabled');
 
-            this.options.views[mod.id] = newView;
+            // remove class from all
+            this.$clsItems.removeClass(classEnabled);
 
-            this.$el.append(newView.render().el);
+            // add class individually
+            if (this.model.get('autoWoot')) {
+                this.$elAutoWoot.addClass(classEnabled);
+            }
+
+            if (this.model.get('autoJoin')) {
+                this.$elAutoJoin.addClass(classEnabled);
+            }
+
+            if (this.model.get('skipVideo')) {
+                this.$elSkipVideo.addClass(classEnabled);
+            }
         },
         listenToAPI: function () {
             var that = this,
                 cid = this.model.cid;
 
-            APIBuffer.addListening('auto-woot-' + cid, this, [
+            APIBuffer.addListening('auto-woot:' + cid, this, [
                 API.DJ_ADVANCE
             ], {
                 fnCheck: function () {
-                    return Plugbot.settings.mainUi.autoWoot;
+                    return that.model.get('autoWoot');
                 },
-                callback: function () {
-                    $(Ui.plugdj.woot).click();
-                }
+                callback: that.enableAutoWoot
             });
 
-            APIBuffer.addListening('auto-join-' + cid, this, [
+            APIBuffer.addListening('auto-join:' + cid, this, [
                 API.WAIT_LIST_UPDATE
             ], {
                 fnCheck: function () {
-                    return Plugbot.settings.mainUi.autoJoin;
+                    return that.model.get('autoJoin');
                 },
                 callback: this.enableAutoJoin
             });
 
-            APIBuffer.addListening('skip-video-' + cid, this, [
+            APIBuffer.addListening('skip-video:' + cid, this, [
                 API.DJ_ADVANCE
             ], {
                 fnCheck: function () {
-                    that.options.watcherSkipVideo.remove('skip-video');
+                    that.watcher.remove('skip-video');
 
-                    return that.collection.get('plugbot-btn-skip-video')
-                        .get('enabled');
+                    return that.model.get('skipVideo');
                 },
                 callback: function () {
-                    var lastVolume = that.options.lastPlaybackVolume,
+                    var lastVolume = that.lastVolume,
                         nearbyVolume;
 
                     if (100 === nearbyVolume) {
@@ -135,32 +131,41 @@ define('Plugbot/views/MainUi/View', [
 
                     that.disableSkipVideo();
 
-                    that.options.watcherSkipVideo.add('skip-video', {
-                        call: function () {
-                            var ret, volume = API.getVolume();
+                    that.watcher.add('skip-video', function () {
+                        var ret, volume = API.getVolume();
 
-                            if (volume === lastVolume) {
-                                API.setVolume(nearbyVolume);
-                                API.setVolume(lastVolume);
-                            } else {
-                                ret = 0;
-                            }
-
-                            return ret;
+                        if (volume === lastVolume) {
+                            API.setVolume(nearbyVolume);
+                            API.setVolume(lastVolume);
+                        } else {
+                            ret = 0;
                         }
+
+                        return ret;
                     });
                 }
             });
         },
         listenToWindow: function () {
-            var dispatcherWindow = this.options.dispatcherWindow;
+            var that = this,
+                moduleWindow = this.options.moduleWindow,
+                disprWindow = this.options.dispatcherWindow;
 
-            this.listenTo(dispatcherWindow,
-                dispatcherWindow.CONTROLBOX_CLOSE, function (options) {
+            this.listenTo(moduleWindow, 'change:visible', function (mod) {
+                if (mod.get('visible')) {
+                    if (that.pendingUpdate) {
+                        that.update();
+                        that.pendindUpdate = false;
+                    }
+                }
+            });
+
+            this.listenTo(disprWindow, disprWindow.CONTROLBOX_CLOSE,
+                function (options) {
                     options.enabledCallback = true;
 
                     // show dialog
-                    this.options.elemDialogAsk.dialog({
+                    that.elemDialogAsk.dialog({
                         modal: true,
                         draggable: false,
                         resizable: false,
@@ -179,29 +184,39 @@ define('Plugbot/views/MainUi/View', [
                     });
                 });
         },
-        onClick: function (e) {
-            var id = e.target.id,
-                model = this.collection.get(id),
-                enabled = model.get('enabled');
+        onChangeAny: function () {
+            if (this.options.moduleWindow.get('visible')) {
+                this.update();
+            } else {
+                this.pendingUpdate = true;
+            }
+        },
+        onClickItem: function (e) {
+            var elem = $(e.currentTarget),
+                tmplElem = this.template.elements,
+                classEnabled = this.template.getClass('enabled'),
+                en = !elem.hasClass(classEnabled);
 
-            // handle what to do
-            switch (id) {
-            case 'plugbot-btn-woot':
-                this.onClickAutoWoot(enabled);
+            switch (elem.data('id')) {
+            case tmplElem.elAutoWoot:
+                this.model.set('autoWoot', en);
+                this.onClickAutoWoot(en);
                 break;
-            case 'plugbot-btn-join':
-                this.onClickAutoJoin(enabled);
+            case tmplElem.elAutoJoin:
+                this.model.set('autoJoin', en);
+                this.onClickAutoJoin(en);
                 break;
-            case 'plugbot-btn-skip-video':
-                this.onClickSkipVideo(enabled);
+            case tmplElem.elSkipVideo:
+                this.model.set('skipVideo', en);
+                this.onClickSkipVideo(en);
                 break;
             }
         },
         onClickAutoWoot: function (en) {
             if (en) {
-                if (UtilsAPI.USER.VOTE.UNDECIDED === API.getUser().vote) {
-                    $(Ui.plugdj.woot).click();
-                }
+                this.enableAutoWoot();
+            } else {
+                this.disableAutoWoot();
             }
 
             return this;
@@ -224,56 +239,68 @@ define('Plugbot/views/MainUi/View', [
 
             return this;
         },
+        enableAutoWoot: function () {
+            var vote = API.getUser().vote,
+                undecided = UtilsAPI.USER.VOTE.UNDECIDED,
+                elemWoot =  Ui.plugdj.$woot;
+
+            if (undecided === vote) {
+                elemWoot.click();
+                vote = API.getUser().vote;
+
+                if (undecided === vote) {
+                    this.watcher.add('auto-woot', function () {
+                        var ret;
+
+                        elemWoot.click();
+                        vote = API.getUser().vote;
+
+                        if (undecided !== vote) {
+                            ret = 0;
+                        }
+
+                        return ret;
+                    });
+                }
+            }
+        },
+        disableAutoWoot: function () {
+            this.watcher.remove('auto-woot');
+        },
         enableAutoJoin: function () {
             var ret = API.djJoin();
 
             if (0 !== ret) {
-                this.options.watcherAutoJoin.add('auto-join', {
-                    call: function () {
-                        return API.djJoin();
-                    }
+                this.watcher.add('auto-join', function () {
+                    return API.djJoin();
                 });
             }
         },
         disableAutoJoin: function () {
-            this.options.watcherAutoJoin.remove('auto-join');
+            this.watcher.remove('auto-join');
         },
         enableSkipVideo: function () {
-            this.options.watcherSkipVideo.remove('skip-video');
-            this.options.lastPlaybackVolume = API.getVolume();
+            this.watcher.remove('skip-video');
+            this.lastVolume = API.getVolume();
             API.setVolume(0);
         },
         disableSkipVideo: function () {
-            var module;
+            var lastVolume = this.lastVolume;
 
-            if (undefined !== this.options.lastPlaybackVolume) {
-                module = this.collection.get('plugbot-btn-skip-video');
-                module.set('enabled', false);
+            if (undefined !== lastVolume) {
+                this.model.set('skipVideo', false);
 
                 if (0 === API.getVolume()) {
-                    API.setVolume(this.options.lastPlaybackVolume);
-                    this.options.lastPlaybackVolume = undefined;
+                    API.setVolume(lastVolume);
+                    this.lastVolume = undefined;
                 }
             }
         },
         close: function () {
-            var key, views = this.options.views;
+            // close the watcher
+            this.watcher.close();
 
             this.remove();
-
-            // remove collection
-            this.collection.close();
-
-            // remove views
-            for (key in views) {
-                if (views.hasOwnProperty(key)) {
-                    views[key].close();
-                }
-            }
-
-            // close watchers
-            this.options.watcherAutoJoin.close();
-            this.options.watcherSkipVideo.close();
         }
     });
 

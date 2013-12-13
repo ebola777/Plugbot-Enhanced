@@ -13,20 +13,25 @@ define('Plugbot/tmpls/FloatedWindow/View', [
             elClose: '.close',
             elBody: '.body'
         },
+        elementIds: {
+            elMinimize: null,
+            elMaximize: null,
+            elClose: null
+        },
         template:
             '<div class="plugbot-floated-window">' +
-            '    <div class="{{getName elHeader}}">' +
-            '        <h1 class="{{getName elTitle}}">{{textTitle}}<\/h1>' +
-            '        <div class="{{getName elControlBox}}">' +
-            '            <button class="{{getName elMinimize}}"' +
+            '    <div class="{{elHeader}}">' +
+            '        <h1 class="{{elTitle}}">{{textTitle}}<\/h1>' +
+            '        <div class="{{elControlBox}}">' +
+            '            <button class="{{elMinimize}}"' +
             ' title="Minimize"><\/button>' +
-            '            <button class="{{getName elMaximize}}"' +
+            '            <button class="{{elMaximize}}"' +
             ' title="Restore"><\/button>' +
-            '            <button class="{{getName elClose}}"' +
+            '            <button class="{{elClose}}"' +
             ' title="Close"><\/button>' +
             '        <\/div>' +
             '    <\/div>' +
-            '    <div class="{{getName elBody}}"><\/div>' +
+            '    <div class="{{elBody}}"><\/div>' +
             '<\/div>'
     });
 

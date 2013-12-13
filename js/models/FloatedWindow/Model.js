@@ -1,4 +1,6 @@
-define('Plugbot/models/FloatedWindow/Model', [], function () {
+define('Plugbot/models/FloatedWindow/Model', [
+    'Plugbot/main/Settings'
+], function (Settings) {
     'use strict';
 
     var Model = Backbone.Model.extend({
@@ -9,6 +11,7 @@ define('Plugbot/models/FloatedWindow/Model', [], function () {
                  */
                 name: undefined,
                 bodyClass: '',
+                tableLayout: undefined,
                 status: 'normal',
                 /**
                  * View
@@ -49,16 +52,13 @@ define('Plugbot/models/FloatedWindow/Model', [], function () {
                 closeBox: false
             };
         },
-        NarrowActions: {
-            none: 0,
-            hidden: 1,
-            callsign: 2,
-            expanded: 3
+        initialize: function () {
+            this.listenTo(this, 'change', this.onChangeAny);
         },
-        Status: {
-            hidden: 0,
-            minimized: 1,
-            normal: 2
+        onChangeAny: function () {
+            Plugbot.settings.windows[this.get('name')] = this.toJSON();
+
+            Settings.saveSettings();
         }
     });
 

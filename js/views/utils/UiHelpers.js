@@ -129,21 +129,25 @@ define('Plugbot/views/utils/UiHelpers', [
         return min;
     }
 
-    function insertAt(elem, parent, ind) {
+    function insertAt(jqElem, jqParent, ind) {
         if (0 === ind) {
-            parent.prepend(elem);
+            jqParent.prepend(jqElem);
         } else {
-            parent.children().eq(ind - 1).after(elem);
+            jqParent.children().eq(ind - 1).after(jqElem);
         }
+    }
+
+    function replaceAt(jqElem, jqParent, ind) {
+        jqParent.children().eq(ind).replaceWith(jqElem);
     }
 
     /**
      * Fit child element to parent element
-     * @param {Array.<Object(element)>} child         Child element
-     * @param {Array.<Object(element)>} parent        Parent element
-     * @param {string} size         width, height, both
-     * @param {number=} addW         Add width how much
-     * @param {number=} addH         Add height how much
+     * @param {Array.<Object{element}>} child   Child element
+     * @param {Array.<Object{element}>} parent  Parent element
+     * @param {string} size     'width', 'height' or 'both'
+     * @param {number=} addW    Add width how much
+     * @param {number=} addH    Add height how much
      */
     function fitElement(child, parent, size, addW, addH) {
         var outerW = child.outerWidth(true) - child.width(),
@@ -166,36 +170,10 @@ define('Plugbot/views/utils/UiHelpers', [
         }
     }
 
-    function detach(elem) {
-        var nextSibling,
-            parent = null;
-
-        nextSibling = elem.next();
-        if (0 === nextSibling.length) {
-            parent = elem.parent();
-        }
-
-        elem = elem.detach();
-
-        return {
-            elem: elem,
-            nextSibling: nextSibling,
-            parent: parent
-        };
-    }
-
-    function reattach(obj) {
-        if (null === obj.parent) {
-            obj.nextSibling.before(obj.elem);
-        } else {
-            obj.parent.append(obj.elem);
-        }
-    }
-
     function iframeFix(iframe) {
         var oriPointerEvents = iframe.css('pointer-events'),
             watcher = new Watcher(),
-            fix = function (iframe) {
+            fnFix = function (iframe) {
                 if (0 === iframe.length) {
                     return 0;
                 }
@@ -204,23 +182,26 @@ define('Plugbot/views/utils/UiHelpers', [
                 return 1;
             };
 
-        watcher.add('iframe-fix', {
-            call: fix,
+        watcher.add('iframe-fix', fnFix, {
             args: [iframe]
         });
 
-        fix(iframe);
+        fnFix(iframe);
 
         return {
-            watcher: watcher,
-            iframe: iframe,
-            oriPointerEvents: oriPointerEvents
+            close: function () {
+                _removeIframeFix(watcher, iframe, oriPointerEvents);
+            }
         };
     }
 
-    function removeIframeFix(obj) {
-        obj.iframe.css('pointer-events', obj.oriPointerEvents);
-        obj.watcher.close();
+    //endregion
+
+
+    //region PRIVATE FUNCTIONS =====
+    function _removeIframeFix(watcher, iframe, oriPointerEvents) {
+        iframe.css('pointer-events', oriPointerEvents);
+        watcher.close();
     }
 
     //endregion
@@ -233,10 +214,8 @@ define('Plugbot/views/utils/UiHelpers', [
         getMargin: getMargin,
         getMinFloatSize: getMinFloatSize,
         insertAt: insertAt,
+        replaceAt: replaceAt,
         fitElement: fitElement,
-        detach: detach,
-        reattach: reattach,
-        iframeFix: iframeFix,
-        removeIframeFix: removeIframeFix
+        iframeFix: iframeFix
     };
 });

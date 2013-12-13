@@ -10,74 +10,81 @@ define('Plugbot/main/Settings', [
         // min compatible version, empty: not compatible with any older version
     var minCompatibleVersion = '1.0.5.pre',
         // read-only settings
-        settingsReadOnly = {
-            tickerIds: {
-                saveSettings: 'save-settings',
-                saveWindow: 'save-window'
-            },
-            tickerInterval: {
-                defaults: 1000,
-                APICallback: 3000,
-                saveSettings: 5000
-            },
-            windows: {
-                MainUi: {
-                    name: 'MainUi',
-                    bodyClass: UiHelpers.getClass(Ui.plugbot.mainUi),
-                    view: 'Plugbot/views/MainUi/View',
-                    narrowAction: 'none',
-                    title: 'Plugbot',
-                    callsign: 'PB',
-                    zIndex: 22,
-                    resizable: false,
-                    draggable: true
+        settingsReadOnly = function () {
+            return {
+                tickerIds: {
+                    saveSettings: 'save-settings',
+                    saveWindow: 'save-window'
                 },
-                Userlist: {
-                    name: 'Userlist',
-                    bodyClass: UiHelpers.getClass(Ui.plugbot.userlist),
-                    view: 'Plugbot/views/Userlist/View',
-                    narrowAction: 'callsign',
-                    title: 'Userlist',
-                    callsign: 'UL',
-                    zIndex: 21,
-                    resizable: true,
-                    draggable: true,
-                    minWidth: 8 * 15,
-                    maxWidth: 8 * 40,
-                    minHeight: 0,
-                    maxHeight: 8 * 90
+                watcherIds: {
+                    playlistVisible: 'playlist-visible'
+                },
+                tickerInterval: {
+                    defaults: 1000,
+                    APICallback: 3000,
+                    saveSettings: 5000
+                },
+                windows: {
+                    MainUi: {
+                        name: 'MainUi',
+                        bodyClass: UiHelpers.getClass(Ui.plugbot.mainUi),
+                        view: 'Plugbot/views/MainUi/View',
+                        narrowAction: 'none',
+                        title: 'Plugbot',
+                        callsign: 'PB',
+                        zIndex: 22,
+                        resizable: false,
+                        draggable: true
+                    },
+                    Userlist: {
+                        name: 'Userlist',
+                        bodyClass: UiHelpers.getClass(Ui.plugbot.userlist),
+                        view: 'Plugbot/views/Userlist/View',
+                        narrowAction: 'callsign',
+                        title: 'Userlist',
+                        callsign: 'UL',
+                        zIndex: 21,
+                        resizable: true,
+                        draggable: true,
+                        minWidth: 8 * 15,
+                        maxWidth: 8 * 40,
+                        minHeight: 0,
+                        maxHeight: 8 * 90
+                    }
                 }
-            }
+            };
         },
         // default settings
-        settingsDefault = {
-            version: '1.0.6.pre',
-            windows: {
-                MainUi: {
-                    status: 'normal',
-                    oldZIndex: 22,
-                    x: 70,
-                    y: 85,
-                    oldX: 70,
-                    oldY: 85,
-                    width: 'auto',
-                    height: 'auto'
+        settingsDefault = function () {
+            return {
+                version: '1.0.7.pre',
+                windows: {
+                    MainUi: {
+                        status: 'normal',
+                        oldZIndex: 22,
+                        x: 70,
+                        y: 85,
+                        oldX: 70,
+                        oldY: 85,
+                        width: 'auto',
+                        height: 'auto'
+                    },
+                    Userlist: {
+                        status: 'minimized',
+                        oldZIndex: 21,
+                        x: 730,
+                        y: 70,
+                        oldX: 730,
+                        oldY: 70,
+                        width: 8 * 30,
+                        height: 8 * 50
+                    }
                 },
-                Userlist: {
-                    status: 'minimized',
-                    oldZIndex: 21,
-                    x: 730,
-                    y: 70,
-                    oldX: 730,
-                    oldY: 70,
-                    width: 8 * 30,
-                    height: 8 * 50
+                mainUi: {
+                    autoWoot: true,
+                    autoJoin: false
                 }
-            },
-            mainUi: {
-                autoWoot: true,
-                autoJoin: false
-            }
+            };
         };
 
     //endregion
@@ -93,23 +100,24 @@ define('Plugbot/main/Settings', [
      * user -> default -> read-only
      */
     function readSettings() {
-        var settingsUser = LocalStorage.readSettings(),
-            currentVersion = settingsDefault.version,
+        var settingsDefaultCloned = settingsDefault(),
+            settingsUser = LocalStorage.readSettings(),
+            currentVersion = settingsDefaultCloned.version,
             fnGetExtendDefault = function (settings) {
-                var obj = _.clone(settingsReadOnly);
+                var obj = settingsReadOnly();
 
                 Helpers.extendDeep(settings, obj);
 
                 return obj;
             },
             fnExtendSettings = function () {
-                var obj = _.clone(settingsDefault);
+                var obj = settingsDefault();
 
                 Helpers.applyDeep(settingsUser, obj);
                 Plugbot.settings = fnGetExtendDefault(obj);
             },
             fnUseDefault = function () {
-                Plugbot.settings = fnGetExtendDefault(settingsDefault);
+                Plugbot.settings = fnGetExtendDefault(settingsDefaultCloned);
             };
 
         // check version
@@ -176,7 +184,7 @@ define('Plugbot/main/Settings', [
 
     //region PRIVATE FUNCTIONS
     function saveSettingsImmediate() {
-        var obj = _.clone(settingsDefault);
+        var obj = settingsDefault();
 
         Helpers.applyDeep(Plugbot.settings, obj);
         LocalStorage.saveSettings(obj);

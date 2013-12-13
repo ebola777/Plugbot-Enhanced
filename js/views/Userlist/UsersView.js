@@ -1,99 +1,70 @@
 define('Plugbot/views/Userlist/UsersView', [
+    'Plugbot/base/SubView',
     'Plugbot/colls/Userlist/ItemCollection',
+    'Plugbot/models/Userlist/UsersModel',
     'Plugbot/views/Userlist/UsersItemView',
-    'Plugbot/views/utils/Ui'
-], function (UserlistItemCollection, UsersItemView, Ui) {
+    'Plugbot/views/utils/Ui',
+    'Plugbot/views/utils/UiHelpers'
+], function (BaseSubView, UserlistItemCollection, UserlistUsersModel,
+             UsersItemView, Ui, UiHelpers) {
     'use strict';
 
-    var View = Backbone.View.extend({
-        defaults: function () {
-            return {
-                /**
-                 * Runtime
-                 */
-                views: {}
-            };
-        },
+    var View = BaseSubView.extend({
         initialize: function () {
-            _.bindAll(this);
+            // set parent
+            this.parent = BaseSubView.prototype;
+            this.parent.initialize.call(this);
 
-            _.defaults(this.options, this.defaults());
+            // set model
+            this.model = new UserlistUsersModel();
 
-            // set model collection
+            // set collection
             this.collection = new UserlistItemCollection();
 
-            // render
-            this.render();
+            // collection events
+            this.listenTo(this.collection, 'add', this.addOne);
+            this.listenTo(this.collection, 'remove', this.removeOne);
+            this.listenTo(this.collection, 'change:curated change:vote',
+                this.changeOne);
         },
-        events: {
-            'click .userlist-item': 'onClick'
+        renderFromParent: function () {
+            this.updateData();
         },
-        render: function () {
-            var i,
-                users = this.model.get('users'),
-                user,
-                models,
-                model,
-                newView;
-
-            // reset
-            this.removeViews();
-            this.collection.reset();
-
-            // add models to collection
-            for (i = 0; i < users.length; i += 1) {
-                user = users[i];
-                this.collection.add({
-                    id: user.id,
-                    user: user
-                });
-            }
-
-            // render
-            models = this.collection.models;
-            for (i = 0; i !== models.length; i += 1) {
-                model = models[i];
+        updateData: function () {
+            this.model.update();
+            this.collection.set(this.model.get('users'));
+        },
+        addOne: function (mod) {
+            var ind = this.collection.indexOf(mod),
                 newView = new UsersItemView({
-                    model: model
+                    model: mod
                 });
 
-                this.$el.append(newView.render().$el);
-                this.options.views[model.get('id')] = newView;
-            }
+            UiHelpers.insertAt(newView.render().$el, this.$el, ind);
+            this.setSubView(mod.get('id'), newView);
         },
-        onClick: function (e) {
-            var id = $(e.currentTarget).data('id'),
-                model = this.collection.get(id),
-                user = model.get('user');
-
-            // mention
-            $(Ui.plugdj.chatInputField)
-                .val('@' + user.username + ' ')
-                .focus();
+        removeOne: function (mod) {
+            this.closeSubView(mod.get('id'));
         },
-        removeViews: function () {
-            var key, views = this.options.views;
+        changeOne: function (mod) {
+            var ind = this.collection.indexOf(mod),
+                view = this.getSubView(mod.get('id'));
 
-            for (key in views) {
-                if (views.hasOwnProperty(key)) {
-                    views[key].close();
-                }
-            }
+            view.model.set({
+                vote: mod.get('vote'),
+                curated: mod.get('curated')
+            });
+
+            UiHelpers.replaceAt(view.render().$el, this.$el, ind);
         },
         close: function () {
-            var key;
-
-            this.remove();
-
             // remove collection
             this.collection.reset();
 
-            // remove views
-            for (key in this.views) {
-                if (this.views.hasOwnProperty(key)) {
-                    this.views[key].close();
-                }
-            }
+            // remove sub-views
+            this.closeAllSubViews();
+
+            this.remove();
         }
     });
 

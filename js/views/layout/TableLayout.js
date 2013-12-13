@@ -4,7 +4,7 @@ define('Plugbot/views/layout/TableLayout', [
     'use strict';
 
     var View = Backbone.View.extend({
-        defaults: function () {
+        options: function () {
             return {
                 /**
                  * Options
@@ -13,24 +13,18 @@ define('Plugbot/views/layout/TableLayout', [
                 classes: [],
                 values: [],
                 styles: [],
-                grows: [],
-                /**
-                 * Runtime
-                 */
-                cached: false,
-                elCached: []
+                grows: []
             };
         },
         initialize: function () {
-            _.bindAll(this);
-
-            // pull options from defaults
-            _.defaults(this.options, this.defaults());
+            // runtime options
+            this.clsTableLayout = '.plugbot-table-layout';
+            this.cached = false;
+            this.elCached = [];
         },
-        elTableLayout: '.plugbot-table-layout',
         render: function () {
             // add class name
-            this.$el.addClass(UiHelpers.getClass(this.elTableLayout));
+            this.$el.addClass(UiHelpers.getClass(this.clsTableLayout));
             this.$el.children('div').addClass(this.options.display);
 
             this.resize();
@@ -50,14 +44,14 @@ define('Plugbot/views/layout/TableLayout', [
                 arrRemain;
 
             if (!this.cached) {
-                this.cacheElements();
+                this._cacheElements();
             }
 
             total = this.$el[size]();
             arrRemain = [];
             weight = 0;
             for (i = 0; i !== this.options.classes.length; i += 1) {
-                elemWrap = this.options.elCached[i];
+                elemWrap = this.elCached[i];
                 value = this.options.values[i];
                 style = this.options.styles[i];
                 grow = this.options.grows[i];
@@ -88,7 +82,7 @@ define('Plugbot/views/layout/TableLayout', [
                 total /= weight;
                 for (i = 0; i !== arrRemain.length; i += 1) {
                     ind = arrRemain[i];
-                    elemWrap = this.options.elCached[ind];
+                    elemWrap = this.elCached[ind];
                     grow = this.options.grows[ind];
 
                     elemWrap.css(size, (total * grow) -
@@ -97,12 +91,11 @@ define('Plugbot/views/layout/TableLayout', [
                 }
             }
         },
-        cacheElements: function () {
+        _cacheElements: function () {
             var i;
 
             for (i = 0; i !== this.options.classes.length; i += 1) {
-                this.options.elCached[i] =
-                    this.$('.' + this.options.classes[i]);
+                this.elCached[i] = this.$('.' + this.options.classes[i]);
             }
 
             this.cached = true;

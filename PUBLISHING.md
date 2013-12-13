@@ -1,6 +1,7 @@
 # Publishing
 
 ## Scripts
+
 <input type="checkbox">
 Settings -> version, min compatible version
 
@@ -8,6 +9,7 @@ Settings -> version, min compatible version
 WebStorm watcher -> Compass Release -> Rebuild
 
 ## Files
+
 <input type="checkbox">
 Optimize
 

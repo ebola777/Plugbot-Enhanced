@@ -5,9 +5,6 @@ define('Plugbot/colls/Taskbar/ItemCollection', [
 
     var Collection = Backbone.Collection.extend({
         model: TaskbarItemModel,
-        initialize: function () {
-            _.bindAll(this);
-        },
         comparator: function (first, second) {
             var ret = 0,
                 ascend = -1,

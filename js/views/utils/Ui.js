@@ -6,6 +6,8 @@ define('Plugbot/views/utils/Ui', [], function () {
             /**
              * Elements
              */
+            window: window,
+            document: document,
             header: '#header',
             room: '#room',
             playback: '#playback',
@@ -17,9 +19,32 @@ define('Plugbot/views/utils/Ui', [], function () {
             /**
              * Elements
              */
-            mainUi: '.plugbot-ui',
+            mainUi: '.plugbot-main-ui',
             userlist: '.plugbot-userlist'
         };
+
+    //endregion
+
+
+    //region INIT =====
+    (function () {
+        // cache plugdj elements
+        cachePlugDjElements();
+    }());
+
+    //endregion
+
+
+    //region PRIVATE FUNCTIONS =====
+    function cachePlugDjElements() {
+        var key;
+
+        for (key in plugdj) {
+            if (plugdj.hasOwnProperty(key)) {
+                plugdj['$' + key] = $(plugdj[key]);
+            }
+        }
+    }
 
     //endregion
 

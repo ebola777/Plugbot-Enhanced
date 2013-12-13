@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.7.pre (12/14/2013)
+- [NEW] curated users are shown as violet color in userlist
+- [IMPROVED] userlist performance, it won't cause video lagging anymore
+- [FIXED] default settings bugs
+
 ## 1.0.6.pre (12/5/2013)
 - [FIXED] minor bugs
 

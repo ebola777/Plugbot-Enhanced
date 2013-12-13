@@ -1,20 +1,7 @@
-define('Plugbot/utils/Helpers', [
-    'handlebars'
-], function (Handlebars) {
+define('Plugbot/utils/Helpers', [], function () {
     'use strict';
 
     //region PUBLIC FUNCTIONS =====
-    function initHandlebarsHelpers() {
-        // get the name of jquery id or class
-        Handlebars.registerHelper('getName', function (jqName) {
-            return jqName.substr(1);
-        });
-    }
-
-    function removeHandlebarsHelpers() {
-        delete Handlebars.helpers.getName;
-    }
-
     function defaultsDeep(src, dst) {
         var key;
 
@@ -73,14 +60,17 @@ define('Plugbot/utils/Helpers', [
         }
     }
 
+    function cloneDeep(src) {
+        return JSON.parse(JSON.stringify(src));
+    }
+
     //endregion
 
 
     return {
-        initHandlebarsHelpers: initHandlebarsHelpers,
-        removeHandlebarsHelpers: removeHandlebarsHelpers,
         defaultsDeep: defaultsDeep,
         extendDeep: extendDeep,
-        applyDeep: applyDeep
+        applyDeep: applyDeep,
+        cloneDeep: cloneDeep
     };
 });

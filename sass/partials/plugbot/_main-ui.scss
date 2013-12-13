@@ -1,10 +1,13 @@
-.plugbot-ui {
+@import "../../modules/site/colors";
+
+.plugbot-main-ui {
 	@include fixList(padding, 1, 1, 2, 1);
 	background: $v-dark-gray;
 
-	p {
+	.item {
 		@include fixList(margin, 0);
 		@include fixList(padding, 1);
+		color: red;
 		cursor: pointer;
 		font: {
 			variant: small-caps;
@@ -12,11 +15,7 @@
 		}
 	}
 
-	.item-enabled {
-		color: lawngreen;
-	}
-
-	.item-disabled {
-		color: red;
+	.enabled {
+		color: lawngreen !important;
 	}
 }

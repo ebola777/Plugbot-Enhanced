@@ -1,11 +1,10 @@
 define('Plugbot/main/Init', [
-    'Plugbot/events/SiteEvents',
+    'Plugbot/events/site/Events',
     'Plugbot/main/Settings',
     'Plugbot/main/WindowManager',
-    'Plugbot/utils/Helpers',
     'Plugbot/utils/Ticker',
     'Plugbot/utils/Watcher'
-], function (SiteEvents, Settings, WindowManager, Helpers, Ticker, Watcher) {
+], function (SiteEvents, Settings, WindowManager, Ticker, Watcher) {
     'use strict';
 
     //region PUBLIC FUNCTIONS =====
@@ -15,9 +14,6 @@ define('Plugbot/main/Init', [
          */
         // read settings
         Settings.readSettings();
-
-        // init handlebars helpers
-        Helpers.initHandlebarsHelpers();
 
         // init watchers and tickers
         initWatchers();
@@ -66,10 +62,8 @@ define('Plugbot/main/Init', [
         var watcher = new Watcher({
             interval: '1 hz',
             exitWhenNoCall: true,
-            defaultOptions: {
-                exitValue: true,
-                exitCall: callback
-            }
+            exitValue: true,
+            exitCall: callback
         });
 
         watcher
@@ -80,12 +74,44 @@ define('Plugbot/main/Init', [
     }
 
     function initWatchers() {
-        Plugbot.watcher = new Watcher();
+        // the 'keyId' must be in Plugbot.settings.watcherIds list
+        Plugbot.watcher = (function () {
+            return {
+                _watcher: new Watcher(),
+                add: function (keyId, fn, options) {
+                    var id = this.getId(keyId);
+
+                    this._watcher.add(id, fn, options);
+                },
+                remove: function (keyId) {
+                    var id = this.getId(keyId);
+
+                    this._watcher.remove(id);
+                },
+                clear: function () {
+                    this._watcher.clear();
+                },
+                getId: function (keyId) {
+                    var ret,
+                        id = Plugbot.settings.watcherIds[keyId];
+
+                    if (undefined !== id) {
+                        ret = id;
+                    } else {
+                        throw new Error('watcher key ' + keyId + ' not found');
+                    }
+
+                    return ret;
+                },
+                close: function () {
+                    this._watcher.close();
+                }
+            };
+        }());
     }
 
     function initTickers() {
-        // the 'keyId' must be in Plugbot.settings.tickerIds list in case of
-        //      typo
+        // the 'keyId' must be in Plugbot.settings.tickerIds list
         Plugbot.ticker = (function () {
             return {
                 _ticker: new Ticker(),
@@ -109,7 +135,7 @@ define('Plugbot/main/Init', [
                     if (undefined !== id) {
                         ret = id;
                     } else {
-                        throw 'ticker key ' + keyId + ' not found';
+                        throw new Error('ticker key ' + keyId + ' not found');
                     }
 
                     return ret;

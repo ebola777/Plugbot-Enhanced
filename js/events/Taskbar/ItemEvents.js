@@ -12,6 +12,14 @@ define('Plugbot/events/Taskbar/ItemEvents', [
     //endregion
 
 
+    //region PUBLIC FUNCTIONS =====
+    function getDispatcher(old) {
+        return _.defaults(_.clone(events), old);
+    }
+
+    //endregion
+
+
     //region INIT =====
     (function () {
         _.extend(events, BaseEvents);
@@ -19,5 +27,7 @@ define('Plugbot/events/Taskbar/ItemEvents', [
 
     //endregion
 
-    return events;
+    return {
+        getDispatcher: getDispatcher
+    };
 });

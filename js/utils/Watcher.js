@@ -4,41 +4,29 @@
  */
 
 define('Plugbot/utils/Watcher', [
-    'Plugbot/base/Timer',
-    'Plugbot/utils/Helpers'
-], function (BaseTimer, Helpers) {
+    'Plugbot/base/Timer'
+], function (BaseTimer) {
     'use strict';
 
     var Model = BaseTimer.extend({
         defaults: function () {
             return {
                 /**
-                 * Default, single object options
+                 * Default, read-only
                  */
-                defaultOptions: {
-                    call: undefined,
-                    args: undefined,
-                    exitValue: 0,
-                    exitCall: undefined,
-                    maxNumCall: 0
-                },
-                /**
-                 * Default, single object runtime
-                 */
-                defaultRuntime: {
-                    suspended: false,
-                    numCall: 0
-                }
+                call: undefined,
+                args: undefined,
+                exitValue: 0,
+                exitCall: undefined,
+                maxNumCall: 0
             };
         },
         initialize: function () {
-            _.bindAll(this);
             this.parent = BaseTimer.prototype;
             this.parent.initialize.call(this);
 
-            // extend defaults to this
-            _.defaults(this, this.parent.defaults());
-            Helpers.defaultsDeep(this.defaults(), this);
+            // extend parent defaults
+            _.defaults(this.attributes, this.parent.defaults());
         },
         fnTick: function () {
             var items, isEmpty, id, item, options, runtime, ret, enMaxNumCall;
@@ -83,7 +71,7 @@ define('Plugbot/utils/Watcher', [
                 }
             }
 
-            if (isEmpty && this.exitWhenNoCall) {
+            if (isEmpty && this.get('exitWhenNoCall')) {
                 this.close();
             }
         },
@@ -92,48 +80,42 @@ define('Plugbot/utils/Watcher', [
          * @param {function} fn     Function call
          */
         addFn: function (fn) {
-            this.add(Date.now(), {
-                call: fn
-            });
+            this.add(Date.now(), fn);
 
             return this;
         },
         /**
          * Add a call. The watcher will start automatically once a function
          * is added.
-         * @param {number|string} id   ID
-         * @param {Object=} options    Options
+         * @param {(number|string)} id  ID
+         * @param {function} fn         Function to be called
+         * @param {Object=} options     Options
          */
-        add: function (id, options) {
-            var defOptions, defRuntime;
-
+        add: function (id, fn, options) {
             // check repetition
             if (undefined !== this.items[id]) { return this; }
-
-            defOptions = this.defaultOptions;
-            defRuntime = this.defaultRuntime;
 
             // use default attributes if parameters are not defined
             options = options || {};
             _.defaults(options, {
-                call: defOptions.call,
-                exitValue: defOptions.exitValue,
-                exitCall: defOptions.exitCall,
-                maxNumCall: defOptions.maxNumCall
+                call: fn,
+                exitValue: this.get('exitValue'),
+                exitCall: this.get('exitCall'),
+                maxNumCall: this.get('maxNumCall')
             });
 
             // push new item
             this.items[id] = {
                 options: options,
                 runtime: {
-                    suspended: defRuntime.suspended,
-                    numCall: defRuntime.numCall
+                    suspended: false,
+                    numCall: 0
                 }
             };
 
             // check to start
             if (!this.enabled) {
-                if (this.autoStart) {
+                if (this.get('autoStart')) {
                     this.start();
                 }
             }

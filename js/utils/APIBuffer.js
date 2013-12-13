@@ -4,17 +4,9 @@ define('Plugbot/utils/APIBuffer', [
     'use strict';
 
     var Model = Backbone.Model.extend({
-        defaults: function () {
-            return {
-                /**
-                 * Runtime
-                 */
-                ticker: new Ticker()
-            };
-        },
         initialize: function () {
-            _.bindAll(this);
-            _.defaults(this, this.defaults());
+            // runtime options
+            this.ticker = new Ticker();
         },
         /**
          * Listen for some API events

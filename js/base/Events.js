@@ -9,8 +9,10 @@ define('Plugbot/base/Events', [], function () {
             if (undefined !== eventItem) {
                 this.trigger(this[event], options);
             } else {
-                throw 'Cannot find event "' + event + '".';
+                throw new Error('Cannot find event "' + event + '".');
             }
+
+            return this;
         }
     };
 

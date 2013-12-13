@@ -5,42 +5,41 @@ define('Plugbot/base/Timer', [], function () {
         defaults: function () {
             return {
                 /**
-                 * Default, public
+                 * Default, read-only
                  */
                 interval: 'optimal',
                 optimalHz: 12,
                 autoStart: true,
-                exitWhenNoCall: false,
-                /**
-                 * Runtime
-                 */
-                enabled: false,
-                items: {},
-                idInterval: undefined,
-                suspendedAll: false
+                exitWhenNoCall: false
             };
         },
         initialize: function () {
-            _.bindAll(this);
+            _.bindAll(this, 'fnTick');
 
-            // extend attributes to this
-            _.defaults(this, this.attributes);
+            // runtime options
+            this.enabled = false;
+            this.interval = undefined;
+            this.items = {};
+            this.idInterval = undefined;
+            this.suspendedAll = false;
         },
         start: function () {
-            var interval = this.interval;
+            var interval = this.get('interval');
 
             // set interval
-            if (interval === 'optimal') {
-                interval = Math.round(1000 / this.optimalHz);
-            } else if (this.interval.substr(-2) === 'hz') {
-                interval = Math.round(1000 /
-                    +interval.substr(0, interval.length - 2));
+            if (!_.isNumber(interval)) {
+                if ('optimal' === interval) {
+                    interval = Math.round(1000 / this.get('optimalHz'));
+                } else if ('hz' === interval.substr(-2)) {
+                    interval = Math.round(1000 /
+                        +interval.substr(0, interval.length - 2));
+                }
             }
 
             this.interval = interval;
 
             // start
-            this.idInterval = window.setInterval(this.fnTick, interval);
+            this.idInterval = setInterval(this.fnTick, interval);
             this.enabled = true;
 
             return this;
@@ -75,6 +74,7 @@ define('Plugbot/base/Timer', [], function () {
         },
         close: function () {
             clearInterval(this.idInterval);
+            this.idInterval = null;
 
             this.clear();
         }

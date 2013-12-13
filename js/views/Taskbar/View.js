@@ -1,54 +1,66 @@
 define('Plugbot/views/Taskbar/View', [
+    'Plugbot/base/SubView',
     'Plugbot/colls/Taskbar/ItemCollection',
+    'Plugbot/events/site/Events',
     'Plugbot/tmpls/Taskbar/View',
     'Plugbot/utils/Countdown',
     'Plugbot/views/Taskbar/ItemView',
+    'Plugbot/views/utils/Ui',
     'Plugbot/views/utils/UiHelpers'
-], function (TaskbarItemCollection, TaskbarViewTemplate, Countdown,
-             TaskbarItemView, UiHelpers) {
+], function (BaseSubView, TaskbarItemCollection, SiteEvents, TaskbarTemplate,
+             Countdown, TaskbarItemView, Ui, UiHelpers) {
     'use strict';
 
-    var View = Backbone.View.extend({
-        defaults: function () {
-            return {
-                /**
-                 * Runtime
-                 */
-                template: undefined,
-                views: {},
-                countdownSlide: (new Countdown()),
-                countdownTask: (new Countdown()),
-                currentWindow: undefined
-            };
-        },
+    var View = BaseSubView.extend({
         events: {
             'mouseenter': 'onMouseEnter',
             'mouseleave': 'onMouseLeave'
         },
-        TEMPLATE: TaskbarViewTemplate,
         initialize: function () {
-            _.bindAll(this);
-            _.defaults(this.options, this.defaults());
+            _.bindAll(this, 'onWindowScroll');
 
-            // init template
-            this.options.template = new this.TEMPLATE({view: this});
+            // parent
+            this.parent = BaseSubView.prototype;
+            this.parent.initialize.call(this);
 
+            // runtime options
+            this.currentWindow = undefined;
+            this.countdownSlide = new Countdown();
+            this.countdownTask = new Countdown();
+            this.template = new TaskbarTemplate({view: this});
+
+            // set collection
             this.collection = new TaskbarItemCollection();
 
             this.listenTo(this.collection, 'add', this.addOne);
             this.listenTo(this.collection, 'remove', this.removeOne);
 
             this.bindUiEvents();
+
+            this.listenToSiteEvents();
         },
         render: function () {
             // render
-            this.options.template
+            this.template
                 .setSelf()
                 .cacheElements();
+
+            this.update();
 
             this.$el.trigger('mouseleave');
 
             return this;
+        },
+        update: function () {
+            var uiWindow = Ui.plugdj.$window,
+                uiHeader = Ui.plugdj.$header,
+                uiRoom = Ui.plugdj.$room;
+
+            // update position and size
+            this.$el.css({
+                top: uiHeader.height() - uiWindow.scrollTop(),
+                height: uiRoom.height()
+            });
         },
         addOne: function (mod) {
             var newView = new TaskbarItemView({
@@ -56,7 +68,7 @@ define('Plugbot/views/Taskbar/View', [
                 }),
                 indMod;
 
-            this.options.views[mod.cid] = newView;
+            this.setSubView(mod.cid, newView);
 
             // add element
             indMod = this.collection.indexOf(mod);
@@ -70,94 +82,25 @@ define('Plugbot/views/Taskbar/View', [
         },
         removeOne: function (mod) {
             var cid = mod.cid,
-                views = this.options.views;
-
-            // stop listening
-            this.stopListeningItem(this.options.views[mod.cid]);
-            this.stopListeningWindow(mod.get('window'));
+                oldView = this.getSubView(cid);
 
             // resume countdowns
-            this.options.countdownSlide.resumeAll();
-            this.options.countdownTask.resumeAll();
+            this.countdownSlide.resumeAll();
+            this.countdownTask.resumeAll();
 
             // reset current window
-            this.options.currentWindow = undefined;
+            this.currentWindow = undefined;
+
+            // stop listening
+            this.stopListeningItem(oldView);
+            this.stopListeningWindow(mod.get('window'));
 
             // remove view
-            views[cid].close();
-            delete views[cid];
-        },
-        listenToItem: function (view) {
-            var that = this,
-                dispatcher = view.options.dispatcher,
-                cid = view.model.cid,
-                idMouseEnter = 'mouse-enter',
-                idMouseLeave = 'mouse-leave';
-
-            this.listenTo(dispatcher, dispatcher.MOUSE_ENTER,
-                function (options) {
-                    that.options.countdownTask
-                        .remove(idMouseEnter + ':' + cid)
-                        .add(idMouseEnter + ':' + cid, {
-                            call: function () {
-                                var window = options.model.get('window');
-
-                                that.options.currentWindow = window;
-                                that.showWindow(window);
-                            },
-                            countdown: 300
-                        });
-                });
-
-            this.listenTo(dispatcher, dispatcher.MOUSE_LEAVE,
-                function (options) {
-                    that.options.countdownTask
-                        .remove(idMouseLeave + ':' + cid)
-                        .add(idMouseLeave + ':' + cid, {
-                            call: function () {
-                                var window = options.model.get('window');
-
-                                that.options.currentWindow = undefined;
-                                that.hideWindow(window);
-                            },
-                            countdown: 300
-                        });
-                });
-        },
-        listenToWindow: function (view) {
-            var dispatcher = view.options.dispatcher,
-                countdownSlide = this.options.countdownSlide,
-                countdownTask = this.options.countdownTask;
-
-            this.listenTo(dispatcher, dispatcher.MOUSE_ENTER,
-                function () {
-                    countdownSlide.suspendAll();
-                    countdownTask.suspendAll();
-                });
-
-            this.listenTo(dispatcher, dispatcher.MOUSE_LEAVE,
-                function () {
-                    countdownSlide.resumeAll();
-                    countdownTask.resumeAll();
-                });
-        },
-        stopListeningItem: function (view) {
-            var dispatcher = view.options.dispatcher,
-                cidMod = view.model.cid;
-
-            this.stopListening(dispatcher);
-            this.options.countdownTask
-                .remove('mouse-enter:' + cidMod)
-                .remove('mouse-leave:' + cidMod);
-        },
-        stopListeningWindow: function (view) {
-            var dispatcher = view.options.dispatcher;
-
-            this.stopListening(dispatcher);
+            this.closeSubView(cid);
         },
         showWindow: function (wnd) {
             wnd.model.set({
-                x: this.$el.width() + $(window).scrollLeft(),
+                x: this.$el.width() + Ui.plugdj.$window.scrollLeft(),
                 y: this.model.get('windowTop'),
                 zIndex: 10000
             });
@@ -177,58 +120,131 @@ define('Plugbot/views/Taskbar/View', [
             }, 200);
         },
         bindUiEvents: function () {
-            $(window).on('scroll', this.onWindowScroll);
+            Ui.plugdj.$window.on('scroll', this.onWindowScroll);
         },
         unbindUiEvents: function () {
-            $(window).off('scroll', this.onWindowScroll);
+            Ui.plugdj.$window.off('scroll', this.onWindowScroll);
+        },
+        listenToSiteEvents: function () {
+            var that = this,
+                disprSite = SiteEvents.getDispatcher();
+
+            this.listenTo(disprSite, disprSite.RESIZE, function () {
+                that.update();
+
+                if (undefined !== that.currentWindow) {
+                    that.showWindow(that.currentWindow);
+                }
+            });
+        },
+        /**
+         * Listen to item events
+         * @param {{Taskbar ItemView}} view     Taskbar item view
+         */
+        listenToItem: function (view) {
+            var that = this,
+                dispatcher = view.dispatcher,
+                window = view.model.get('window'),
+                cid = view.model.cid;
+
+            this.listenTo(dispatcher, dispatcher.MOUSE_ENTER,
+                function () {
+                    that.countdownTask
+                        .remove('mouse-leave:' + cid)
+                        .add('mouse-enter:' + cid, function () {
+                            that.currentWindow = window;
+                            that.showWindow(window);
+                        }, {
+                            countdown: 300
+                        });
+                });
+
+            this.listenTo(dispatcher, dispatcher.MOUSE_LEAVE,
+                function () {
+                    that.countdownTask
+                        .remove('mouse-enter:' + cid)
+                        .add('mouse-leave:' + cid, function () {
+                            that.currentWindow = undefined;
+                            that.hideWindow(window);
+                        }, {
+                            countdown: 300
+                        });
+                });
+        },
+        /**
+         * Listen to window events
+         * @param {{FloatedWindow View}} view    Floated window view
+         */
+        listenToWindow: function (view) {
+            var dispr = view.dispatcher,
+                countdownSlide = this.countdownSlide,
+                countdownTask = this.countdownTask;
+
+            this.listenTo(dispr, dispr.MOUSE_ENTER, function () {
+                countdownSlide.suspendAll();
+                countdownTask.suspendAll();
+            });
+
+            this.listenTo(dispr, dispr.MOUSE_LEAVE, function () {
+                countdownSlide.resumeAll();
+                countdownTask.resumeAll();
+            });
+        },
+        stopListeningItem: function (view) {
+            var dispr = view.dispatcher,
+                cid = view.model.cid;
+
+            this.stopListening(dispr);
+            this.countdownTask
+                .remove('mouse-enter:' + cid)
+                .remove('mouse-leave:' + cid);
+        },
+        stopListeningWindow: function (view) {
+            var dispr = view.dispatcher;
+
+            this.stopListening(dispr);
         },
         onWindowScroll: function () {
-            var currentWindow = this.options.currentWindow;
+            var currentWindow = this.currentWindow;
+
+            this.update();
 
             if (undefined !== currentWindow) {
-                this.showWindow(this.options.currentWindow);
+                this.showWindow(this.currentWindow);
             }
         },
         onMouseEnter: function () {
-            var that = this,
-                countdownSlide = this.options.countdownSlide;
+            var that = this;
 
-            countdownSlide
+            this.countdownSlide
                 .remove('mouse-leave')
-                .add('mouse-enter', {
-                    call: function () {
-                        that.expand();
-                    },
+                .add('mouse-enter', function () {
+                    that.expand();
+                }, {
                     countdown: 100
                 });
         },
         onMouseLeave: function () {
-            var that = this,
-                countdownSlide = this.options.countdownSlide;
+            var that = this;
 
-            countdownSlide
+            this.countdownSlide
                 .remove('mouse-enter')
-                .add('mouse-leave', {
-                    call: function () {
-                        that.collapse();
-                    },
+                .add('mouse-leave', function () {
+                    that.collapse();
+                }, {
                     countdown: 500
                 });
         },
         close: function () {
-            var key, views = this.options.views;
+            this.collection.close();
 
             this.unbindUiEvents();
 
+            // close sub-views
+            this.closeAllSubViews();
+
+            // close self
             this.remove();
-
-            this.collection.close();
-
-            for (key in views) {
-                if (views.hasOwnProperty(key)) {
-                    views[key].close();
-                }
-            }
         }
     });
 

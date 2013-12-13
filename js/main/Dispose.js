@@ -1,13 +1,11 @@
 define('Plugbot/main/Dispose', [
     'Plugbot/Entry',
     'Plugbot/Loader',
-    'Plugbot/events/SiteEvents',
+    'Plugbot/events/site/Events',
     'Plugbot/main/Settings',
     'Plugbot/main/WindowManager',
-    'Plugbot/utils/APIBuffer',
-    'Plugbot/utils/Helpers'
-], function (Entry, Loader, SiteEvents, Settings, WindowManager, APIBuffer,
-             Helpers) {
+    'Plugbot/utils/APIBuffer'
+], function (Entry, Loader, SiteEvents, Settings, WindowManager, APIBuffer) {
     'use strict';
 
     //region PUBLIC FUNCTIONS =====
@@ -44,31 +42,27 @@ define('Plugbot/main/Dispose', [
          * Reload PlugBot
          */
         Plugbot.reload = function (options) {
-            var i,
-                preserveFunctions = [
+            var preserveFunctions = [
                     'initDone'
                 ],
-                tmp = {};
+                tmp;
 
             // override options
             options = options || {};
             options.removeEntryAndLoader = false;
+            options.removeOtherScripts = false;
 
             close(options);
 
             // preverse PlugBot functions
-            for (i = 0; i !== preserveFunctions.length; i += 1) {
-                tmp[preserveFunctions[i]] = Plugbot[preserveFunctions[i]];
-            }
+            tmp = _.pick(Plugbot, preserveFunctions);
 
             // re-declare namespace
             delete window.Plugbot;
             window.Plugbot = {};
 
             // add back preserved functions
-            for (i = 0; i !== preserveFunctions.length; i += 1) {
-                Plugbot[preserveFunctions[i]] = tmp[preserveFunctions[i]];
-            }
+            _.defaults(Plugbot, tmp);
 
             // init loader
             Loader.initialize();
@@ -86,7 +80,8 @@ define('Plugbot/main/Dispose', [
         options = options || {};
         _.defaults(options, {
             saveSettings: true,
-            removeEntryAndLoader: true
+            removeEntryAndLoader: true,
+            removeOtherScripts: true
         });
 
         /**
@@ -96,9 +91,6 @@ define('Plugbot/main/Dispose', [
         if (options.saveSettings) {
             Settings.saveSettings({immediate: true});
         }
-
-        // remove handlebars helpers
-        Helpers.removeHandlebarsHelpers();
 
         // remove utilities
         Plugbot.watcher.close();
@@ -123,7 +115,7 @@ define('Plugbot/main/Dispose', [
          * #4: Libraries, Loader, Entry
          */
         // remove IDs from RequireJS
-        removeDefs(options.removeEntryAndLoader);
+        removeDefs(options);
 
         // remove css files
         removeCssFiles();
@@ -132,17 +124,17 @@ define('Plugbot/main/Dispose', [
     /**
      * Remove definitions from RequireJS
      */
-    function removeDefs(removeEntryAndLoader) {
+    function removeDefs(options) {
         var i;
 
         // entry & loader
-        if (removeEntryAndLoader) {
+        if (options.removeEntryAndLoader) {
             requirejs.undef('Plugbot/Entry');
             requirejs.undef('Plugbot/Loader');
         }
 
         // core scripts
-        if ('DEBUG' === Entry.environment) {
+        if (options.removeOtherScripts) {
             for (i = 0; i !== Entry.scripts.length; i += 1) {
                 requirejs.undef(Entry.scripts[i]);
             }

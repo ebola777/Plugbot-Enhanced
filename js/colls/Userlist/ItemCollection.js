@@ -1,22 +1,14 @@
-define('Plugbot/colls/Userlist/ItemCollection', [
-    'Plugbot/models/Userlist/ItemModel'
-], function (UserlistItemModel) {
+define('Plugbot/colls/Userlist/ItemCollection', [], function () {
     'use strict';
 
     var Collection = Backbone.Collection.extend({
-        model: UserlistItemModel,
-        initialize: function () {
-            _.bindAll(this);
-        },
         comparator: function (first, second) {
             var ret = 0,
                 ascend = 1,
-                user1 = first.get('user'),
-                user2 = second.get('user'),
-                permission1 = +user1.permission,
-                permission2 = +user2.permission,
-                username1 = user1.username.toUpperCase(),
-                username2 = user2.username.toUpperCase();
+                permission1 = first.get('permission'),
+                permission2 = second.get('permission'),
+                username1 = first.get('username').toLowerCase(),
+                username2 = second.get('username').toLowerCase();
 
             if (permission1 > permission2) {
                 ret = -ascend;

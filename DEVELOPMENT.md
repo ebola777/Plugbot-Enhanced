@@ -1,6 +1,7 @@
 # Development
 
 ## Required software
+
 - A modern browser
     - ex. Chrome
 - A home network file server
@@ -19,6 +20,7 @@
 	- CSSTidy
 
 ## How to debug
+
 1. Open "bookmarks/PlugBot Enhanced LOCAL DEBUG.html" in browser and drag the
 	link to bookmark bar
 2. Open HTTP File Server, drag GitHub project root folder
@@ -27,19 +29,23 @@
 3. Enter a plug.dj room, click the bookmark "PlugBot Enhanced LOCAL DEBUG"
 
 ## How to optimize
+
 1. Install UglifyJs2
 2. Download CSSTidy and copy csstidy.exe to optimization/ folder
 3. Copy cpp/app/bin/Debug/Refactor-Debug.exe to optimization/ folder
 4. Run optimization/build.bat
 
 ## How to release
+
 1. Follow checklist PUBLISHING.md
 
 ## Beautifying
+
 1. Install js-beautify
 2. Run any bat file under beautifying/ folder
 
 ## C++ projects
+
 - Refactor-Debug <br>
 Refactors debug.js to release.js. release.js will be merged with other scripts
 after optimization.

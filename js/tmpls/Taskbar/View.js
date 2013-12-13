@@ -11,10 +11,10 @@ define('Plugbot/tmpls/Taskbar/View', [
         },
         template:
             '<div class="plugbot-taskbar">' +
-            '    <div class="{{getName elContent}}">' +
-            '        <ul class="{{getName elContainer}}"><\/ul>' +
+            '    <div class="{{elContent}}">' +
+            '        <ul class="{{elContainer}}"><\/ul>' +
             '    <\/div>' +
-            '    <div class="{{getName elHandle}}"><\/div>' +
+            '    <div class="{{elHandle}}"><\/div>' +
             '<\/div>'
     });
 

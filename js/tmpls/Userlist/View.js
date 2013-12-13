@@ -6,16 +6,18 @@ define('Plugbot/tmpls/Userlist/View', [
     var View = BaseTemplate.extend({
         elements: {
             elHead: '.head',
-            elWrapList: '.wrap-list',
-            elList: '.list'
+            elWrapUsers: '.wrap-users',
+            elUsers: '.users',
+            clsHead: '.row-head',
+            clsUsers: '.row-users'
         },
         template:
-            '<div class="row-head">' +
-            '    <div class="{{getName elHead}}"><\/div>' +
+            '<div class="{{clsHead}}">' +
+            '    <div class="{{elHead}}"><\/div>' +
             '<\/div>' +
-            '<div class="row-list">' +
-            '    <div class="{{getName elWrapList}}">' +
-            '        <ul class="{{getName elList}}"><\/ul>' +
+            '<div class="{{clsUsers}}">' +
+            '    <div class="{{elWrapUsers}}">' +
+            '        <ul class="{{elUsers}}"><\/ul>' +
             '    <\/div>' +
             '<\/div>'
     });

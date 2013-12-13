@@ -101,7 +101,7 @@ echo.
 echo # Optimizing css...
 set /p options=<"%FILE_OPTIONS_CSS%"
 echo Options: %options%
-call csstidy "..\css\style.css" %options% "..\css\style.min.css"
+call csstidy "%DIR_CSS%\style.css" %options% "%DIR_CSS%\style.min.css"
 echo.
 
 echo.

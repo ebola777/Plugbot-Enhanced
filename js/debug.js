@@ -4,9 +4,6 @@
 // TODO selectable sort method
 // TODO group users by accordion
 // TODO menu in taskbar
-// TODO comparatpr sort by mutiple fields -> more convenient way
-// TODO make userlist render like taskbar
-// TODO decouple MainUi and Userlist
 // TODO decouple WindowManager and FloatedWindow
 
 /**
@@ -60,7 +57,7 @@
         delete window.Plugbot;
     };
 
-    // called when PlugBot has been initialized
+    // called when Plugbot has been initialized
     Plugbot.initDone = function () {
         // custom debug code
         // (DEBUG)
@@ -82,13 +79,12 @@
 
         // custom debug code
         // (DEBUG)
-        // add global variables for debugging
-        window.req('Plugbot/Entry', 'PBE');
+        //window.req('Plugbot/Entry', 'PBE');
     });
 }());
 
 /**
- * PlugBot entry
+ * Plugbot entry
  */
 define('Plugbot/Entry', [], function () {
     'use strict';
@@ -111,13 +107,12 @@ define('Plugbot/Entry', [], function () {
              * Base
              */
                 'Plugbot/base/Events',
+                'Plugbot/base/SubView',
                 'Plugbot/base/Template',
                 'Plugbot/base/Timer',
             /**
              * Collections
              */
-                // main UI
-                'Plugbot/colls/MainUi/ItemCollection',
                 // taskbar
                 'Plugbot/colls/Taskbar/ItemCollection',
                 // userlist
@@ -127,10 +122,11 @@ define('Plugbot/Entry', [], function () {
              */
                 // floated window
                 'Plugbot/events/FloatedWindow/Events',
+                // site
+                'Plugbot/events/site/Events',
+                'Plugbot/events/site/RoomSize',
                 // taskbar
                 'Plugbot/events/Taskbar/ItemEvents',
-                // site
-                'Plugbot/events/SiteEvents',
             /**
              * Main
              */
@@ -144,14 +140,14 @@ define('Plugbot/Entry', [], function () {
                 // floated window
                 'Plugbot/models/FloatedWindow/Model',
                 // main UI
-                'Plugbot/models/MainUi/ItemModel',
                 'Plugbot/models/MainUi/Model',
                 // taskbar
                 'Plugbot/models/Taskbar/ItemModel',
                 'Plugbot/models/Taskbar/Model',
                 // userlist
-                'Plugbot/models/Userlist/ItemModel',
+                'Plugbot/models/Userlist/HeadModel',
                 'Plugbot/models/Userlist/Model',
+                'Plugbot/models/Userlist/UsersModel',
             /**
              * Storage
              */
@@ -163,7 +159,7 @@ define('Plugbot/Entry', [], function () {
                 // floated window
                 'Plugbot/tmpls/FloatedWindow/View',
                 // main UI
-                'Plugbot/tmpls/MainUi/ItemView',
+                'Plugbot/tmpls/MainUi/View',
                 // taskbar
                 'Plugbot/tmpls/Taskbar/ItemView',
                 'Plugbot/tmpls/Taskbar/View',
@@ -188,7 +184,6 @@ define('Plugbot/Entry', [], function () {
                 // layout
                 'Plugbot/views/layout/TableLayout',
                 // main UI
-                'Plugbot/views/MainUi/ItemView',
                 'Plugbot/views/MainUi/View',
                 // taskbar
                 'Plugbot/views/Taskbar/View',
@@ -251,7 +246,7 @@ define('Plugbot/Entry', [], function () {
 });
 
 /**
- * PlugBot loader
+ * Plugbot loader
  * order: initialize -> loadScript, loadCss -> fileDone -> loadDep
  */
 define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
@@ -323,7 +318,7 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
                     numFiles += 1;
                 }
 
-                // push dependencies directly if there is nothing to load
+                // load dependencies directly if there is nothing to load
                 if (0 === numFiles) {
                     this.loadDep();
                     return;
@@ -402,7 +397,7 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
                     textError: 'Unknown'
                 });
 
-                alert('Failed to load PlugBot file, stopping now.\n' +
+                alert('Failed to load Plugbot file, stopping now.\n' +
                     '\n' +
                     'File: ' + url + '\n' +
                     'Error: ' + options.textError);

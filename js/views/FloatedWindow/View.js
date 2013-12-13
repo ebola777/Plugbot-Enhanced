@@ -1,51 +1,61 @@
 define('Plugbot/views/FloatedWindow/View', [
     'Plugbot/events/FloatedWindow/Events',
-    'Plugbot/models/FloatedWindow/Model',
+    'Plugbot/events/site/Events',
     'Plugbot/tmpls/FloatedWindow/View',
     'Plugbot/utils/Watcher',
     'Plugbot/views/utils/Ui',
     'Plugbot/views/utils/UiHelpers'
-], function (FloatedWindowEvents, FloatedWindowModel,
-             FloatedWindowViewTemplate, Watcher, Ui, UiHelpers) {
+], function (FloatedWindowEvents, SiteEvents, FloatedWindowTemplate, Watcher,
+             Ui, UiHelpers) {
     'use strict';
 
     var View = Backbone.View.extend({
-        defaults: function () {
-            return {
-                /**
-                 * Options
-                 */
-                dispatcher: _.clone(FloatedWindowEvents),
-                /**
-                 * Runtime
-                 */
-                template: undefined,
-                // if window has been rendered
-                hasRenderedWindow: false,
-                // if body has been rendered
-                hasRenderedBody: false,
-                // the view rendered in the body
-                bodyView: undefined,
-                // table layout
-                tableLayout: undefined,
-                // title is showed as text or callsign
-                nowNarrowAction: this.NarrowActions.expanded
-            };
-        },
         events: {
             'mouseenter': 'onMouseEnter',
             'mouseleave': 'onMouseLeave'
         },
-        TEMPLATE: FloatedWindowViewTemplate,
         initialize: function () {
-            _.bindAll(this);
-            _.defaults(this.options, this.defaults());
+            _.bindAll(this, 'resizeBody', 'resizeTableLayout',
+                'onClickControlBoxButton');
 
-            // init template
-            this.options.template = new this.TEMPLATE({view: this});
+            /**
+             * Runtime options
+             */
+            this.NarrowActions = {
+                none: 0,
+                hidden: 1,
+                callsign: 2,
+                expanded: 3
+            };
+            this.Status = {
+                hidden: 0,
+                minimized: 1,
+                normal: 2
+            };
+            this.minWidth = 8 * 20;
+            this.minHeight = 8 * 5;
+            this.buttonClasses = [
+                'ui-icon-minus',
+                'ui-icon-extlink',
+                'ui-icon-close'
+            ];
+            this.buttonNames = [
+                'minimize',
+                'maximize',
+                'close'
+            ];
+            // title is showed as text or callsign
+            this.nowNarrowStatus = this.NarrowActions.expanded;
+            // dispatcher
+            this.dispatcher = FloatedWindowEvents.getDispatcher();
+            // template
+            this.template = new FloatedWindowTemplate({view: this});
+            // the view rendered in the body
+            this.bodyView = undefined;
+            // elements of control box
+            this.elemControlBox = undefined;
 
-            // bind events
-            this.listenTo(this.model, 'change', this.onChangeAll);
+            // model events
             this.listenTo(this.model, 'change:visible', this.onChangeVisible);
             this.listenTo(this.model, 'change:zIndex', this.onChangeZIndex);
             this.listenTo(this.model, 'change:x change:y', this.onChangePos);
@@ -56,41 +66,66 @@ define('Plugbot/views/FloatedWindow/View', [
             this.listenTo(this.model, 'change:draggable',
                 this.onChangeDraggable);
 
-            // hide
-            this.hide();
+            // listens to site events
+            this.listenToSiteEvents();
         },
-        NarrowActions: FloatedWindowModel.prototype.NarrowActions,
-        Status: FloatedWindowModel.prototype.Status,
-        minWidth: 8 * 20,
-        minHeight: 8 * 5,
-        buttonClasses: [
-            'ui-icon-minus',
-            'ui-icon-extlink',
-            'ui-icon-close'
-        ],
-        buttonNames: [
-            'minimize',
-            'maximize',
-            'close'
-        ],
-        FIXED_ACCURACY: 2,
         render: function () {
-            var that = this,
-                i,
-                elemControlBox;
+            var that = this;
 
             // render
-            this.options.template
+            this.template
                 .setSelf({
                     textTitle: this.model.get('title')
                 })
-                .cacheElements();
+                .cacheElements()
+                .setElementIds();
+
+            // render control boxes
+            this.renderControlBoxes();
+
+            // hide first
+            this.hide();
+
+            // set css
+            this.$el.css({
+                position: 'absolute',
+                left: this.model.get('x'),
+                top: this.model.get('y'),
+                width: this.model.get('width'),
+                height: this.model.get('height'),
+                'min-width': this.minWidth,
+                'min-height': this.minHeight,
+                'z-index': this.model.get('zIndex')
+            });
 
             // set scheme
             this.$el.addClass('scheme-default-plugbot-floated-window');
 
-            // get elements
-            elemControlBox = [
+            // set up body classname
+            this.$elBody.addClass(this.model.get('bodyClass'));
+
+            // bind UI events
+            this.bindUiEvents();
+
+            // render body view
+            require([this.model.get('view')], function (View) {
+                that.bodyView = new View({
+                    el: that.$elBody,
+                    moduleWindow: that.model,
+                    dispatcherWindow: that.dispatcher
+                });
+
+                that.bodyView.render();
+                that.afterRenderBody();
+            });
+
+            return this;
+        },
+        renderControlBoxes: function () {
+            var i, elemControlBox;
+
+            // get elements of control box
+            this.elemControlBox = elemControlBox = [
                 this.$elMinimize,
                 this.$elMaximize,
                 this.$elClose
@@ -105,59 +140,14 @@ define('Plugbot/views/FloatedWindow/View', [
                     text: false
                 });
 
-                // assign index
-                elemControlBox[i].data('name', this.buttonNames[i]);
-
                 // add events
                 elemControlBox[i].on('click', this.onClickControlBoxButton);
             }
-
-            // set up body classname
-            this.$elBody.addClass(this.model.get('bodyClass'));
-
-            // set up window attributes
-            this.$el.css({
-                position: 'absolute',
-                left: this.model.get('x'),
-                top: this.model.get('y'),
-                width: this.model.get('width'),
-                height: this.model.get('height'),
-                'min-width': this.minWidth,
-                'min-height': this.minHeight,
-                'z-index': this.model.get('zIndex')
-            });
-
-            // bind UI events
-            this.bindUiEvents();
-
-            // set up afterRender
-            Plugbot.watcher.addFn(function () {
-                var ret;
-
-                if (that.$el.is(':visible')) {
-                    that.afterRender();
-                    that.options.hasRenderedWindow = true;
-                    ret = 0;
-                }
-
-                return ret;
-            });
-
-            // render body view
-            require([this.model.get('view')], function (View) {
-                that.options.bodyView = new View({
-                    el: that.$elBody,
-                    modWindow: that.model,
-                    dispatcherWindow: that.options.dispatcher
-                });
-                that.options.bodyView.render();
-                that.show();
-                that.options.hasRenderedBody = true;
-            });
-
-            return this;
         },
-        afterRender: function () {
+        afterRenderBody: function () {
+            // #1: show
+            this.show();
+
             // update title
             this.updateTitle();
 
@@ -167,34 +157,22 @@ define('Plugbot/views/FloatedWindow/View', [
             // resize table layout
             this.resizeTableLayout();
 
-            this.options.dispatcher.dispatch('AFTER_RENDER');
+            this.dispatcher.dispatch('AFTER_RENDER');
         },
         show: function () {
             this.model.set('visible', true);
-            this.resizeBody();
 
-            this.options.dispatcher.dispatch('SHOW');
+            this.dispatcher.dispatch('SHOW');
         },
         hide: function () {
             this.model.set('visible', false);
 
-            this.options.dispatcher.dispatch('HIDE');
-        },
-        getBodyView: function () {
-            return this.options.bodyView;
-        },
-        getRemainingHeaderSpace: function (safeDistance) {
-            return this.$elHeader.width() -
-                this.$elTitle.outerWidth(true) -
-                this.$elControlBox.outerWidth(true) -
-                safeDistance;
+            this.dispatcher.dispatch('HIDE');
         },
         resizeBody: function () {
-            if (this.model.get('visible')) {
-                // fit body to parent
-                UiHelpers.fitElement(this.$elBody, this.$el, 'both',
-                    0, -this.$elHeader.outerHeight(true));
-            }
+            // fit body to parent
+            UiHelpers.fitElement(this.$elBody, this.$el, 'both', 0,
+                -this.$elHeader.outerHeight(true));
         },
         resizeTableLayout: function () {
             var tableLayout = this.model.get('tableLayout');
@@ -211,26 +189,26 @@ define('Plugbot/views/FloatedWindow/View', [
                 remainingWidth,
                 safeDistance = 8;
 
-            switch (this.options.nowNarrowAction) {
+            switch (this.nowNarrowStatus) {
             case NarrowActions.expanded:
-                remainingWidth = this.getRemainingHeaderSpace(safeDistance);
+                remainingWidth = this._getRemainingHeaderSpace(safeDistance);
 
                 if (remainingWidth < 0) {
                     switch (narrowAction) {
                     case NarrowActions.none:
                         this.$el.css('min-width',
                             this.$el.width() - remainingWidth);
-                        this.options.nowNarrowAction = NarrowActions.none;
+                        this.nowNarrowStatus = NarrowActions.none;
 
                         break;
                     case NarrowActions.hidden:
                         this.$elTitle.hide();
-                        this.options.nowNarrowAction = NarrowActions.hidden;
+                        this.nowNarrowStatus = NarrowActions.hidden;
 
                         break;
                     case NarrowActions.callsign:
                         this.$elTitle.text('<' + callsign + '>');
-                        this.options.nowNarrowAction = NarrowActions.callsign;
+                        this.nowNarrowStatus = NarrowActions.callsign;
 
                         break;
                     }
@@ -243,10 +221,10 @@ define('Plugbot/views/FloatedWindow/View', [
                 break;
             case NarrowActions.hidden:
                 this.$elTitle.text(title).show();
-                remainingWidth = this.getRemainingHeaderSpace(safeDistance);
+                remainingWidth = this._getRemainingHeaderSpace(safeDistance);
 
                 if (remainingWidth >= 0) {
-                    this.options.nowNarrowAction = NarrowActions.expanded;
+                    this.nowNarrowStatus = NarrowActions.expanded;
                 } else {
                     this.$elTitle.hide();
                 }
@@ -254,10 +232,10 @@ define('Plugbot/views/FloatedWindow/View', [
                 break;
             case NarrowActions.callsign:
                 this.$elTitle.text(title);
-                remainingWidth = this.getRemainingHeaderSpace(safeDistance);
+                remainingWidth = this._getRemainingHeaderSpace(safeDistance);
 
                 if (remainingWidth >= 0) {
-                    this.options.nowNarrowAction = NarrowActions.expanded;
+                    this.nowNarrowStatus = NarrowActions.expanded;
                 } else {
                     this.$elTitle.text('<' + callsign + '>');
                 }
@@ -305,43 +283,36 @@ define('Plugbot/views/FloatedWindow/View', [
                     start: function (e, ui) {
                         // iframe fix
                         iframeFixObj =
-                            UiHelpers.iframeFix($(Ui.plugdj.playback));
+                            UiHelpers.iframeFix(Ui.plugdj.$playback);
 
-                        // resize table layout if it exists
-                        if (undefined !== that.model.get('tableLayout')) {
-                            watcherTableLayout = new Watcher();
-                            watcherTableLayout.addFn(that.resizeTableLayout);
-                        }
+                        // use a watcher to trottle actions
+                        watcherTableLayout = new Watcher();
+                        watcherTableLayout.addFn(that.resizeTableLayout);
 
-                        that.options.dispatcher.dispatch('RESIZE_START',
-                            [e, ui]);
+                        that.dispatcher.dispatch('RESIZE_START',
+                            {e: e, ui: ui});
                     },
                     resize: function (e, ui) {
                         that.updateTitle();
-
-                        // fit body to parent
                         that.resizeBody();
 
-                        that.options.dispatcher.dispatch('RESIZE_NOW',
-                            [e, ui]);
+                        that.dispatcher.dispatch('RESIZE_NOW', {e: e, ui: ui});
                     },
                     stop: function (e, ui) {
-                        // iframe fix
-                        UiHelpers.removeIframeFix(iframeFixObj);
+                        // close iframe fix
+                        iframeFixObj.close();
 
-                        // table layout
-                        if (undefined !== watcherTableLayout) {
-                            watcherTableLayout.close();
-                        }
+                        // close the watcher
+                        watcherTableLayout.close();
 
                         // record the size
                         that.model.set({
-                            width: that._getFixed(ui.size.width),
-                            height: that._getFixed(ui.size.height)
+                            width: ui.size.width,
+                            height: ui.size.height
                         });
 
-                        that.options.dispatcher.dispatch('RESIZE_STOP',
-                            [e, ui]);
+                        that.dispatcher.dispatch('RESIZE_STOP',
+                            {e: e, ui: ui});
                     }
                 });
             }
@@ -375,10 +346,9 @@ define('Plugbot/views/FloatedWindow/View', [
                             });
 
                         iframeFixObj =
-                            UiHelpers.iframeFix($(Ui.plugdj.playback));
+                            UiHelpers.iframeFix(Ui.plugdj.$playback);
 
-                        that.options.dispatcher.dispatch('DRAG_START',
-                            [e, ui]);
+                        that.dispatcher.dispatch('DRAG_START', {e: e, ui: ui});
                     },
                     /**
                      * A bad fix for jquery UI bug caused by zooming in
@@ -391,31 +361,53 @@ define('Plugbot/views/FloatedWindow/View', [
                         ui.position.top -= diffOfs.Y;
 
                         // event handler, not a part of the fix
-                        that.options.dispatcher.dispatch('DRAG_NOW', [e, ui]);
+                        that.dispatcher.dispatch('DRAG_NOW', {e: e, ui: ui});
                     },
                     stop: function (e, ui) {
-                        UiHelpers.removeIframeFix(iframeFixObj);
+                        iframeFixObj.close();
 
                         // record size
                         that.model.set({
-                            x: that._getFixed(ui.position.left),
-                            y: that._getFixed(ui.position.top)
+                            x: ui.position.left,
+                            y: ui.position.top
                         });
 
-                        that.options.dispatcher.dispatch('DRAG_STOP', [e, ui]);
+                        that.dispatcher.dispatch('DRAG_STOP', {e: e, ui: ui});
                     }
                 });
             }
         },
+        listenToSiteEvents: function () {
+            var that = this,
+                disprSite = SiteEvents.getDispatcher();
+
+            this.listenTo(disprSite, disprSite.RESIZE, function (options) {
+                var ratio = options.ratio;
+
+                if (this.model.get('visible')) {
+                    that.resizeBody();
+
+                    that.model.set('x', that.model.get('x') * ratio.width);
+                    that.model.set('y', that.model.get('y') * ratio.height);
+                } else {
+                    that.model.set('oldX',
+                        that.model.get('oldX') * ratio.width);
+                    that.model.set('oldY',
+                        that.model.get('oldY') * ratio.height);
+                }
+            });
+        },
         onMouseEnter: function () {
-            this.options.dispatcher.dispatch('MOUSE_ENTER');
+            this.dispatcher.dispatch('MOUSE_ENTER');
         },
         onMouseLeave: function () {
-            this.options.dispatcher.dispatch('MOUSE_LEAVE');
+            this.dispatcher.dispatch('MOUSE_LEAVE');
         },
         onChangeVisible: function () {
             if (this.model.get('visible')) {
                 this.$el.show();
+
+                this.resizeBody();
             } else {
                 this.$el.hide();
             }
@@ -437,6 +429,7 @@ define('Plugbot/views/FloatedWindow/View', [
         },
         onClickControlBoxButton: function (e) {
             var that = this,
+                tmplElem = this.template.elements,
                 options = {
                     cancel: false,
                     enabledCallback: false,
@@ -447,20 +440,17 @@ define('Plugbot/views/FloatedWindow/View', [
                     }
                 };
 
-            switch ($(e.currentTarget).data('name')) {
-            case 'minimize':
-                this.options.dispatcher.dispatch('CONTROLBOX_MINIMIZE',
-                    options);
+            switch ($(e.currentTarget).data('id')) {
+            case tmplElem.elMinimize:
+                this.dispatcher.dispatch('CONTROLBOX_MINIMIZE', options);
 
                 break;
-            case 'maximize':
-                this.options.dispatcher.dispatch('CONTROLBOX_MAXIMIZE',
-                    options);
+            case tmplElem.elMaximize:
+                this.dispatcher.dispatch('CONTROLBOX_MAXIMIZE', options);
 
                 break;
-            case 'close':
-                this.options.dispatcher.dispatch('CONTROLBOX_CLOSE',
-                    options);
+            case tmplElem.elClose:
+                this.dispatcher.dispatch('CONTROLBOX_CLOSE', options);
 
                 if (!options.enabledCallback) {
                     // TODO
@@ -471,17 +461,25 @@ define('Plugbot/views/FloatedWindow/View', [
                 break;
             }
         },
-        onChangeAll: function () {
-            this.options.dispatcher.dispatch('CHANGEANY_MODEL');
-        },
-        _getFixed: function (num) {
-            return +num.toFixed(this.FIXED_ACCURACY);
+        _getRemainingHeaderSpace: function (safeDistance) {
+            return this.$elHeader.width() -
+                this.$elTitle.outerWidth(true) -
+                this.$elControlBox.outerWidth(true) -
+                safeDistance;
         },
         close: function () {
-            this.remove();
+            var i,
+                elemControlBox = this.elemControlBox;
+
+            // close control box events
+            for (i = 0; i !== elemControlBox.length; i += 1) {
+                elemControlBox[i].off();
+            }
 
             // close body view
-            this.options.bodyView.close();
+            this.bodyView.close();
+
+            this.remove();
         }
     });
 

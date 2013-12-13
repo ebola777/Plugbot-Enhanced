@@ -1,4 +1,5 @@
 define('Plugbot/views/Userlist/View', [
+    'Plugbot/base/SubView',
     'Plugbot/models/Userlist/Model',
     'Plugbot/tmpls/Userlist/View',
     'Plugbot/utils/APIBuffer',
@@ -6,62 +7,41 @@ define('Plugbot/views/Userlist/View', [
     'Plugbot/views/layout/TableLayout',
     'Plugbot/views/Userlist/HeadView',
     'Plugbot/views/Userlist/UsersView'
-], function (UserlistModel, UserlistViewTemplate, APIBuffer, Ticker,
+], function (BaseSubView, UserlistModel, UserlistTemplate, APIBuffer, Ticker,
              TableLayout, UserlistHeadView, UserlistUsersView) {
     'use strict';
 
-    var View = Backbone.View.extend({
-        defaults: function () {
+    var View = BaseSubView.extend({
+        options: function () {
             return {
-                /**
-                 * Options
-                 */
-                modWindow: undefined,
-                dispatcherWindow: undefined,
-                renderOverElapsed: 5,
-                ticker: new Ticker({interval: '12 hz'}),
-                /**
-                 * Runtime
-                 */
-                template: undefined,
-                pendingRenderHead: false,
-                pendingRenderList: false,
-                tableLayout: undefined,
-                viewHead: undefined,
-                viewList: undefined
+                moduleWindow: undefined,
+                dispatcherWindow: undefined
             };
         },
-        model: new UserlistModel(),
-        TEMPLATE: UserlistViewTemplate,
         initialize: function () {
-            _.bindAll(this);
-            _.defaults(this.options, this.defaults());
+            var tmpl;
 
-            // init template
-            this.options.template = new this.TEMPLATE({view: this});
+            _.bindAll(this, 'renderHead', 'renderUsers');
 
-            // listen to API
-            this.listenToAPI();
-        },
-        render: function () {
-            this.model.updateAll();
+            // parent class
+            this.parent = BaseSubView.prototype;
+            this.parent.initialize.call(this);
 
-            // render
-            this.options.template
-                .setHtml()
-                .cacheElements();
+            // set model
+            this.model = new UserlistModel();
 
-            // set scheme
-            this.$el
-                .addClass('scheme-default-plugbot-userlist');
-
-            // create a table layout
-            this.options.tableLayout = new TableLayout({
+            // runtime options
+            this.renderOverElapsed = 5;
+            this.ticker = new Ticker({interval: 'optimal'});
+            this.pendingRenderHead = false;
+            this.pendingRenderUsers = false;
+            this.template = tmpl = new UserlistTemplate({view: this});
+            this.tableLayout = new TableLayout({
                 el: this.$el,
                 display: 'column',
                 classes: [
-                    'row-head',
-                    'row-list'
+                    tmpl.getElement('clsHead'),
+                    tmpl.getElement('clsUsers')
                 ],
                 values: [
                     0,
@@ -77,29 +57,36 @@ define('Plugbot/views/Userlist/View', [
                 ]
             });
 
+            // listen to API
+            this.listenToAPI();
+        },
+        render: function () {
+            // render
+            this.template
+                .setHtml()
+                .cacheElements();
+
+            // set scheme
+            this.$el
+                .addClass('scheme-default-plugbot-userlist');
+
             // let window know table layout
-            this.options.modWindow.set('tableLayout',
-                this.options.tableLayout);
+            this.options.moduleWindow.set('tableLayout', this.tableLayout);
 
-            // init views
-            this.options.viewHead = new UserlistHeadView({
-                model: this.model,
-                el: this.$elHead
-            });
-            this.options.viewList = new UserlistUsersView({
-                model: this.model,
-                el: this.$elList
-            });
+            // render table layout
+            this.tableLayout.render();
 
-            // table layout
-            this.options.tableLayout.render();
-            // head
-            this.options.viewHead.render();
-            // users
-            this.options.viewList.render();
-
-            // resize table layout
-            this.options.tableLayout.resize();
+            // render sub-views
+            this
+                .subViews({
+                    head: new UserlistHeadView({
+                        el: this.$elHead
+                    }),
+                    users: new UserlistUsersView({
+                        el: this.$elUsers
+                    })
+                })
+                .renderSub();
 
             // listen to window events
             this.listenToWindow();
@@ -107,41 +94,42 @@ define('Plugbot/views/Userlist/View', [
             return this;
         },
         renderHead: function () {
-            this.model.updateWaitList();
-            this.options.viewHead.render();
-
-            this.options.pendingRenderHead = false;
+            this.renderSub('head');
 
             return this;
         },
-        renderList: function () {
-            this.model.updateUsers();
-            this.options.viewList.render();
-
-            this.options.pendingRenderList = false;
+        renderUsers: function () {
+            this.renderSub('users');
 
             return this;
+        },
+        updateListRearSpace: function () {
+            var that = this;
+
+            this.ticker.add('update-users-rear-space', function () {
+                that.$elUsers.css('padding-bottom',
+                    0.5 * that.$elWrapUsers.height());
+            });
         },
         listenToAPI: function () {
             var that = this,
                 cid = this.model.cid,
-                fnCheck = function (com) {
+                fnCheck = function (part) {
                     var ret;
 
-                    if (that.options.modWindow.get('visible')) {
-                        if (API.getTimeElapsed() >=
-                                that.options.renderOverElapsed) {
+                    if (that.options.moduleWindow.get('visible')) {
+                        if (API.getTimeElapsed() >= that.renderOverElapsed) {
                             ret = true;
                         } else {
                             ret = false;
                         }
                     } else {
-                        switch (com) {
+                        switch (part) {
                         case 'head':
-                            that.options.pendingRenderHead = true;
+                            that.pendingRenderHead = true;
                             break;
-                        case 'list':
-                            that.options.pendingRenderList = true;
+                        case 'users':
+                            that.pendingRenderUsers = true;
                             break;
                         }
 
@@ -161,71 +149,63 @@ define('Plugbot/views/Userlist/View', [
                 callback: this.renderHead
             });
 
-            APIBuffer.addListening('list-' + cid, this, [
+            APIBuffer.addListening('users-' + cid, this, [
                 API.VOTE_UPDATE,
                 API.USER_JOIN,
                 API.USER_LEAVE
             ], {
                 fnCheck: function () {
-                    return fnCheck('list');
+                    return fnCheck('users');
                 },
-                callback: this.renderList
+                callback: this.renderUsers
             });
         },
         listenToWindow: function () {
             var that = this,
-                modWindow = this.options.modWindow,
-                dispatcherWindow = this.options.dispatcherWindow;
+                moduleWindow = this.options.moduleWindow,
+                disprWindow = this.options.dispatcherWindow;
 
-            this.listenTo(modWindow, 'change:visible', function () {
-                if (modWindow.get('visible')) {
-                    that.updateUsersRearSpace();
+            this.listenTo(moduleWindow, 'change:visible', function (mod) {
+                if (mod.get('visible')) {
+                    that.updateListRearSpace();
 
-                    if (that.options.pendingRenderHead) {
+                    if (that.pendingRenderHead) {
                         that.renderHead();
+                        that.pendingRenderHead = false;
                     }
 
-                    if (that.options.pendingRenderList) {
-                        that.renderList();
+                    if (that.pendingRenderUsers) {
+                        that.renderUsers();
+                        that.pendingRenderUsers = false;
                     }
                 }
             });
 
             this
-                .listenTo(dispatcherWindow, dispatcherWindow.AFTER_RENDER,
+                .listenTo(disprWindow, disprWindow.AFTER_RENDER,
                     function () {
-                        that.updateUsersRearSpace();
+                        that.updateListRearSpace();
                     })
-                .listenTo(dispatcherWindow, dispatcherWindow.RESIZE_NOW,
+                .listenTo(disprWindow, disprWindow.RESIZE_NOW,
                     function () {
-                        that.updateUsersRearSpace();
+                        that.updateListRearSpace();
                     })
-                .listenTo(dispatcherWindow, dispatcherWindow.RESIZE_START,
+                .listenTo(disprWindow, disprWindow.RESIZE_START,
                     function () {
-                        that.updateUsersRearSpace();
+                        that.updateListRearSpace();
                     });
         },
-        updateUsersRearSpace: function () {
-            var that = this;
-
-            this.options.ticker.add('update-users-rear-space', function () {
-                that.$elList.css('padding-bottom',
-                    0.5 * that.$elWrapList.height());
-            });
-        },
-        /**
-         * Disposing
-         */
         close: function () {
-            this.remove();
+            // close utilities
+            this.ticker.close();
 
             // close views
-            this.options.tableLayout.close();
-            this.options.viewHead.close();
-            this.options.viewList.close();
+            this.tableLayout.close();
 
-            // close utilities
-            this.options.ticker.close();
+            // close sub-views
+            this.closeAllSubViews();
+
+            this.remove();
         }
     });
 

@@ -24,7 +24,7 @@
  * Stretch vertically
  */
 /**
- * Stretch both directions
+ * Stretch in both directions
  */
 /**
  * Reset Webkit margin
@@ -43,6 +43,9 @@
  */
 /**
  * Vivid
+ */
+/**
+ * Light
  */
 /**
  * Options
@@ -102,6 +105,9 @@
  * Vivid
  */
 /**
+ * Light
+ */
+/**
  * Scheme names
  */
 /**
@@ -145,7 +151,6 @@
   position: absolute;
   top: 0px;
   left: 0px;
-  display: none;
   border: 4px solid;
   border-radius: 4px;
 }
@@ -198,31 +203,101 @@
   height: 100%;
 }
 
-.plugbot-ui {
+/**
+ * Mostly desaturated
+ */
+/**
+ * Dark
+ */
+/**
+ * Very dark
+ */
+/**
+ * Bright
+ */
+/**
+ * Vivid
+ */
+/**
+ * Light
+ */
+.plugbot-main-ui {
   padding: 8px 8px 16px 8px;
   background: #0a0a0a;
 }
-.plugbot-ui p {
+.plugbot-main-ui .item {
   margin: 0px;
   padding: 8px;
+  color: red;
   cursor: pointer;
   font-variant: small-caps;
   font-size: 15px;
 }
-.plugbot-ui .item-enabled {
-  color: lawngreen;
-}
-.plugbot-ui .item-disabled {
-  color: red;
+.plugbot-main-ui .enabled {
+  color: lawngreen !important;
 }
 
+/**
+ * Mostly desaturated
+ */
+/**
+ * Dark
+ */
+/**
+ * Very dark
+ */
+/**
+ * Bright
+ */
+/**
+ * Vivid
+ */
+/**
+ * Light
+ */
+/**
+ * Scheme names
+ */
+/**
+ * Text - Floated window
+ */
+/**
+ * Border - Floated window
+ */
+/**
+ * Border - Userlist
+ */
+/**
+ * Background - Floated window
+ */
+/**
+ * Shadow - Floated window
+ */
+/**
+ * Mostly desaturated
+ */
+/**
+ * Dark
+ */
+/**
+ * Very dark
+ */
+/**
+ * Bright
+ */
+/**
+ * Vivid
+ */
+/**
+ * Light
+ */
 /**
  * Dynamic
  */
 .scheme-default-plugbot-userlist .head {
   color: #42a6dc;
 }
-.scheme-default-plugbot-userlist .wrap-list {
+.scheme-default-plugbot-userlist .wrap-users {
   border-color: #292929 !important;
 }
 
@@ -241,7 +316,7 @@
   font-size: 15px;
   font-variant: small-caps;
 }
-.plugbot-userlist .wrap-list {
+.plugbot-userlist .wrap-users {
   position: absolute;
   top: 8px;
   right: 16px;
@@ -251,24 +326,27 @@
   border-radius: 4px;
   overflow: auto;
 }
-.plugbot-userlist .list {
+.plugbot-userlist .users {
   margin: 0;
   padding: 8px 16px;
   list-style-type: none;
 }
-.plugbot-userlist .list li {
+.plugbot-userlist .users li {
   white-space: nowrap;
   margin: auto auto 8px;
 }
-.plugbot-userlist .list .userlist-item {
+.plugbot-userlist .users .item {
   cursor: pointer;
 }
-.plugbot-userlist .list .item-woot {
+.plugbot-userlist .users .item-curated {
+  color: #9966ff;
+}
+.plugbot-userlist .users .item-woot {
   color: lawngreen;
 }
-.plugbot-userlist .list .item-meh {
+.plugbot-userlist .users .item-meh {
   color: red;
 }
-.plugbot-userlist .list .item-undecided {
+.plugbot-userlist .users .item-undecided {
   color: white;
 }

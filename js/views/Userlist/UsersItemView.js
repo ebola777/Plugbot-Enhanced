@@ -1,53 +1,57 @@
 define('Plugbot/views/Userlist/UsersItemView', [
     'Plugbot/tmpls/Userlist/UsersItemView',
-    'Plugbot/utils/API'
-], function (UserlistUsersItemViewTemplate, UtilsAPI) {
+    'Plugbot/utils/API',
+    'Plugbot/views/utils/Ui'
+], function (UserlistUsersItemTemplate, UtilsAPI, Ui) {
     'use strict';
 
     var View = Backbone.View.extend({
-        defaults: function () {
-            return {
-                /**
-                 * Runtime
-                 */
-                template: undefined
-            };
-        },
-        TEMPLATE: UserlistUsersItemViewTemplate,
         initialize: function () {
-            _.bindAll(this);
-            _.defaults(this, this.defaults());
-
-            // init template
-            this.options.template = new this.TEMPLATE({view: this});
+            // runtime options
+            this.template = new UserlistUsersItemTemplate({view: this});
+        },
+        events: {
+            'click': 'onClick'
         },
         render: function () {
-            var user = this.model.get('user');
-
-            this.options.template.setSelf({
+            this.template.setSelf({
                 id: this.model.get('id'),
-                classVote: this.getClass(+user.vote),
-                text: user.username
+                clsVote: this.getClass(),
+                text: this.model.get('username')
             });
 
             return this;
         },
-        getClass: function (vote) {
-            var ret, VOTE = UtilsAPI.USER.VOTE;
+        getClass: function () {
+            var ret,
+                tmpl = this.template,
+                VOTE = UtilsAPI.USER.VOTE,
+                curated = this.model.get('curated'),
+                vote = this.model.get('vote');
 
-            switch (vote) {
-            case VOTE.WOOT:
-                ret = 'item-woot';
-                break;
-            case VOTE.UNDECIDED:
-                ret = 'item-undecided';
-                break;
-            case VOTE.MEH:
-                ret = 'item-meh';
-                break;
+            if (curated) {
+                ret = tmpl.getClass('curated');
+            } else {
+                switch (vote) {
+                case VOTE.WOOT:
+                    ret = tmpl.getClass('woot');
+                    break;
+                case VOTE.MEH:
+                    ret = tmpl.getClass('meh');
+                    break;
+                case VOTE.UNDECIDED:
+                    ret = tmpl.getClass('undecided');
+                    break;
+                }
             }
 
             return ret;
+        },
+        onClick: function () {
+            // mention
+            Ui.plugdj.$chatInputField
+                .val('@' + this.model.get('username') + ' ')
+                .focus();
         },
         close: function () {
             this.remove();

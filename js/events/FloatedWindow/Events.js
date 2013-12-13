@@ -5,7 +5,6 @@ define('Plugbot/events/FloatedWindow/Events', [
 
     //region VARIABLES =====
     var events = {
-        CHANGEANY_MODEL: 'change-any:model',
         AFTER_RENDER: 'after:render',
         SHOW: 'show',
         HIDE: 'hide',
@@ -25,6 +24,14 @@ define('Plugbot/events/FloatedWindow/Events', [
     //endregion
 
 
+    //region PUBLIC FUNCTIONS =====
+    function getDispatcher(old) {
+        return _.defaults(_.clone(events), old);
+    }
+
+    //endregion
+
+
     //region INIT =====
     (function () {
         _.extend(events, BaseEvents);
@@ -32,5 +39,7 @@ define('Plugbot/events/FloatedWindow/Events', [
 
     //endregion
 
-    return events;
+    return {
+        getDispatcher: getDispatcher
+    };
 });

@@ -5,9 +5,16 @@ define('Plugbot/tmpls/Userlist/UsersItemView', [
 
     var View = BaseTemplate.extend({
         elements: {
+            clsItem: '.item'
+        },
+        classes: {
+            curated: '.item-curated',
+            woot: '.item-woot',
+            meh: '.item-meh',
+            undecided: '.item-undecided'
         },
         template:
-            '<li class="userlist-item {{classVote}}" data-id="{{id}}">' +
+            '<li class="{{clsItem}} {{clsVote}}" data-id="{{id}}">' +
                 '{{text}}<\/li>'
     });
 
