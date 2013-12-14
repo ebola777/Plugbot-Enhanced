@@ -57,7 +57,7 @@ define('Plugbot/main/Settings', [
         // default settings
         settingsDefault = function () {
             return {
-                version: '1.0.9.pre',
+                version: '1.0.10.pre',
                 windows: {
                     MainUi: {
                         status: 'normal',

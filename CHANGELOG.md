@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.10.pre (12/14/2013)
+- [FIXED] userlist bugs
+
 ## 1.0.9.pre (12/14/2013)
 - [FIXED] userlist bugs
 
