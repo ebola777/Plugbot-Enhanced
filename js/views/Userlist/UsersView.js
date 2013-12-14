@@ -43,7 +43,8 @@ define('Plugbot/views/Userlist/UsersView', [
             UiHelpers.insertAt(newView.render().$el, this.$el, ind);
             this.setSubView(mod.get('id'), newView);
         },
-        removeOne: function (mod) {
+        removeOne: function (mod, coll, ind) {
+            UiHelpers.removeAt(this.$el, ind);
             this.closeSubView(mod.get('id'));
         },
         changeOne: function (mod) {

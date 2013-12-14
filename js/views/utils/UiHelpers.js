@@ -137,6 +137,10 @@ define('Plugbot/views/utils/UiHelpers', [
         }
     }
 
+    function removeAt(jqParent, ind) {
+        jqParent.children().eq(ind).remove();
+    }
+
     function replaceAt(jqElem, jqParent, ind) {
         jqParent.children().eq(ind).replaceWith(jqElem);
     }
@@ -214,6 +218,7 @@ define('Plugbot/views/utils/UiHelpers', [
         getMargin: getMargin,
         getMinFloatSize: getMinFloatSize,
         insertAt: insertAt,
+        removeAt: removeAt,
         replaceAt: replaceAt,
         fitElement: fitElement,
         iframeFix: iframeFix
