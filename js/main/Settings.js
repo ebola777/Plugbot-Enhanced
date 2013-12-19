@@ -7,8 +7,10 @@ define('Plugbot/main/Settings', [
     'use strict';
 
     //region VARIABLES =====
+        // version delimiter
+    var delimVersion = '.',
         // min compatible version, empty: not compatible with any older version
-    var minCompatibleVersion = '1.0.5.pre',
+        minCompatibleVersion = '1.0.5.pre',
         // read-only settings
         settingsReadOnly = function () {
             return {
@@ -57,7 +59,7 @@ define('Plugbot/main/Settings', [
         // default settings
         settingsDefault = function () {
             return {
-                version: '1.0.11.pre',
+                version: '1.0.12.pre',
                 windows: {
                     MainUi: {
                         status: 'normal',
@@ -122,7 +124,8 @@ define('Plugbot/main/Settings', [
 
         // check version
         if (undefined !== settingsUser.version) {
-            if (currentVersion === settingsUser.version) {
+            if (0 === compareVersion(currentVersion, settingsUser.version,
+                    delimVersion)) {
                 /**
                  * Same version
                  */
@@ -132,7 +135,8 @@ define('Plugbot/main/Settings', [
                  * Older version
                  */
                 if ('' !== minCompatibleVersion &&
-                        settingsUser.version >= minCompatibleVersion) {
+                        1 === compareVersion(minCompatibleVersion,
+                            settingsUser.version, delimVersion)) {
                     /**
                      * Compatible version
                      */
@@ -188,6 +192,47 @@ define('Plugbot/main/Settings', [
 
         Helpers.applyDeep(Plugbot.settings, obj);
         LocalStorage.saveSettings(obj);
+    }
+
+    function compareVersion(first, second, delim) {
+        var ret = 0,
+            i,
+            arrFirst = first.split(delim),
+            arrSecond = second.split(delim),
+            partFirst,
+            partSecond,
+            isNumeric = function (str) {
+                return !isNaN(parseFloat(str)) && isFinite(str);
+            },
+            fnToNum = function (str) {
+                var ret = str;
+
+                if (isNumeric(str)) {
+                    ret = +str;
+                }
+
+                return ret;
+            };
+
+        for (i = 0; i !== arrFirst.length &&
+                i !== arrSecond.length; i += 1) {
+            partFirst = fnToNum(arrFirst[i]);
+            partSecond = fnToNum(arrSecond[i]);
+
+            if (partFirst < partSecond) {
+                ret = 1;
+                break;
+            } else if (partFirst > partSecond) {
+                ret = -1;
+                break;
+            }
+        }
+
+        if (arrFirst.length !== arrSecond.length) {
+            ret = (arrSecond > arrFirst ? 1 : -1);
+        }
+
+        return ret;
     }
 
     //endregion
