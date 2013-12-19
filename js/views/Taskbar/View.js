@@ -7,8 +7,8 @@ define('Plugbot/views/Taskbar/View', [
     'Plugbot/views/Taskbar/ItemView',
     'Plugbot/views/utils/Ui',
     'Plugbot/views/utils/UiHelpers'
-], function (BaseSubView, TaskbarItemCollection, SiteEvents, TaskbarTemplate,
-             Countdown, TaskbarItemView, Ui, UiHelpers) {
+], function (BaseSubView, ItemCollection, SiteEvents, Template, Countdown,
+             ItemView, Ui, UiHelpers) {
     'use strict';
 
     var View = BaseSubView.extend({
@@ -27,11 +27,12 @@ define('Plugbot/views/Taskbar/View', [
             this.currentWindow = undefined;
             this.countdownSlide = new Countdown();
             this.countdownTask = new Countdown();
-            this.template = new TaskbarTemplate({view: this});
+            this.template = new Template({view: this});
 
             // set collection
-            this.collection = new TaskbarItemCollection();
+            this.collection = new ItemCollection();
 
+            // collection events
             this.listenTo(this.collection, 'add', this.addOne);
             this.listenTo(this.collection, 'remove', this.removeOne);
 
@@ -62,17 +63,16 @@ define('Plugbot/views/Taskbar/View', [
                 height: uiRoom.height()
             });
         },
-        addOne: function (mod) {
-            var newView = new TaskbarItemView({
+        addOne: function (mod, coll) {
+            var newView = new ItemView({
                     model: mod
                 }),
-                indMod;
+                ind = coll.indexOf(mod);
 
             this.setSubView(mod.cid, newView);
 
             // add element
-            indMod = this.collection.indexOf(mod);
-            UiHelpers.insertAt(newView.render().el, this.$elContainer, indMod);
+            UiHelpers.insertAt(newView.render().el, this.$elContainer, ind);
 
             // listen to child events
             this.listenToItem(newView);

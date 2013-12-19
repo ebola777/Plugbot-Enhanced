@@ -1,16 +1,16 @@
 define('Plugbot/views/Userlist/HeadView', [
     'Plugbot/models/Userlist/HeadModel',
     'Plugbot/tmpls/Userlist/HeadView'
-], function (UserlistHeadModel, UserlistHeadTemplate) {
+], function (HeadModel, HeadTemplate) {
     'use strict';
 
     var View = Backbone.View.extend({
         initialize: function () {
             // set model
-            this.model = new UserlistHeadModel();
+            this.model = new HeadModel();
 
             // runtime options
-            this.template = new UserlistHeadTemplate({view: this});
+            this.template = new HeadTemplate({view: this});
 
             // model events
             this.listenTo(this.model, 'change', this.render);

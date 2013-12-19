@@ -2,13 +2,15 @@ define('Plugbot/views/Userlist/UsersItemView', [
     'Plugbot/tmpls/Userlist/UsersItemView',
     'Plugbot/utils/API',
     'Plugbot/views/utils/Ui'
-], function (UserlistUsersItemTemplate, UtilsAPI, Ui) {
+], function (UsersItemTemplate, UtilsAPI, Ui) {
     'use strict';
 
     var View = Backbone.View.extend({
         initialize: function () {
             // runtime options
-            this.template = new UserlistUsersItemTemplate({view: this});
+            this.template = new UsersItemTemplate({view: this});
+
+            this.render();
         },
         events: {
             'click': 'onClick'

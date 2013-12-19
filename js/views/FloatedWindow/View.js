@@ -1,12 +1,12 @@
 define('Plugbot/views/FloatedWindow/View', [
     'Plugbot/events/FloatedWindow/Events',
     'Plugbot/events/site/Events',
+    'Plugbot/main/Settings',
     'Plugbot/tmpls/FloatedWindow/View',
     'Plugbot/utils/Watcher',
     'Plugbot/views/utils/Ui',
     'Plugbot/views/utils/UiHelpers'
-], function (FloatedWindowEvents, SiteEvents, FloatedWindowTemplate, Watcher,
-             Ui, UiHelpers) {
+], function (Events, SiteEvents, Settings, Template, Watcher, Ui, UiHelpers) {
     'use strict';
 
     var View = Backbone.View.extend({
@@ -39,23 +39,19 @@ define('Plugbot/views/FloatedWindow/View', [
                 'ui-icon-extlink',
                 'ui-icon-close'
             ];
-            this.buttonNames = [
-                'minimize',
-                'maximize',
-                'close'
-            ];
             // title is showed as text or callsign
             this.nowNarrowStatus = this.NarrowActions.expanded;
             // dispatcher
-            this.dispatcher = FloatedWindowEvents.getDispatcher();
+            this.dispatcher = Events.getDispatcher();
             // template
-            this.template = new FloatedWindowTemplate({view: this});
+            this.template = new Template({view: this});
             // the view rendered in the body
             this.bodyView = undefined;
             // elements of control box
             this.elemControlBox = undefined;
 
             // model events
+            this.listenTo(this.model, 'change', this.onChangeAny);
             this.listenTo(this.model, 'change:visible', this.onChangeVisible);
             this.listenTo(this.model, 'change:zIndex', this.onChangeZIndex);
             this.listenTo(this.model, 'change:x change:y', this.onChangePos);
@@ -413,6 +409,12 @@ define('Plugbot/views/FloatedWindow/View', [
         },
         onMouseLeave: function () {
             this.dispatcher.dispatch('MOUSE_LEAVE');
+        },
+        onChangeAny: function () {
+            Plugbot.settings.windows[this.model.get('name')] =
+                this.model.toJSON();
+
+            Settings.saveSettings();
         },
         onChangeVisible: function () {
             if (this.model.get('visible')) {

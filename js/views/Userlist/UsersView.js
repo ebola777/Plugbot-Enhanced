@@ -2,11 +2,12 @@ define('Plugbot/views/Userlist/UsersView', [
     'Plugbot/base/SubView',
     'Plugbot/colls/Userlist/ItemCollection',
     'Plugbot/models/Userlist/UsersModel',
+    'Plugbot/utils/Countdown',
     'Plugbot/views/Userlist/UsersItemView',
     'Plugbot/views/utils/Ui',
     'Plugbot/views/utils/UiHelpers'
-], function (BaseSubView, UserlistItemCollection, UserlistUsersModel,
-             UsersItemView, Ui, UiHelpers) {
+], function (BaseSubView, ItemCollection, UsersModel, Countdown, UsersItemView,
+             Ui, UiHelpers) {
     'use strict';
 
     var View = BaseSubView.extend({
@@ -15,37 +16,64 @@ define('Plugbot/views/Userlist/UsersView', [
             this.parent = BaseSubView.prototype;
             this.parent.initialize.call(this);
 
+            // runtime options
+            this.countdownError = new Countdown();
+            this.firstUpdateData = true;
+
             // set model
-            this.model = new UserlistUsersModel();
+            this.model = new UsersModel();
 
             // set collection
-            this.collection = new UserlistItemCollection();
+            this.collection = new ItemCollection();
 
             // collection events
-            this.listenTo(this.collection, 'add', this.addOne);
-            this.listenTo(this.collection, 'remove', this.removeOne);
-            this.listenTo(this.collection, 'change:curated change:vote',
-                this.changeOne);
-        },
-        renderFromParent: function () {
-            this.updateData();
+            this
+                .listenTo(this.collection, 'add', this.addOne)
+                .listenTo(this.collection, 'remove', this.removeOne)
+                .listenTo(this.collection,
+                    'change:vote change:curated change:username',
+                    this.changeOne);
         },
         updateData: function () {
             this.model.update();
             this.collection.set(this.model.get('users'));
+
+            this.firstUpdateData = false;
         },
-        addOne: function (mod) {
-            var ind = this.collection.indexOf(mod),
+        renderFromParent: function () {
+            this.$el.hide();
+            this.updateData();
+            this.$el.show();
+        },
+        render: function () {
+            this.collection.reset();
+            this.closeAllSubViews();
+            this.$el.empty();
+
+            this.firstUpdateData = true;
+            this.$el.hide();
+            this.updateData();
+            this.$el.show();
+        },
+        addOne: function (mod, coll) {
+            var that = this,
+                ind = coll.indexOf(mod),
                 newView = new UsersItemView({
                     model: mod
                 });
 
-            UiHelpers.insertAt(newView.render().$el, this.$el, ind);
             this.setSubView(mod.get('id'), newView);
+
+            _.defer(function () {
+                UiHelpers.insertAt(newView.$el, that.$el, ind);
+            });
+
+            this.verify();
         },
-        removeOne: function (mod, coll, options) {
-            UiHelpers.removeAt(this.$el, options.index);
+        removeOne: function (mod) {
             this.closeSubView(mod.get('id'));
+
+            this.verify();
         },
         changeOne: function (mod) {
             var ind = this.collection.indexOf(mod),
@@ -53,14 +81,85 @@ define('Plugbot/views/Userlist/UsersView', [
 
             view.model.set({
                 vote: mod.get('vote'),
-                curated: mod.get('curated')
+                curated: mod.get('curated'),
+                username: mod.get('username')
             });
 
-            UiHelpers.replaceAt(view.render().$el, this.$el, ind);
+            view.render();
+            UiHelpers.replaceAt(view.$el, this.$el, ind);
+        },
+        /**
+         * A bad fix for an unknown bug, Backbone events sometimes don't fire
+         */
+        verify: function () {
+            if (this.firstUpdateData) { return; }
+
+            var that = this,
+                i,
+                models = this.collection.models,
+                elems = this.$el.children(),
+                isError = false,
+                fnRender = function () {
+//                    console.debug('RENDER!!!');
+                    that.render();
+                };
+
+            for (i = 0; i < models.length; i += 1) {
+                if ($(elems[i]).text() !== models[i].get('username')) {
+                    isError = true;
+                    this.countdownError.add('users-error', fnRender, {
+                        countdown: 30000
+                    });
+
+                    break;
+                }
+            }
+
+            if (!isError) {
+                this.countdownError.remove('users-error');
+            }
+        },
+        checkValid: function () {
+            var ret = true, i = 0, users = API.getUsers();
+
+            _.each(this.$el.children(), function (elem) {
+                if (!ret) { return; }
+
+                var user = users[i];
+
+                elem = $(elem);
+
+                if (elem.text() !== user.username) {
+                    ret = false;
+                    return;
+                }
+
+                if (elem.hasClass('item-woot') && 1 !== user.vote) {
+                    ret = false;
+                    return;
+                }
+
+                if (elem.hasClass('item-meh') && -1 !== user.vote) {
+                    ret = false;
+                    return;
+                }
+
+                if (elem.hasClass('item-curated') && true !== user.curated) {
+                    ret = false;
+                    return;
+                }
+
+                i += 1;
+                if (i > users.length) {
+                    ret = false;
+                }
+            });
+
+            return ret;
         },
         close: function () {
-            // remove collection
-            this.collection.reset();
+            // close collection
+            this.collection.close();
 
             // remove sub-views
             this.closeAllSubViews();

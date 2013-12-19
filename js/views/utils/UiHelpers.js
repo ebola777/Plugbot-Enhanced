@@ -130,10 +130,12 @@ define('Plugbot/views/utils/UiHelpers', [
     }
 
     function insertAt(jqElem, jqParent, ind) {
-        if (0 === ind) {
-            jqParent.prepend(jqElem);
+        var jqChildren = jqParent.children();
+
+        if (jqChildren.length === ind) {
+            jqParent.append(jqElem);
         } else {
-            jqParent.children().eq(ind - 1).after(jqElem);
+            jqChildren.eq(ind).before(jqElem);
         }
     }
 

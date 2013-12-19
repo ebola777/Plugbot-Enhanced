@@ -1,7 +1,7 @@
 define('Plugbot/views/Taskbar/ItemView', [
     'Plugbot/events/Taskbar/ItemEvents',
     'Plugbot/tmpls/Taskbar/ItemView'
-], function (TaskbarItemEvents, TaskbarItemTemplate) {
+], function (ItemEvents, ItemTemplate) {
     'use strict';
 
     var View = Backbone.View.extend({
@@ -11,8 +11,8 @@ define('Plugbot/views/Taskbar/ItemView', [
         },
         initialize: function () {
             // runtime options
-            this.dispatcher = TaskbarItemEvents.getDispatcher();
-            this.template = new TaskbarItemTemplate({view: this});
+            this.dispatcher = ItemEvents.getDispatcher();
+            this.template = new ItemTemplate({view: this});
         },
         render: function () {
             this.template.setSelf({

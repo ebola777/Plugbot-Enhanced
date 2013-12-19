@@ -7,8 +7,8 @@ define('Plugbot/views/Userlist/View', [
     'Plugbot/views/layout/TableLayout',
     'Plugbot/views/Userlist/HeadView',
     'Plugbot/views/Userlist/UsersView'
-], function (BaseSubView, UserlistModel, UserlistTemplate, APIBuffer, Ticker,
-             TableLayout, UserlistHeadView, UserlistUsersView) {
+], function (BaseSubView, Model, Template, APIBuffer, Ticker, TableLayout,
+             HeadView, UsersView) {
     'use strict';
 
     var View = BaseSubView.extend({
@@ -28,14 +28,14 @@ define('Plugbot/views/Userlist/View', [
             this.parent.initialize.call(this);
 
             // set model
-            this.model = new UserlistModel();
+            this.model = new Model();
 
             // runtime options
             this.renderOverElapsed = 5;
             this.ticker = new Ticker({interval: 'optimal'});
             this.pendingRenderHead = false;
             this.pendingRenderUsers = false;
-            this.template = tmpl = new UserlistTemplate({view: this});
+            this.template = tmpl = new Template({view: this});
             this.tableLayout = new TableLayout({
                 el: this.$el,
                 display: 'column',
@@ -79,10 +79,10 @@ define('Plugbot/views/Userlist/View', [
             // render sub-views
             this
                 .subViews({
-                    head: new UserlistHeadView({
+                    head: new HeadView({
                         el: this.$elHead
                     }),
-                    users: new UserlistUsersView({
+                    users: new UsersView({
                         el: this.$elUsers
                     })
                 })
@@ -151,6 +151,7 @@ define('Plugbot/views/Userlist/View', [
 
             APIBuffer.addListening('users-' + cid, this, [
                 API.VOTE_UPDATE,
+                API.CURATE_UPDATE,
                 API.USER_JOIN,
                 API.USER_LEAVE
             ], {

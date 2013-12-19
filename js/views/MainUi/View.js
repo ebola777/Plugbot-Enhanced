@@ -1,12 +1,13 @@
 define('Plugbot/views/MainUi/View', [
     'handlebars',
+    'Plugbot/main/Settings',
     'Plugbot/models/MainUi/Model',
     'Plugbot/tmpls/MainUi/View',
     'Plugbot/utils/API',
     'Plugbot/utils/APIBuffer',
     'Plugbot/utils/Watcher',
     'Plugbot/views/utils/Ui'
-], function (Handlebars, MainUiModel, MainUiTemplate, UtilsAPI, APIBuffer,
+], function (Handlebars, Settings, Model, Template, UtilsAPI, APIBuffer,
              Watcher, Ui) {
     'use strict';
 
@@ -23,7 +24,7 @@ define('Plugbot/views/MainUi/View', [
                 'disableSkipVideo');
 
             // model
-            this.model = new MainUiModel();
+            this.model = new Model();
 
             // runtime options
             this.lastVolume = undefined;
@@ -36,9 +37,9 @@ define('Plugbot/views/MainUi/View', [
                     '    <\/p>' +
                     '<\/div>'
             );
-            this.template = new MainUiTemplate({view: this});
+            this.template = new Template({view: this});
 
-            // bind model events
+            // model events
             this.listenTo(this.model, 'change', this.onChangeAny);
 
             // listen to window events
@@ -184,12 +185,33 @@ define('Plugbot/views/MainUi/View', [
                     });
                 });
         },
-        onChangeAny: function () {
+        onChangeAny: function (e) {
+            var key, value, changed = e.changedAttributes();
+
+            // view
             if (this.options.moduleWindow.get('visible')) {
                 this.update();
             } else {
                 this.pendingUpdate = true;
             }
+
+            // model
+            for (key in changed) {
+                if (changed.hasOwnProperty(key)) {
+                    value = changed[key];
+
+                    switch (key) {
+                    case 'autoWoot':
+                        Plugbot.settings.mainUi.autoWoot = value;
+                        break;
+                    case 'autoJoin':
+                        Plugbot.settings.mainUi.autoJoin = value;
+                        break;
+                    }
+                }
+            }
+
+            Settings.saveSettings();
         },
         onClickItem: function (e) {
             var elem = $(e.currentTarget),

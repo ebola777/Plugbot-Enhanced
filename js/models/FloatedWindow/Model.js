@@ -1,6 +1,4 @@
-define('Plugbot/models/FloatedWindow/Model', [
-    'Plugbot/main/Settings'
-], function (Settings) {
+define('Plugbot/models/FloatedWindow/Model', [], function () {
     'use strict';
 
     var Model = Backbone.Model.extend({
@@ -51,14 +49,6 @@ define('Plugbot/models/FloatedWindow/Model', [
                 restireBox: false,
                 closeBox: false
             };
-        },
-        initialize: function () {
-            this.listenTo(this, 'change', this.onChangeAny);
-        },
-        onChangeAny: function () {
-            Plugbot.settings.windows[this.get('name')] = this.toJSON();
-
-            Settings.saveSettings();
         }
     });
 
