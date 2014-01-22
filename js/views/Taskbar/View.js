@@ -12,6 +12,17 @@ define('Plugbot/views/Taskbar/View', [
     'use strict';
 
     var View = BaseSubView.extend({
+        COUNTDOWN_IDS: {
+            MOUSE_LEAVE: 'mouse-leave',
+            MOUSE_ENTER: 'mouse-enter'
+        },
+        MAX_ZINDEX: 10000,
+        COUNTDOWN_MOUSE_ENTER: 100,
+        COUNTDOWN_MOUSE_LEAVE: 500,
+        COUNTDOWN_ITEM_MOUSE_ENTER: 300,
+        COUNTDOWN_ITEM_MOUSE_LEAVE: 300,
+        DURATION_ANIMATE_EXPAND: 200,
+        DURATION_ANIMATE_COLLAPSE: 200,
         events: {
             'mouseenter': 'onMouseEnter',
             'mouseleave': 'onMouseLeave'
@@ -33,8 +44,9 @@ define('Plugbot/views/Taskbar/View', [
             this.collection = new ItemCollection();
 
             // collection events
-            this.listenTo(this.collection, 'add', this.addOne);
-            this.listenTo(this.collection, 'remove', this.removeOne);
+            this
+                .listenTo(this.collection, 'add', this.addOne)
+                .listenTo(this.collection, 'remove', this.removeOne);
 
             this.bindUiEvents();
 
@@ -67,7 +79,8 @@ define('Plugbot/views/Taskbar/View', [
             var newView = new ItemView({
                     model: mod
                 }),
-                ind = coll.indexOf(mod);
+                ind = coll.indexOf(mod),
+                wnd = mod.get('window');
 
             this.setSubView(mod.cid, newView);
 
@@ -78,11 +91,12 @@ define('Plugbot/views/Taskbar/View', [
             this.listenToItem(newView);
 
             // listen to window events
-            this.listenToWindow(mod.get('window'));
+            this.listenToWindow(wnd);
         },
         removeOne: function (mod) {
             var cid = mod.cid,
-                oldView = this.getSubView(cid);
+                oldView = this.getSubView(cid),
+                wnd = mod.get('window');
 
             // resume countdowns
             this.countdownSlide.resumeAll();
@@ -93,18 +107,18 @@ define('Plugbot/views/Taskbar/View', [
 
             // stop listening
             this.stopListeningItem(oldView);
-            this.stopListeningWindow(mod.get('window'));
+            this.stopListeningWindow(wnd);
 
             // remove view
             this.closeSubView(cid);
         },
         showWindow: function (wnd) {
-            wnd.model.set({
+            wnd.model.set('zIndex', this.MAX_ZINDEX);
+
+            wnd.show({
                 x: this.$el.width() + Ui.plugdj.$window.scrollLeft(),
-                y: this.model.get('windowTop'),
-                zIndex: 10000
+                y: this.model.get('windowTop')
             });
-            wnd.show();
         },
         hideWindow: function (wnd) {
             wnd.hide();
@@ -112,12 +126,12 @@ define('Plugbot/views/Taskbar/View', [
         expand: function () {
             this.$el.animate({
                 left: 0
-            }, 200);
+            }, this.DURATION_ANIMATE_EXPAND);
         },
         collapse: function () {
             this.$el.animate({
                 left: -this.$elContent.width()
-            }, 200);
+            }, this.DURATION_ANIMATE_COLLAPSE);
         },
         bindUiEvents: function () {
             Ui.plugdj.$window.on('scroll', this.onWindowScroll);
@@ -139,37 +153,39 @@ define('Plugbot/views/Taskbar/View', [
         },
         /**
          * Listen to item events
-         * @param {{Taskbar ItemView}} view     Taskbar item view
+         * @param {{ItemView}} view     Taskbar item view
          */
         listenToItem: function (view) {
             var that = this,
                 dispatcher = view.dispatcher,
                 window = view.model.get('window'),
-                cid = view.model.cid;
+                cid = view.model.cid,
+                ID_MOUSE_LEAVE = this.COUNTDOWN_IDS.MOUSE_LEAVE + ':' + cid,
+                ID_MOUSE_ENTER = this.COUNTDOWN_IDS.MOUSE_ENTER + ':' + cid;
 
-            this.listenTo(dispatcher, dispatcher.MOUSE_ENTER,
-                function () {
-                    that.countdownTask
-                        .remove('mouse-leave:' + cid)
-                        .add('mouse-enter:' + cid, function () {
-                            that.currentWindow = window;
-                            that.showWindow(window);
-                        }, {
-                            countdown: 300
-                        });
-                });
-
-            this.listenTo(dispatcher, dispatcher.MOUSE_LEAVE,
-                function () {
-                    that.countdownTask
-                        .remove('mouse-enter:' + cid)
-                        .add('mouse-leave:' + cid, function () {
-                            that.currentWindow = undefined;
-                            that.hideWindow(window);
-                        }, {
-                            countdown: 300
-                        });
-                });
+            this
+                .listenTo(dispatcher, dispatcher.MOUSE_ENTER,
+                    function () {
+                        that.countdownTask
+                            .remove(ID_MOUSE_LEAVE)
+                            .add(ID_MOUSE_ENTER, function () {
+                                that.currentWindow = window;
+                                that.showWindow(window);
+                            }, {
+                                countdown: that.COUNTDOWN_ITEM_MOUSE_ENTER
+                            });
+                    })
+                .listenTo(dispatcher, dispatcher.MOUSE_LEAVE,
+                    function () {
+                        that.countdownTask
+                            .remove(ID_MOUSE_ENTER)
+                            .add(ID_MOUSE_LEAVE, function () {
+                                that.currentWindow = undefined;
+                                that.hideWindow(window);
+                            }, {
+                                countdown: that.COUNTDOWN_ITEM_MOUSE_LEAVE
+                            });
+                    });
         },
         /**
          * Listen to window events
@@ -180,15 +196,15 @@ define('Plugbot/views/Taskbar/View', [
                 countdownSlide = this.countdownSlide,
                 countdownTask = this.countdownTask;
 
-            this.listenTo(dispr, dispr.MOUSE_ENTER, function () {
-                countdownSlide.suspendAll();
-                countdownTask.suspendAll();
-            });
-
-            this.listenTo(dispr, dispr.MOUSE_LEAVE, function () {
-                countdownSlide.resumeAll();
-                countdownTask.resumeAll();
-            });
+            this
+                .listenTo(dispr, dispr.MOUSE_ENTER, function () {
+                    countdownSlide.suspendAll();
+                    countdownTask.suspendAll();
+                })
+                .listenTo(dispr, dispr.MOUSE_LEAVE, function () {
+                    countdownSlide.resumeAll();
+                    countdownTask.resumeAll();
+                });
         },
         stopListeningItem: function (view) {
             var dispr = view.dispatcher,
@@ -217,22 +233,22 @@ define('Plugbot/views/Taskbar/View', [
             var that = this;
 
             this.countdownSlide
-                .remove('mouse-leave')
-                .add('mouse-enter', function () {
+                .remove(this.COUNTDOWN_IDS.MOUSE_LEAVE)
+                .add(this.COUNTDOWN_IDS.MOUSE_ENTER, function () {
                     that.expand();
                 }, {
-                    countdown: 100
+                    countdown: this.COUNTDOWN_MOUSE_ENTER
                 });
         },
         onMouseLeave: function () {
             var that = this;
 
             this.countdownSlide
-                .remove('mouse-enter')
-                .add('mouse-leave', function () {
+                .remove(this.COUNTDOWN_IDS.MOUSE_ENTER)
+                .add(this.COUNTDOWN_IDS.MOUSE_LEAVE, function () {
                     that.collapse();
                 }, {
-                    countdown: 500
+                    countdown: this.COUNTDOWN_MOUSE_LEAVE
                 });
         },
         close: function () {

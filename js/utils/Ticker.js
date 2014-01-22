@@ -59,7 +59,7 @@ define('Plugbot/utils/Ticker', [], function () {
 
             this.ids[id] = setTimeout(function () {
                 // invoke
-                fn.call(that);
+                fn.apply(that);
 
                 // remove this key
                 delete that.ids[id];

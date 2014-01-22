@@ -1,37 +1,39 @@
 define('Plugbot/main/Settings', [
     'Plugbot/store/LocalStorage',
     'Plugbot/utils/Helpers',
+    'Plugbot/views/FloatedWindow/View',
     'Plugbot/views/utils/Ui',
     'Plugbot/views/utils/UiHelpers'
-], function (LocalStorage, Helpers, Ui, UiHelpers) {
+], function (LocalStorage, Helpers, FloatedWindowView, Ui, UiHelpers) {
     'use strict';
 
     //region VARIABLES =====
         // version delimiter
     var delimVersion = '.',
-        // min compatible version, empty: not compatible with any older version
+        // min compatible version
         minCompatibleVersion = '1.0.5.pre',
+        // current version
+        currentVersion = '1.0.13.pre',
+        // throttled version of saving settings function
+        throttledSaveSettings,
+        // interval of saving settings
+        throttleSaveSettingsInterval = 3000,
+        // is last saving immediate
+        lastSaveImmediate,
         // read-only settings
         settingsReadOnly = function () {
             return {
-                tickerIds: {
-                    saveSettings: 'save-settings',
-                    saveWindow: 'save-window'
-                },
-                watcherIds: {
-                    playlistVisible: 'playlist-visible'
-                },
                 tickerInterval: {
                     defaults: 1000,
-                    APICallback: 3000,
-                    saveSettings: 5000
+                    APICallback: 1000
                 },
                 windows: {
                     MainUi: {
                         name: 'MainUi',
                         bodyClass: UiHelpers.getClass(Ui.plugbot.mainUi),
                         view: 'Plugbot/views/MainUi/View',
-                        narrowAction: 'none',
+                        narrowAction: FloatedWindowView.prototype
+                            .NARROW_ACTIONS.NONE,
                         title: 'Plugbot',
                         callsign: 'PB',
                         zIndex: 22,
@@ -42,7 +44,8 @@ define('Plugbot/main/Settings', [
                         name: 'Userlist',
                         bodyClass: UiHelpers.getClass(Ui.plugbot.userlist),
                         view: 'Plugbot/views/Userlist/View',
-                        narrowAction: 'callsign',
+                        narrowAction: FloatedWindowView.prototype
+                            .NARROW_ACTIONS.CALLSIGN,
                         title: 'Userlist',
                         callsign: 'UL',
                         zIndex: 21,
@@ -56,35 +59,30 @@ define('Plugbot/main/Settings', [
                 }
             };
         },
-        // default settings
+        // default settings, will be stored at client-side
         settingsDefault = function () {
             return {
-                version: '1.0.12.pre',
+                // current version
+                version: currentVersion,
                 windows: {
                     MainUi: {
-                        status: 'normal',
-                        oldZIndex: 22,
+                        status: FloatedWindowView.prototype.STATUS.NORMAL,
                         x: 70,
                         y: 85,
-                        oldX: 70,
-                        oldY: 85,
                         width: 'auto',
-                        height: 'auto'
+                        height: 'auto',
+                        settings: {
+                            autoWoot: true,
+                            autoJoin: false
+                        }
                     },
                     Userlist: {
-                        status: 'minimized',
-                        oldZIndex: 21,
+                        status: FloatedWindowView.prototype.STATUS.MINIMIZED,
                         x: 730,
                         y: 70,
-                        oldX: 730,
-                        oldY: 70,
                         width: 8 * 30,
                         height: 8 * 50
                     }
-                },
-                mainUi: {
-                    autoWoot: true,
-                    autoJoin: false
                 }
             };
         };
@@ -95,6 +93,13 @@ define('Plugbot/main/Settings', [
     //region PUBLIC FUNCTIONS =====
     function initialize() {
         Plugbot.settings = Plugbot.settings || {};
+
+        // version info
+        Plugbot.VERSION = currentVersion;
+
+        // throttle: save settings
+        throttledSaveSettings = _.throttle(_saveSettingsImmediate,
+            throttleSaveSettingsInterval);
     }
 
     /**
@@ -104,7 +109,10 @@ define('Plugbot/main/Settings', [
     function readSettings() {
         var settingsDefaultCloned = settingsDefault(),
             settingsUser = LocalStorage.readSettings(),
-            currentVersion = settingsDefaultCloned.version,
+            cmpVer = _compareVersion(currentVersion, settingsUser.version,
+                delimVersion),
+            cmpCompatibleVer = _compareVersion(settingsUser.version,
+                minCompatibleVersion, delimVersion),
             fnGetExtendDefault = function (settings) {
                 var obj = settingsReadOnly();
 
@@ -120,35 +128,44 @@ define('Plugbot/main/Settings', [
             },
             fnUseDefault = function () {
                 Plugbot.settings = fnGetExtendDefault(settingsDefaultCloned);
+            },
+            fnUpdateVersion = function () {
+                // override version
+                Plugbot.settings.version = currentVersion;
             };
 
         // check version
         if (undefined !== settingsUser.version) {
-            if (0 === compareVersion(currentVersion, settingsUser.version,
-                    delimVersion)) {
+            /**
+             * User has used it before
+             */
+
+            if (0 === cmpVer) {
                 /**
                  * Same version
                  */
                 fnExtendSettings();
-            } else {
+            } else if (1 === cmpVer) {
                 /**
-                 * Older version
+                 * Current version is newer
                  */
-                if ('' !== minCompatibleVersion &&
-                        1 === compareVersion(minCompatibleVersion,
-                            settingsUser.version, delimVersion)) {
+                if (1 === cmpCompatibleVer) {
                     /**
-                     * Compatible version
+                     * Compatible with older version
                      */
                     fnExtendSettings();
-                    // override version
-                    Plugbot.settings.version = currentVersion;
+                    fnUpdateVersion();
                 } else {
                     /**
-                     * Incompatible version
+                     * Incompatible with older version
                      */
                     fnUseDefault();
                 }
+            } else {
+                /**
+                 * Current version is older
+                 */
+                fnUseDefault();
             }
         } else {
             /**
@@ -167,15 +184,13 @@ define('Plugbot/main/Settings', [
             immediate: false
         });
 
+        // when set to true, past throttled call will be canceled
+        lastSaveImmediate = options.immediate;
+
         if (options.immediate) {
-            saveSettingsImmediate();
+            _saveSettingsImmediate(true);
         } else {
-            // use ticker to delay action
-            Plugbot.ticker.add('saveSettings', function () {
-                saveSettingsImmediate();
-            }, {
-                interval: Plugbot.settings.tickerInterval.saveSettings
-            });
+            throttledSaveSettings();
         }
     }
 
@@ -186,50 +201,67 @@ define('Plugbot/main/Settings', [
     //endregion
 
 
-    //region PRIVATE FUNCTIONS
-    function saveSettingsImmediate() {
-        var obj = settingsDefault();
+    //region PRIVATE FUNCTIONS =====
+    function _saveSettingsImmediate(force) {
+        var obj;
 
-        Helpers.applyDeep(Plugbot.settings, obj);
-        LocalStorage.saveSettings(obj);
+        // only run when immediate flag is true or force is true
+        if (!lastSaveImmediate || force) {
+            obj = settingsDefault();
+
+            Helpers.applyDeep(Plugbot.settings, obj);
+            LocalStorage.saveSettings(obj);
+        }
     }
 
-    function compareVersion(first, second, delim) {
+    /**
+     * Compare two versions
+     * @param {string} first    First version
+     * @param {string} second   Second version
+     * @param {string} delim    Delimeter
+     * @return {number} 0: equal, 1: 1st > 2nd, -1: 1st < 2nd, null: error
+     * @private
+     */
+    function _compareVersion(first, second, delim) {
         var ret = 0,
             i,
-            arrFirst = first.split(delim),
-            arrSecond = second.split(delim),
+            arrFirst,
+            arrSecond,
             partFirst,
             partSecond,
-            isNumeric = function (str) {
-                return !isNaN(parseFloat(str)) && isFinite(str);
-            },
             fnToNum = function (str) {
                 var ret = str;
 
-                if (isNumeric(str)) {
+                if (_.isFinite(str)) {
                     ret = +str;
                 }
 
                 return ret;
             };
 
-        for (i = 0; i !== arrFirst.length &&
-                i !== arrSecond.length; i += 1) {
-            partFirst = fnToNum(arrFirst[i]);
-            partSecond = fnToNum(arrSecond[i]);
+        if (undefined === first || undefined === second) {
+            ret = null;
+        } else {
+            arrFirst = first.split(delim);
+            arrSecond = second.split(delim);
 
-            if (partFirst < partSecond) {
-                ret = 1;
-                break;
-            } else if (partFirst > partSecond) {
-                ret = -1;
-                break;
+            for (i = 0; i !== arrFirst.length &&
+                    i !== arrSecond.length; i += 1) {
+                partFirst = fnToNum(arrFirst[i]);
+                partSecond = fnToNum(arrSecond[i]);
+
+                if (partFirst > partSecond) {
+                    ret = 1;
+                    break;
+                } else if (partFirst < partSecond) {
+                    ret = -1;
+                    break;
+                }
             }
-        }
 
-        if (arrFirst.length !== arrSecond.length) {
-            ret = (arrSecond > arrFirst ? 1 : -1);
+            if (arrFirst.length !== arrSecond.length) {
+                ret = (arrFirst > arrSecond ? 1 : -1);
+            }
         }
 
         return ret;

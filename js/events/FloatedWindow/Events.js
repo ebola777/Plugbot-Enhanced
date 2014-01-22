@@ -15,18 +15,21 @@ define('Plugbot/events/FloatedWindow/Events', [
         DRAG_NOW: 'drag:now',
         DRAG_STOP: 'drag:stop',
         CONTROLBOX_MINIMIZE: 'control-box:minimize',
-        CONTROLBOX_MAXIMIZE: 'control-box:maximize',
+        CONTROLBOX_RESTORE: 'control-box:restore',
         CONTROLBOX_CLOSE: 'control-box:close',
         MOUSE_ENTER: 'mouse-enter',
-        MOUSE_LEAVE: 'mouse-leave'
+        MOUSE_LEAVE: 'mouse-leave',
+        CHANGE_POS: 'change:pos',
+        CHANGE_SIZE: 'change:size',
+        CHANGE_SETTINGS: 'change:settings'
     };
 
     //endregion
 
 
     //region PUBLIC FUNCTIONS =====
-    function getDispatcher(old) {
-        return _.defaults(_.clone(events), old);
+    function getDispatcher() {
+        return _.clone(events);
     }
 
     //endregion

@@ -6,9 +6,6 @@ define('Plugbot/views/layout/TableLayout', [
     var View = Backbone.View.extend({
         options: function () {
             return {
-                /**
-                 * Options
-                 */
                 display: undefined,
                 classes: [],
                 values: [],

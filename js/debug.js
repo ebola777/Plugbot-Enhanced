@@ -4,7 +4,6 @@
 // TODO selectable sort method
 // TODO group users by accordion
 // TODO menu in taskbar
-// TODO decouple WindowManager and FloatedWindow
 
 /**
  * (DEBUG)
@@ -122,6 +121,10 @@ define('Plugbot/Entry', [], function () {
              */
                 // floated window
                 'Plugbot/events/FloatedWindow/Events',
+                // main UI
+                'Plugbot/events/MainUi/Events',
+                // managers
+                'Plugbot/events/mgrs/WindowManager',
                 // site
                 'Plugbot/events/site/Events',
                 'Plugbot/events/site/RoomSize',
@@ -130,10 +133,13 @@ define('Plugbot/Entry', [], function () {
             /**
              * Main
              */
+                'Plugbot/main/mgrs/ResourceManager',
+                'Plugbot/main/mgrs/SiteManager',
+                'Plugbot/main/mgrs/TaskbarManager',
+                'Plugbot/main/mgrs/WindowManager',
                 'Plugbot/main/Dispose',
                 'Plugbot/main/Init',
                 'Plugbot/main/Settings',
-                'Plugbot/main/WindowManager',
             /**
              * Models
              */
@@ -258,13 +264,13 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
              * Constants
              */
             // timeout
-            timeoutLoading: 5000,
+            TIMEOUT_LOADING: 5000,
             // retry interval
-            intervalRetry: 1000,
+            INTERVAL_RETRY: 1000,
             // max retry number
-            maxNumRetry: 2,
+            MAX_NUM_RETRIES: 2,
             // load depedencies function name
-            fnNameLoadDep: 'initialize',
+            FUNC_NAME_LOAD_DEP: 'initialize',
             /**
              * Runtime
              */
@@ -357,9 +363,10 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
                     for (i = 0; i !== scriptDep.length; i += 1) {
                         ret = require(scriptDep[i]);
                         if (undefined !== ret) {
-                            fnLoadDep = ret[that.fnNameLoadDep];
-                            if (undefined !== fnLoadDep) {
-                                fnLoadDep();
+                            fnLoadDep = ret[that.FUNC_NAME_LOAD_DEP];
+
+                            if (_.isFunction(fnLoadDep)) {
+                                ret[that.FUNC_NAME_LOAD_DEP]();
                             }
                         }
                     }
@@ -416,7 +423,7 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
 
                 // get script
                 this.getScript(url, {
-                    timeout: this.timeoutLoading
+                    timeout: this.TIMEOUT_LOADING
                 }, function fnDone() {
                     if (that.aborted) { return; }
 
@@ -428,7 +435,7 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
                     numRetry += 1;
 
                     // check retry times
-                    if (numRetry === that.maxNumRetry) {
+                    if (numRetry === that.MAX_NUM_RETRIES) {
                         that.fileFail(url, {
                             textError: jqXHR.status
                         });
@@ -441,7 +448,7 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
                         if (!that.isFileLoaded(url)) {
                             that.loadScript(url, numRetry);
                         }
-                    }, that.intervalRetry);
+                    }, that.INTERVAL_RETRY);
                 });
             },
             /**
@@ -456,7 +463,7 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
                 if (this.aborted) { return; }
 
                 this.getCss(url, {
-                    timeout: this.timeoutLoading,
+                    timeout: this.TIMEOUT_LOADING,
                     classname: Entry.cssClassname
                 }, function fnDone() {
                     if (that.aborted) { return; }
@@ -469,7 +476,7 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
                     numRetry += 1;
 
                     // check retry times
-                    if (numRetry === that.maxNumRetry) {
+                    if (numRetry === that.MAX_NUM_RETRIES) {
                         that.fileFail(url, {
                             textError: 'Timeout'
                         });
@@ -482,7 +489,7 @@ define('Plugbot/Loader', ['Plugbot/Entry'], function (Entry) {
                         if (!that.isFileLoaded(url)) {
                             that.loadCss(url, numRetry);
                         }
-                    }, that.intervalRetry);
+                    }, that.INTERVAL_RETRY);
                 });
             },
             /**

@@ -1,17 +1,20 @@
 define('Plugbot/views/Userlist/View', [
     'Plugbot/base/SubView',
+    'Plugbot/main/mgrs/ResourceManager',
     'Plugbot/models/Userlist/Model',
     'Plugbot/tmpls/Userlist/View',
-    'Plugbot/utils/APIBuffer',
     'Plugbot/utils/Ticker',
     'Plugbot/views/layout/TableLayout',
     'Plugbot/views/Userlist/HeadView',
     'Plugbot/views/Userlist/UsersView'
-], function (BaseSubView, Model, Template, APIBuffer, Ticker, TableLayout,
-             HeadView, UsersView) {
+], function (BaseSubView, ResourceManager, Model, Template, Ticker,
+             TableLayout, HeadView, UsersView) {
     'use strict';
 
     var View = BaseSubView.extend({
+        TICKER_IDS: {
+            UPDATE_USERS_REAR_SPACE: 'update-users-rear-space'
+        },
         options: function () {
             return {
                 moduleWindow: undefined,
@@ -106,14 +109,16 @@ define('Plugbot/views/Userlist/View', [
         updateListRearSpace: function () {
             var that = this;
 
-            this.ticker.add('update-users-rear-space', function () {
-                that.$elUsers.css('padding-bottom',
-                    0.5 * that.$elWrapUsers.height());
-            });
+            this.ticker.add(this.TICKER_IDS.UPDATE_USERS_REAR_SPACE,
+                function () {
+                    that.$elUsers.css('padding-bottom',
+                        0.5 * that.$elWrapUsers.height());
+                });
         },
         listenToAPI: function () {
             var that = this,
                 cid = this.model.cid,
+                bufferAPI = ResourceManager.get('API-buffer'),
                 fnCheck = function (part) {
                     var ret;
 
@@ -139,7 +144,7 @@ define('Plugbot/views/Userlist/View', [
                     return ret;
                 };
 
-            APIBuffer.addListening('head-' + cid, this, [
+            bufferAPI.addListening('head:' + cid, this, [
                 API.WAIT_LIST_UPDATE,
                 API.DJ_UPDATE
             ], {
@@ -149,7 +154,7 @@ define('Plugbot/views/Userlist/View', [
                 callback: this.renderHead
             });
 
-            APIBuffer.addListening('users-' + cid, this, [
+            bufferAPI.addListening('users:' + cid, this, [
                 API.VOTE_UPDATE,
                 API.CURATE_UPDATE,
                 API.USER_JOIN,

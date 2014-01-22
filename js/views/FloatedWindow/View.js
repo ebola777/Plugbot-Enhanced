@@ -10,6 +10,25 @@ define('Plugbot/views/FloatedWindow/View', [
     'use strict';
 
     var View = Backbone.View.extend({
+        STATUS: {
+            NORMAL: 'normal',
+            HIDDEN: 'hidden',
+            MINIMIZED: 'minimized'
+        },
+        MIN_WIDTH: 8 * 20,
+        MIN_HEIGHT: 8 * 5,
+        MAX_ZINDEX: 10000,
+        NARROW_ACTIONS: {
+            NONE: 'none',
+            HIDDEN: 'hidden',
+            CALLSIGN: 'callsign',
+            EXPANDED: 'expanded'
+        },
+        CLASSES_BUTTON: [
+            'ui-icon-minus',
+            'ui-icon-extlink',
+            'ui-icon-close'
+        ],
         events: {
             'mouseenter': 'onMouseEnter',
             'mouseleave': 'onMouseLeave'
@@ -21,26 +40,8 @@ define('Plugbot/views/FloatedWindow/View', [
             /**
              * Runtime options
              */
-            this.NarrowActions = {
-                none: 0,
-                hidden: 1,
-                callsign: 2,
-                expanded: 3
-            };
-            this.Status = {
-                hidden: 0,
-                minimized: 1,
-                normal: 2
-            };
-            this.minWidth = 8 * 20;
-            this.minHeight = 8 * 5;
-            this.buttonClasses = [
-                'ui-icon-minus',
-                'ui-icon-extlink',
-                'ui-icon-close'
-            ];
             // title is showed as text or callsign
-            this.nowNarrowStatus = this.NarrowActions.expanded;
+            this.nowNarrowStatus = this.NARROW_ACTIONS.EXPANDED;
             // dispatcher
             this.dispatcher = Events.getDispatcher();
             // template
@@ -51,23 +52,21 @@ define('Plugbot/views/FloatedWindow/View', [
             this.elemControlBox = undefined;
 
             // model events
-            this.listenTo(this.model, 'change', this.onChangeAny);
-            this.listenTo(this.model, 'change:visible', this.onChangeVisible);
-            this.listenTo(this.model, 'change:zIndex', this.onChangeZIndex);
-            this.listenTo(this.model, 'change:x change:y', this.onChangePos);
-            this.listenTo(this.model, 'change:width change:height',
-                this.onChangeSize);
-            this.listenTo(this.model, 'change:resizable',
-                this.onChangeResizable);
-            this.listenTo(this.model, 'change:draggable',
-                this.onChangeDraggable);
+            this
+                .listenTo(this.model, 'change:visible', this.onChangeVisible)
+                .listenTo(this.model, 'change:zIndex', this.onChangeZIndex)
+                .listenTo(this.model, 'change:x change:y', this.onChangePos)
+                .listenTo(this.model, 'change:width change:height',
+                    this.onChangeSize)
+                .listenTo(this.model, 'change:resizable',
+                    this.onChangeResizable)
+                .listenTo(this.model, 'change:draggable',
+                    this.onChangeDraggable);
 
             // listens to site events
             this.listenToSiteEvents();
         },
         render: function () {
-            var that = this;
-
             // render
             this.template
                 .setSelf({
@@ -89,8 +88,8 @@ define('Plugbot/views/FloatedWindow/View', [
                 top: this.model.get('y'),
                 width: this.model.get('width'),
                 height: this.model.get('height'),
-                'min-width': this.minWidth,
-                'min-height': this.minHeight,
+                'min-width': this.MIN_WIDTH,
+                'min-height': this.MIN_HEIGHT,
                 'z-index': this.model.get('zIndex')
             });
 
@@ -104,18 +103,26 @@ define('Plugbot/views/FloatedWindow/View', [
             this.bindUiEvents();
 
             // render body view
+            this.renderBody();
+
+            return this;
+        },
+        renderBody: function () {
+            var that = this;
+
             require([this.model.get('view')], function (View) {
                 that.bodyView = new View({
                     el: that.$elBody,
+                    settings: that.model.get('settings'),
                     moduleWindow: that.model,
                     dispatcherWindow: that.dispatcher
                 });
 
+                that.listenToBody();
+
                 that.bodyView.render();
                 that.afterRenderBody();
             });
-
-            return this;
         },
         renderControlBoxes: function () {
             var i, elemControlBox;
@@ -131,7 +138,7 @@ define('Plugbot/views/FloatedWindow/View', [
             for (i = 0; i !== elemControlBox.length; i += 1) {
                 elemControlBox[i].button({
                     icons: {
-                        primary: this.buttonClasses[i]
+                        primary: this.CLASSES_BUTTON[i]
                     },
                     text: false
                 });
@@ -155,8 +162,16 @@ define('Plugbot/views/FloatedWindow/View', [
 
             this.dispatcher.dispatch('AFTER_RENDER');
         },
-        show: function () {
+        show: function (options) {
             this.model.set('visible', true);
+
+            options = options || {};
+            _.defaults(options, {
+                x: this.model.get('x'),
+                y: this.model.get('y')
+            });
+
+            this.updatePos(options.x, options.y);
 
             this.dispatcher.dispatch('SHOW');
         },
@@ -189,66 +204,72 @@ define('Plugbot/views/FloatedWindow/View', [
             }
         },
         updateTitle: function () {
-            var NarrowActions = this.NarrowActions,
-                narrowAction = NarrowActions[this.model.get('narrowAction')],
+            var NARROW_ACTIONS = this.NARROW_ACTIONS,
+                narrowAction = this.model.get('narrowAction'),
                 title = this.model.get('title'),
                 callsign = this.model.get('callsign'),
                 remainingWidth,
                 safeDistance = 8;
 
             switch (this.nowNarrowStatus) {
-            case NarrowActions.expanded:
+            case NARROW_ACTIONS.EXPANDED:
                 remainingWidth = this._getRemainingHeaderSpace(safeDistance);
 
                 if (remainingWidth < 0) {
                     switch (narrowAction) {
-                    case NarrowActions.none:
+                    case NARROW_ACTIONS.NONE:
                         this.$el.css('min-width',
                             this.$el.width() - remainingWidth);
-                        this.nowNarrowStatus = NarrowActions.none;
+                        this.nowNarrowStatus = NARROW_ACTIONS.NONE;
 
                         break;
-                    case NarrowActions.hidden:
+                    case NARROW_ACTIONS.HIDDEN:
                         this.$elTitle.hide();
-                        this.nowNarrowStatus = NarrowActions.hidden;
+                        this.nowNarrowStatus = NARROW_ACTIONS.HIDDEN;
 
                         break;
-                    case NarrowActions.callsign:
+                    case NARROW_ACTIONS.CALLSIGN:
                         this.$elTitle.text('<' + callsign + '>');
-                        this.nowNarrowStatus = NarrowActions.callsign;
+                        this.nowNarrowStatus = NARROW_ACTIONS.CALLSIGN;
 
                         break;
                     }
                 }
 
                 break;
-            case NarrowActions.none:
+            case NARROW_ACTIONS.NONE:
                 // not used
 
                 break;
-            case NarrowActions.hidden:
+            case NARROW_ACTIONS.HIDDEN:
                 this.$elTitle.text(title).show();
                 remainingWidth = this._getRemainingHeaderSpace(safeDistance);
 
                 if (remainingWidth >= 0) {
-                    this.nowNarrowStatus = NarrowActions.expanded;
+                    this.nowNarrowStatus = NARROW_ACTIONS.EXPANDED;
                 } else {
                     this.$elTitle.hide();
                 }
 
                 break;
-            case NarrowActions.callsign:
+            case NARROW_ACTIONS.CALLSIGN:
                 this.$elTitle.text(title);
                 remainingWidth = this._getRemainingHeaderSpace(safeDistance);
 
                 if (remainingWidth >= 0) {
-                    this.nowNarrowStatus = NarrowActions.expanded;
+                    this.nowNarrowStatus = NARROW_ACTIONS.EXPANDED;
                 } else {
                     this.$elTitle.text('<' + callsign + '>');
                 }
 
                 break;
             }
+        },
+        updatePos: function (x, y) {
+            this.$el.css({
+                left: x,
+                top: y
+            });
         },
         switchResizable: function (en) {
             if (this.model.get('resizable')) {
@@ -258,6 +279,8 @@ define('Plugbot/views/FloatedWindow/View', [
                     this.$el.resizable('disable');
                 }
             }
+
+            return this;
         },
         switchDraggable: function (en) {
             if (this.model.get('draggable')) {
@@ -268,6 +291,8 @@ define('Plugbot/views/FloatedWindow/View', [
                     this.$el.css('opacity', 1);
                 }
             }
+
+            return this;
         },
         bindUiEvents: function () {
             var that = this,
@@ -281,9 +306,9 @@ define('Plugbot/views/FloatedWindow/View', [
                     handles: 'n, e, s, w, se',
                     distance: 0,
                     grid: 8,
-                    minWidth: Math.max(this.minWidth,
+                    minWidth: Math.max(this.MIN_WIDTH,
                         this.model.get('minWidth')),
-                    minHeight: Math.max(this.minHeight,
+                    minHeight: Math.max(this.MIN_HEIGHT,
                         this.model.get('minHeight')),
                     maxWidth: this.model.get('maxWidth'),
                     maxHeight: this.model.get('maxHeight'),
@@ -310,7 +335,9 @@ define('Plugbot/views/FloatedWindow/View', [
                         iframeFixObj.close();
 
                         // close the watcher
-                        watcherTableLayout.close();
+                        watcherTableLayout
+                            .invoke()
+                            .close();
 
                         // record the size
                         that.model.set({
@@ -328,7 +355,7 @@ define('Plugbot/views/FloatedWindow/View', [
             if (this.model.get('draggable')) {
                 this.$el.draggable({
                     containment: 'document',
-                    zIndex: 10001,
+                    zIndex: this.MAX_ZINDEX,
                     handle: '.header',
                     scroll: true,
                     scrollSensitivity: 8,
@@ -389,32 +416,42 @@ define('Plugbot/views/FloatedWindow/View', [
                 disprSite = SiteEvents.getDispatcher();
 
             this.listenTo(disprSite, disprSite.RESIZE, function (options) {
-                var ratio = options.ratio;
+                var ratio = options.ratio,
+                    status = that.model.get('status');
 
-                if (that.model.get('visible')) {
-                    that.resizeBody();
+                // resize body
+                that.resizeBody();
 
-                    that.model.set('x', that.model.get('x') * ratio.width);
-                    that.model.set('y', that.model.get('y') * ratio.height);
-                } else {
-                    that.model.set('oldX',
-                        that.model.get('oldX') * ratio.width);
-                    that.model.set('oldY',
-                        that.model.get('oldY') * ratio.height);
-                }
+                // re-adjust position
+                that.model.set({
+                    x: that.model.get('x') * ratio.width,
+                    y: that.model.get('y') * ratio.height
+                });
+
+                this.dispatcher.dispatch('CHANGE_POS', {
+                    x: this.model.get('x'),
+                    y: this.model.get('y'),
+                    force: true
+                });
             });
+        },
+        listenToBody: function () {
+            var that = this,
+                disprBody = this.bodyView.dispatcher;
+
+            if (undefined !== disprBody &&
+                    undefined !== disprBody.CHANGE_SETTINGS) {
+                this.listenTo(disprBody, disprBody.CHANGE_SETTINGS,
+                    function (options) {
+                        that.dispatcher.dispatch('CHANGE_SETTINGS', options);
+                    });
+            }
         },
         onMouseEnter: function () {
             this.dispatcher.dispatch('MOUSE_ENTER');
         },
         onMouseLeave: function () {
             this.dispatcher.dispatch('MOUSE_LEAVE');
-        },
-        onChangeAny: function () {
-            Plugbot.settings.windows[this.model.get('name')] =
-                this.model.toJSON();
-
-            Settings.saveSettings();
         },
         onChangeVisible: function () {
             if (this.model.get('visible')) {
@@ -429,15 +466,28 @@ define('Plugbot/views/FloatedWindow/View', [
             this.$el.css('z-index', this.model.get('zIndex'));
         },
         onChangePos: function () {
-            this.$el.css({
-                left: this.model.get('x'),
-                top: this.model.get('y')
+            var x = this.model.get('x'),
+                y = this.model.get('y');
+
+            this.updatePos(x, y);
+
+            this.dispatcher.dispatch('CHANGE_POS', {
+                x: x,
+                y: y
             });
         },
         onChangeSize: function () {
+            var width = this.model.get('width'),
+                height = this.model.get('height');
+
             this.$el.css({
-                width: this.model.get('width'),
-                height: this.model.get('height')
+                width: width,
+                height: height
+            });
+
+            this.dispatcher.dispatch('CHANGE_SIZE', {
+                width: width,
+                height: height
             });
         },
         onClickControlBoxButton: function (e) {
@@ -459,7 +509,7 @@ define('Plugbot/views/FloatedWindow/View', [
 
                 break;
             case tmplElem.elMaximize:
-                this.dispatcher.dispatch('CONTROLBOX_MAXIMIZE', options);
+                this.dispatcher.dispatch('CONTROLBOX_RESTORE', options);
 
                 break;
             case tmplElem.elClose:
@@ -480,7 +530,7 @@ define('Plugbot/views/FloatedWindow/View', [
                 this.$elControlBox.outerWidth(true) -
                 safeDistance;
         },
-        close: function () {
+        _closeControlBoxes: function () {
             var i,
                 elemControlBox = this.elemControlBox;
 
@@ -488,6 +538,10 @@ define('Plugbot/views/FloatedWindow/View', [
             for (i = 0; i !== elemControlBox.length; i += 1) {
                 elemControlBox[i].off();
             }
+        },
+        close: function () {
+            // close control boxes
+            this._closeControlBoxes();
 
             // close body view
             this.bodyView.close();

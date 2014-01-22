@@ -2,10 +2,9 @@ define('Plugbot/main/Dispose', [
     'Plugbot/Entry',
     'Plugbot/Loader',
     'Plugbot/events/site/Events',
-    'Plugbot/main/Settings',
-    'Plugbot/main/WindowManager',
-    'Plugbot/utils/APIBuffer'
-], function (Entry, Loader, SiteEvents, Settings, WindowManager, APIBuffer) {
+    'Plugbot/main/mgrs/ResourceManager',
+    'Plugbot/main/Settings'
+], function (Entry, Loader, SiteEvents, ResourceManager, Settings) {
     'use strict';
 
     //region PUBLIC FUNCTIONS =====
@@ -29,17 +28,17 @@ define('Plugbot/main/Dispose', [
         };
 
         /**
-         * Close PlugBot
+         * Close Plugbot
          */
         Plugbot.close = function (options) {
-            close(options);
+            _close(options);
 
             // remove plugbot namespace
             delete window.Plugbot;
         };
 
         /**
-         * Reload PlugBot
+         * Reload Plugbot
          */
         Plugbot.reload = function (options) {
             var preserveFunctions = [
@@ -52,9 +51,9 @@ define('Plugbot/main/Dispose', [
             options.removeEntryAndLoader = false;
             options.removeOtherScripts = false;
 
-            close(options);
+            _close(options);
 
-            // preverse PlugBot functions
+            // preverse Plugbot functions
             tmp = _.pick(Plugbot, preserveFunctions);
 
             // re-declare namespace
@@ -76,7 +75,7 @@ define('Plugbot/main/Dispose', [
     /**
      * Close Plugbot
      */
-    function close(options) {
+    function _close(options) {
         options = options || {};
         _.defaults(options, {
             saveSettings: true,
@@ -92,13 +91,6 @@ define('Plugbot/main/Dispose', [
             Settings.saveSettings({immediate: true});
         }
 
-        // remove utilities
-        Plugbot.watcher.close();
-        Plugbot.ticker.close();
-
-        // close APIBuffer
-        APIBuffer.close();
-
         /**
          * #2: Events
          */
@@ -106,25 +98,24 @@ define('Plugbot/main/Dispose', [
         SiteEvents.removeDispatcher();
 
         /**
-         * #3: UIs
+         * #3: Resources
          */
-        // remove UIs
-        removeUis();
+        ResourceManager.close();
 
         /**
          * #4: Libraries, Loader, Entry
          */
         // remove IDs from RequireJS
-        removeDefs(options);
+        _removeDefs(options);
 
         // remove css files
-        removeCssFiles();
+        _removeCssFiles();
     }
 
     /**
      * Remove definitions from RequireJS
      */
-    function removeDefs(options) {
+    function _removeDefs(options) {
         var i;
 
         // entry & loader
@@ -144,17 +135,8 @@ define('Plugbot/main/Dispose', [
     /**
      * Remove css files
      */
-    function removeCssFiles() {
+    function _removeCssFiles() {
         $(document.head).children('.' + Entry.cssClassname).remove();
-    }
-
-    /**
-     * Remove Uis
-     */
-    function removeUis() {
-        WindowManager.removeTaskbar();
-        WindowManager.removeWindows();
-        WindowManager.removeEvents();
     }
 
     //endregion

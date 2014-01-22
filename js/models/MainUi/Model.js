@@ -5,18 +5,10 @@ define('Plugbot/models/MainUi/Model', [], function () {
         defaults: function () {
             return {
                 // item on/off
-                autoWoot: undefined,
-                autoJoin: undefined,
-                skipVideo: undefined
+                autoWoot: false,
+                autoJoin: false,
+                skipVideo: false
             };
-        },
-        update: function () {
-            var settings = Plugbot.settings.mainUi;
-
-            this.set({
-                autoWoot: settings.autoWoot,
-                autoJoin: settings.autoJoin
-            });
         }
     });
 

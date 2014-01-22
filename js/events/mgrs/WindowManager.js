@@ -1,12 +1,11 @@
-define('Plugbot/events/Taskbar/ItemEvents', [
+define('Plugbot/events/mgrs/WindowManager', [
     'Plugbot/base/Events'
 ], function (BaseEvents) {
     'use strict';
 
     //region VARIABLES =====
     var events = {
-        MOUSE_ENTER: 'mouse-enter',
-        MOUSE_LEAVE: 'mouse-leave'
+        CHANGE_SETTINGS: 'change-settings'
     };
 
     //endregion

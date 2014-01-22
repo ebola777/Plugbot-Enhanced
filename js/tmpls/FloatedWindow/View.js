@@ -18,6 +18,9 @@ define('Plugbot/tmpls/FloatedWindow/View', [
             elMaximize: null,
             elClose: null
         },
+        classes: {
+            hidden: '.plugbot-floated-window-hidden'
+        },
         template:
             '<div class="plugbot-floated-window">' +
             '    <div class="{{elHeader}}">' +

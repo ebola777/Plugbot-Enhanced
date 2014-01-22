@@ -23,7 +23,6 @@ define('Plugbot/models/FloatedWindow/Model', [], function () {
                 title: 'Untitled',
                 callsign: 'AAA',
                 zIndex: undefined,
-                oldZIndex: undefined,
                 resizable: false,
                 draggable: false,
                 /**
@@ -31,8 +30,6 @@ define('Plugbot/models/FloatedWindow/Model', [], function () {
                  */
                 x: 0,
                 y: 0,
-                oldX: 0,
-                oldY: 0,
                 /**
                  * Size
                  */

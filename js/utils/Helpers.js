@@ -26,8 +26,7 @@ define('Plugbot/utils/Helpers', [], function () {
                 if (dst.hasOwnProperty(key)) {
                     valDst = dst[key];
 
-                    if ('object' !== typeof valSrc ||
-                            'object' !== typeof valDst) {
+                    if (!_.isObject(valSrc) || !_.isObject(valDst)) {
                         dst[key] = valSrc;
                     } else {
                         extendDeep(valSrc, valDst);
@@ -49,8 +48,7 @@ define('Plugbot/utils/Helpers', [], function () {
                 if (dst.hasOwnProperty(key)) {
                     valDst = dst[key];
 
-                    if ('object' !== typeof valSrc ||
-                            'object' !== typeof valDst) {
+                    if (!_.isObject(valSrc) || !_.isObject(valDst)) {
                         dst[key] = valSrc;
                     } else {
                         applyDeep(valSrc, valDst);

@@ -12,12 +12,12 @@ See instructions [here](http://ebola777.github.io/)
 ## Features
 
 - Auto-woot
-- Auto-queue
+- Auto-join
 - Skip video
 
 ## Version
 
-1.0.12.pre (12/19/2013)
+1.0.13.pre (1/22/2014)
 
 ## Author
 

@@ -42,7 +42,7 @@ define('Plugbot/utils/Countdown', [
 
                         // check to remove the id
                         if (runtime.elapsed >= options.countdown) {
-                            if (undefined !== options.call) {
+                            if (_.isFunction(options.call)) {
                                 options.call.apply(this);
 
                                 for (i = 0; i < runtime.waitCallbacks.length;
@@ -123,7 +123,7 @@ define('Plugbot/utils/Countdown', [
             return this;
         },
         callAndRemove: function (id) {
-            this.items[id].options.call();
+            this.items[id].options.call.apply(this);
             delete this.items[id];
 
             return this;

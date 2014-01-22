@@ -7,14 +7,18 @@ define('Plugbot/views/utils/Ui', [], function () {
              * Elements
              */
             window: window,
-            document: document,
+            body: document.body,
             header: '#header',
             room: '#room',
             playback: '#playback',
             playlistPanel: '#playlist-panel',
+            dialogPreview: '#dialog-preview',
             chatInputField: '#chat-input-field',
             woot: '#woot'
         },
+        omitCachePlugdj = [
+            'dialogPreview'
+        ],
         plugbot = {
             /**
              * Elements
@@ -29,18 +33,19 @@ define('Plugbot/views/utils/Ui', [], function () {
     //region INIT =====
     (function () {
         // cache plugdj elements
-        cachePlugDjElements();
+        _cachePlugDjElements();
     }());
 
     //endregion
 
 
     //region PRIVATE FUNCTIONS =====
-    function cachePlugDjElements() {
-        var key;
+    function _cachePlugDjElements() {
+        var key,
+            listFilterd = _.omit(plugdj, omitCachePlugdj);
 
-        for (key in plugdj) {
-            if (plugdj.hasOwnProperty(key)) {
+        for (key in listFilterd) {
+            if (listFilterd.hasOwnProperty(key)) {
                 plugdj['$' + key] = $(plugdj[key]);
             }
         }

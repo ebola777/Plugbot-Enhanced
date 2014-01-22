@@ -1,11 +1,21 @@
 define('Plugbot/main/Init', [
     'Plugbot/events/site/Events',
+    'Plugbot/main/mgrs/SiteManager',
+    'Plugbot/main/mgrs/TaskbarManager',
+    'Plugbot/main/mgrs/WindowManager',
+    'Plugbot/main/mgrs/ResourceManager',
     'Plugbot/main/Settings',
-    'Plugbot/main/WindowManager',
-    'Plugbot/utils/Ticker',
+    'Plugbot/utils/APIBuffer',
     'Plugbot/utils/Watcher'
-], function (SiteEvents, Settings, WindowManager, Ticker, Watcher) {
+], function (SiteEvents, SiteManager, TaskbarManager, WindowManager,
+             ResourceManager, Settings, APIBuffer, Watcher) {
     'use strict';
+
+    //region VARIABLES =====
+    var listener = _.clone(Backbone.Events);
+
+    //endregion
+
 
     //region PUBLIC FUNCTIONS =====
     function initialize() {
@@ -15,10 +25,6 @@ define('Plugbot/main/Init', [
         // read settings
         Settings.readSettings();
 
-        // init watchers and tickers
-        initWatchers();
-        initTickers();
-
         /**
          * #2: Events
          */
@@ -26,15 +32,15 @@ define('Plugbot/main/Init', [
         SiteEvents.initDispatcher();
 
         /**
-         * #3: UIs
+         * #3: Resources
          */
-        // init UIs
-        initUis();
+        // init resources
+        _initResources();
 
         /**
          * #4: Notification
          */
-        // notify that PlugBot has been initialized
+        // notify that Plugbot has been initialized
         Plugbot.initDone();
     }
 
@@ -43,14 +49,61 @@ define('Plugbot/main/Init', [
 
     //region PRIVATE FUNCTIONS =====
     /**
-     * Init UIs
+     * Init resources
      */
-    function initUis() {
-        waitAPIEnabled(function () {
-            WindowManager.initTaskbar();
-            WindowManager.initWindows();
-            WindowManager.initEvents();
-            WindowManager.initPublicMethods();
+    function _initResources() {
+        var bufferAPI, siteManager, windowManager, taskbarManager;
+
+        /**
+         * Utilities
+         */
+        bufferAPI = new APIBuffer({
+            tickerInterval: Plugbot.settings.tickerInterval.APICallback
+        });
+        ResourceManager.set('API-buffer', bufferAPI);
+
+        /**
+         * UI
+         */
+        _waitAPIEnabled(function () {
+            /**
+             * #1: Init managers
+             */
+            siteManager = new SiteManager();
+
+            windowManager = new WindowManager({
+                windowSettings: Plugbot.settings.windows
+            });
+
+            taskbarManager = new TaskbarManager();
+
+            /**
+             * #2: Listen to managers
+             */
+            _listenToWindowManager(windowManager);
+
+            /**
+             * #3: Set resources
+             */
+            ResourceManager.set({
+                'site-manager': siteManager,
+                'window-manager': windowManager,
+                'taskbar-manager': taskbarManager
+            });
+
+            /**
+             * #4: Render managers
+             */
+            siteManager.render();
+            windowManager.render();
+            taskbarManager.render();
+
+            /**
+             * #4: Expose managers
+             */
+            Plugbot.siteManager = siteManager;
+            Plugbot.windowManager = windowManager;
+            Plugbot.taskbarManager = taskbarManager;
         });
     }
 
@@ -58,7 +111,7 @@ define('Plugbot/main/Init', [
      * Wait API till it's enabled
      * @param {function} callback   Callback when done
      */
-    function waitAPIEnabled(callback) {
+    function _waitAPIEnabled(callback) {
         var watcher = new Watcher({
             interval: '1 hz',
             exitWhenNoCall: true,
@@ -73,78 +126,15 @@ define('Plugbot/main/Init', [
             .invoke();
     }
 
-    function initWatchers() {
-        // the 'keyId' must be in Plugbot.settings.watcherIds list
-        Plugbot.watcher = (function () {
-            return {
-                _watcher: new Watcher(),
-                add: function (keyId, fn, options) {
-                    var id = this.getId(keyId);
+    function _listenToWindowManager(windowManager) {
+        var disprWndMgr = windowManager.dispatcher;
 
-                    this._watcher.add(id, fn, options);
-                },
-                remove: function (keyId) {
-                    var id = this.getId(keyId);
+        listener.listenTo(disprWndMgr, disprWndMgr.CHANGE_SETTINGS,
+            function (options) {
+                Plugbot.settings.windows = options.windowSettings;
 
-                    this._watcher.remove(id);
-                },
-                clear: function () {
-                    this._watcher.clear();
-                },
-                getId: function (keyId) {
-                    var ret,
-                        id = Plugbot.settings.watcherIds[keyId];
-
-                    if (undefined !== id) {
-                        ret = id;
-                    } else {
-                        throw new Error('watcher key ' + keyId + ' not found');
-                    }
-
-                    return ret;
-                },
-                close: function () {
-                    this._watcher.close();
-                }
-            };
-        }());
-    }
-
-    function initTickers() {
-        // the 'keyId' must be in Plugbot.settings.tickerIds list
-        Plugbot.ticker = (function () {
-            return {
-                _ticker: new Ticker(),
-                add: function (keyId, fn, options) {
-                    var id = this.getId(keyId);
-
-                    this._ticker.add(id, fn, options);
-                },
-                remove: function (keyId) {
-                    var id = this.getId(keyId);
-
-                    this._ticker.remove(id);
-                },
-                clear: function () {
-                    this._ticker.clear();
-                },
-                getId: function (keyId) {
-                    var ret,
-                        id = Plugbot.settings.tickerIds[keyId];
-
-                    if (undefined !== id) {
-                        ret = id;
-                    } else {
-                        throw new Error('ticker key ' + keyId + ' not found');
-                    }
-
-                    return ret;
-                },
-                close: function () {
-                    this._ticker.close();
-                }
-            };
-        }());
+                Settings.saveSettings();
+            });
     }
 
     //endregion

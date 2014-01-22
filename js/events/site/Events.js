@@ -30,19 +30,19 @@ define('Plugbot/events/site/Events', [
         RoomSize.getLastRoomSize();
 
         // bind events
-        Ui.plugdj.$window.on('resize', onWindowResize);
+        Ui.plugdj.$window.on('resize', _onWindowResize);
     }
 
     function removeDispatcher() {
         // unbind events
-        Ui.plugdj.$window.off('resize', onWindowResize);
+        Ui.plugdj.$window.off('resize', _onWindowResize);
     }
 
     //endregion
 
 
     //region PRIVATE FUNCTIONS =====
-    function onWindowResize(e) {
+    function _onWindowResize(e) {
         var lastRoomSize = RoomSize.getLastRoomSize(),
             currentRoomSize = RoomSize.getCurrentRoomSize(),
             ratio = RoomSize.getRatio();

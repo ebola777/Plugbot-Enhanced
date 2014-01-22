@@ -1,19 +1,34 @@
 define('Plugbot/views/MainUi/View', [
     'handlebars',
-    'Plugbot/main/Settings',
+    'Plugbot/events/MainUi/Events',
+    'Plugbot/main/mgrs/ResourceManager',
     'Plugbot/models/MainUi/Model',
     'Plugbot/tmpls/MainUi/View',
     'Plugbot/utils/API',
-    'Plugbot/utils/APIBuffer',
     'Plugbot/utils/Watcher',
     'Plugbot/views/utils/Ui'
-], function (Handlebars, Settings, Model, Template, UtilsAPI, APIBuffer,
+], function (Handlebars, Events, ResourceManager, Model, Template, UtilsAPI,
              Watcher, Ui) {
     'use strict';
 
     var View = Backbone.View.extend({
+        FADING_OVER_THRESHOLD: 5,
+        WATCHER_IDS: {
+            AUTO_WOOT: 'auto-woot',
+            AUTO_JOIN: 'auto-join',
+            SKIP_VIDEO: 'skip-video',
+            DIALOG_PREVIEW_VISIBLE: 'dialog-preview-visible',
+            SKIP_VIDEO_AGAIN: 'skip-video-again'
+        },
+        TEMPLATE_DIALOG_ASK: Handlebars.compile(
+            '    <div title="Exit">' +
+                '    <p>Exit Plugbot Enhanced?' +
+                '    <\/p>' +
+                '<\/div>'
+        ),
         options: function () {
             return {
+                settings: {},
                 moduleWindow: undefined,
                 dispatcherWindow: undefined
             };
@@ -21,22 +36,18 @@ define('Plugbot/views/MainUi/View', [
         initialize: function () {
             _.bindAll(this, 'enableAutoWoot', 'disableAutoWoot',
                 'enableAutoJoin', 'disableAutoJoin', 'enableSkipVideo',
-                'disableSkipVideo');
+                'disableSkipVideo', 'resumeSkipVideo');
 
             // model
-            this.model = new Model();
+            this.model = new Model(this.options.settings);
 
             // runtime options
+            this.dispatcher = Events.getDispatcher();
             this.lastVolume = undefined;
             this.watcher = new Watcher({interval: '1 hz'});
+            this.watcherSkipVideoAgain = new Watcher();
             this.pendingUpdate = false;
             this.elemDialogAsk = undefined;
-            this.templateDialogAsk = Handlebars.compile(
-                '    <div title="Exit">' +
-                    '    <p>Exit Plugbot Enhanced?' +
-                    '    <\/p>' +
-                    '<\/div>'
-            );
             this.template = new Template({view: this});
 
             // model events
@@ -51,7 +62,7 @@ define('Plugbot/views/MainUi/View', [
         el: Ui.plugbot.mainUi,
         render: function () {
             // render dialog
-            this.elemDialogAsk = $(this.templateDialogAsk());
+            this.elemDialogAsk = $(this.TEMPLATE_DIALOG_ASK());
 
             // render template
             this.template
@@ -60,14 +71,17 @@ define('Plugbot/views/MainUi/View', [
                 .delegateEvents()
                 .setElementIds();
 
-            // update model
-            this.model.update();
-
             // trigger button actions
             this
                 .onClickAutoWoot(this.model.get('autoWoot'))
                 .onClickAutoJoin(this.model.get('autoJoin'))
                 .onClickSkipVideo(this.model.get('skipVideo'));
+
+            // update the view
+            this.update();
+
+            // watch activities
+            this._watchActivities();
 
             return this;
         },
@@ -92,9 +106,10 @@ define('Plugbot/views/MainUi/View', [
         },
         listenToAPI: function () {
             var that = this,
-                cid = this.model.cid;
+                cid = this.model.cid,
+                bufferAPI = ResourceManager.get('API-buffer');
 
-            APIBuffer.addListening('auto-woot:' + cid, this, [
+            bufferAPI.addListening('auto-woot:' + cid, this, [
                 API.DJ_ADVANCE
             ], {
                 fnCheck: function () {
@@ -103,7 +118,7 @@ define('Plugbot/views/MainUi/View', [
                 callback: that.enableAutoWoot
             });
 
-            APIBuffer.addListening('auto-join:' + cid, this, [
+            bufferAPI.addListening('auto-join:' + cid, this, [
                 API.WAIT_LIST_UPDATE
             ], {
                 fnCheck: function () {
@@ -112,39 +127,16 @@ define('Plugbot/views/MainUi/View', [
                 callback: this.enableAutoJoin
             });
 
-            APIBuffer.addListening('skip-video:' + cid, this, [
+            bufferAPI.addListening('skip-video:' + cid, this, [
                 API.DJ_ADVANCE
             ], {
                 fnCheck: function () {
-                    that.watcher.remove('skip-video');
+                    // disable resuming volume in last song
+                    that.watcher.remove(that.WATCHER_IDS.SKIP_VIDEO);
 
                     return that.model.get('skipVideo');
                 },
-                callback: function () {
-                    var lastVolume = that.lastVolume,
-                        nearbyVolume;
-
-                    if (100 === nearbyVolume) {
-                        nearbyVolume = 99;
-                    } else {
-                        nearbyVolume = lastVolume + 1;
-                    }
-
-                    that.disableSkipVideo();
-
-                    that.watcher.add('skip-video', function () {
-                        var ret, volume = API.getVolume();
-
-                        if (volume === lastVolume) {
-                            API.setVolume(nearbyVolume);
-                            API.setVolume(lastVolume);
-                        } else {
-                            ret = 0;
-                        }
-
-                        return ret;
-                    });
-                }
+                callback: this.resumeSkipVideo
             });
         },
         listenToWindow: function () {
@@ -152,41 +144,41 @@ define('Plugbot/views/MainUi/View', [
                 moduleWindow = this.options.moduleWindow,
                 disprWindow = this.options.dispatcherWindow;
 
-            this.listenTo(moduleWindow, 'change:visible', function (mod) {
-                if (mod.get('visible')) {
-                    if (that.pendingUpdate) {
-                        that.update();
-                        that.pendindUpdate = false;
-                    }
-                }
-            });
-
-            this.listenTo(disprWindow, disprWindow.CONTROLBOX_CLOSE,
-                function (options) {
-                    options.enabledCallback = true;
-
-                    // show dialog
-                    that.elemDialogAsk.dialog({
-                        modal: true,
-                        draggable: false,
-                        resizable: false,
-                        buttons: {
-                            'OK': function () {
-                                options.callback();
-                                Plugbot.close();
-                                $(this).dialog('close');
-                            },
-                            'Cancel': function () {
-                                options.cancel = true;
-                                options.callback();
-                                $(this).dialog('close');
-                            }
+            this
+                .listenTo(moduleWindow, 'change:visible', function (mod) {
+                    if (mod.get('visible')) {
+                        if (that.pendingUpdate) {
+                            that.update();
+                            that.pendindUpdate = false;
                         }
+                    }
+                })
+                .listenTo(disprWindow, disprWindow.CONTROLBOX_CLOSE,
+                    function (options) {
+                        options.enabledCallback = true;
+
+                        // show dialog
+                        that.elemDialogAsk.dialog({
+                            modal: true,
+                            draggable: false,
+                            resizable: false,
+                            buttons: {
+                                'OK': function () {
+                                    options.callback();
+                                    Plugbot.close();
+                                    $(this).dialog('close');
+                                },
+                                'Cancel': function () {
+                                    options.cancel = true;
+                                    options.callback();
+                                    $(this).dialog('close');
+                                }
+                            }
+                        });
                     });
-                });
         },
         onChangeAny: function (e) {
-            var key, value, changed = e.changedAttributes();
+            var changed = e.changedAttributes();
 
             // view
             if (this.options.moduleWindow.get('visible')) {
@@ -195,23 +187,7 @@ define('Plugbot/views/MainUi/View', [
                 this.pendingUpdate = true;
             }
 
-            // model
-            for (key in changed) {
-                if (changed.hasOwnProperty(key)) {
-                    value = changed[key];
-
-                    switch (key) {
-                    case 'autoWoot':
-                        Plugbot.settings.mainUi.autoWoot = value;
-                        break;
-                    case 'autoJoin':
-                        Plugbot.settings.mainUi.autoJoin = value;
-                        break;
-                    }
-                }
-            }
-
-            Settings.saveSettings();
+            this.dispatcher.dispatch('CHANGE_SETTINGS', changed);
         },
         onClickItem: function (e) {
             var elem = $(e.currentTarget),
@@ -264,63 +240,180 @@ define('Plugbot/views/MainUi/View', [
         enableAutoWoot: function () {
             var vote = API.getUser().vote,
                 undecided = UtilsAPI.USER.VOTE.UNDECIDED,
-                elemWoot =  Ui.plugdj.$woot;
+                elemWoot =  Ui.plugdj.$woot,
+                fnAutoWoot = function () {
+                    var ret;
+
+                    elemWoot.click();
+                    vote = API.getUser().vote;
+
+                    if (undecided !== vote) {
+                        ret = 0;
+                    }
+
+                    return ret;
+                };
 
             if (undecided === vote) {
                 elemWoot.click();
                 vote = API.getUser().vote;
 
                 if (undecided === vote) {
-                    this.watcher.add('auto-woot', function () {
-                        var ret;
-
-                        elemWoot.click();
-                        vote = API.getUser().vote;
-
-                        if (undecided !== vote) {
-                            ret = 0;
-                        }
-
-                        return ret;
-                    });
+                    this.watcher.add(this.WATCHER_IDS.AUTO_WOOT, fnAutoWoot);
                 }
             }
         },
         disableAutoWoot: function () {
-            this.watcher.remove('auto-woot');
+            this.watcher.remove(this.WATCHER_IDS.AUTO_WOOT);
         },
         enableAutoJoin: function () {
             var ret = API.djJoin();
 
             if (0 !== ret) {
-                this.watcher.add('auto-join', function () {
+                this.watcher.add(this.WATCHER_IDS.AUTO_JOIN, function () {
                     return API.djJoin();
                 });
             }
         },
         disableAutoJoin: function () {
-            this.watcher.remove('auto-join');
+            this.watcher.remove(this.WATCHER_IDS.AUTO_JOIN);
         },
         enableSkipVideo: function () {
-            this.watcher.remove('skip-video');
+            var VOLUME_MUTE = UtilsAPI.PLAYBACK.VOLUME.MUTE;
+
+            this.watcher.remove(this.WATCHER_IDS.SKIP_VIDEO);
             this.lastVolume = API.getVolume();
-            API.setVolume(0);
+            API.setVolume(VOLUME_MUTE);
         },
         disableSkipVideo: function () {
             var lastVolume = this.lastVolume;
 
-            if (undefined !== lastVolume) {
-                this.model.set('skipVideo', false);
+            // stop trying to set volume
+            this.watcher.remove(this.WATCHER_IDS.SKIP_VIDEO);
+            this.watcherSkipVideoAgain.remove(
+                this.WATCHER_IDS.SKIP_VIDEO_AGAIN
+            );
 
+            // resume last volume (only call once)
+            if (undefined !== lastVolume) {
                 if (0 === API.getVolume()) {
                     API.setVolume(lastVolume);
                     this.lastVolume = undefined;
                 }
             }
         },
+        resumeSkipVideo: function () {
+            var MAX_VOLUME = UtilsAPI.PLAYBACK.VOLUME.MAX,
+                lastVolume = this.lastVolume,
+                nearbyVolume;
+
+            // decide nearby volume
+            if (MAX_VOLUME === lastVolume) {
+                nearbyVolume = MAX_VOLUME - 1;
+            } else {
+                nearbyVolume = lastVolume + 1;
+            }
+
+            // disable skip-video
+            this.model.set('skipVideo', false);
+            this.disableSkipVideo();
+
+            if (0 !== lastVolume) {
+                // keep setting volume to last one, until user changes it
+                this.watcher.add(this.WATCHER_IDS.SKIP_VIDEO, function () {
+                    var ret, volume = API.getVolume();
+
+                    if (volume === lastVolume) {
+                        API.setVolume(nearbyVolume);
+                        API.setVolume(lastVolume);
+                    } else {
+                        ret = 0;
+                    }
+
+                    return ret;
+                });
+            }
+        },
+        _watchActivities: function () {
+            var that = this,
+                VOLUME_MUTE = UtilsAPI.PLAYBACK.VOLUME.MUTE,
+                isSkipAgain = false,
+                isFadingOver,
+                listVolume,
+                fnSkipVideoAgain = function () {
+                    var vol = API.getVolume(),
+                        ret;
+
+                    if (!isFadingOver) {
+                        // record the volume
+                        listVolume.push(vol);
+                        if (listVolume.length > that.FADING_OVER_THRESHOLD) {
+                            listVolume.splice(0, 1);
+                        }
+
+                        if (listVolume.length === that.FADING_OVER_THRESHOLD) {
+                            // if every element has the same value
+                            if (_.every(listVolume, function (num) {
+                                    return num === listVolume[0] && 0 !== num;
+                                })) {
+                                isFadingOver = true;
+                                API.setVolume(VOLUME_MUTE);
+                                this.invoke();
+                            }
+                        }
+                    } else {
+                        if (0 === vol) {
+                            API.setVolume(VOLUME_MUTE);
+                        } else {
+                            ret = 0;
+                        }
+                    }
+
+                    return ret;
+                };
+
+            this.watcher.add(this.WATCHER_IDS.DIALOG_PREVIEW_VISIBLE,
+                function () {
+                    var uiDialogPreview = $(Ui.plugdj.dialogPreview),
+                        isSkipingVideo = that.model.get('skipVideo');
+
+                    if (uiDialogPreview.is(':visible')) {
+                        // stop keeping volume to zero
+                        that.watcherSkipVideoAgain.remove(
+                            that.WATCHER_IDS.SKIP_VIDEO_AGAIN
+                        );
+
+                        // is skipping video?
+                        isSkipAgain = isSkipingVideo;
+                    } else {
+                        // skip again?
+                        if (isSkipAgain) {
+                            isFadingOver = false;
+                            listVolume = [];
+
+                            // keep setting volume to zero upon fading is over
+                            // until user changes volume
+                            that.watcherSkipVideoAgain.add(
+                                that.WATCHER_IDS.SKIP_VIDEO_AGAIN,
+                                fnSkipVideoAgain
+                            );
+
+                            isSkipAgain = false;
+                        }
+                    }
+                });
+        },
+        _unwatchActivities: function () {
+            this.watcher.remove(this.WATCHER_IDS.DIALOG_PREVIEW_VISIBLE);
+            this.watcherSkipVideoAgain
+                .remove(this.WATCHER_IDS.SKIP_VIDEO_AGAIN);
+        },
         close: function () {
-            // close the watcher
+            // close watchers
             this.watcher.close();
+            this.watcherSkipVideoAgain.close();
+
+            this._unwatchActivities();
 
             this.remove();
         }

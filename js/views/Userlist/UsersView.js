@@ -4,13 +4,16 @@ define('Plugbot/views/Userlist/UsersView', [
     'Plugbot/models/Userlist/UsersModel',
     'Plugbot/utils/Countdown',
     'Plugbot/views/Userlist/UsersItemView',
-    'Plugbot/views/utils/Ui',
     'Plugbot/views/utils/UiHelpers'
 ], function (BaseSubView, ItemCollection, UsersModel, Countdown, UsersItemView,
-             Ui, UiHelpers) {
+             UiHelpers) {
     'use strict';
 
     var View = BaseSubView.extend({
+        COUNTDOWN_IDS: {
+            USERS_ERROR: 'users-error'
+        },
+        COUNTDOWN_USERS_ERROR: 10000,
         initialize: function () {
             // set parent
             this.parent = BaseSubView.prototype;
@@ -45,6 +48,9 @@ define('Plugbot/views/Userlist/UsersView', [
             this.updateData();
             this.$el.show();
         },
+        /**
+         * Bad fix
+         */
         render: function () {
             this.collection.reset();
             this.closeAllSubViews();
@@ -107,16 +113,17 @@ define('Plugbot/views/Userlist/UsersView', [
             for (i = 0; i < models.length; i += 1) {
                 if ($(elems[i]).text() !== models[i].get('username')) {
                     isError = true;
-                    this.countdownError.add('users-error', fnRender, {
-                        countdown: 30000
-                    });
+                    this.countdownError.add(this.COUNTDOWN_IDS.USERS_ERROR,
+                        fnRender, {
+                            countdown: this.COUNTDOWN_USERS_ERROR
+                        });
 
                     break;
                 }
             }
 
             if (!isError) {
-                this.countdownError.remove('users-error');
+                this.countdownError.remove(this.COUNTDOWN_IDS.USERS_ERROR);
             }
         },
         checkValid: function () {
@@ -158,6 +165,9 @@ define('Plugbot/views/Userlist/UsersView', [
             return ret;
         },
         close: function () {
+            // close countdown
+            this.countdownError.close();
+
             // close collection
             this.collection.close();
 

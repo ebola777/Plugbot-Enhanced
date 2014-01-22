@@ -188,7 +188,7 @@ define('Plugbot/views/utils/UiHelpers', [
                 return 1;
             };
 
-        watcher.add('iframe-fix', fnFix, {
+        watcher.addFn(fnFix, {
             args: [iframe]
         });
 

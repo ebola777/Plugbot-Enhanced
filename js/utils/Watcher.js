@@ -59,7 +59,7 @@ define('Plugbot/utils/Watcher', [
                         if ((ret === options.exitValue) ||
                                 (enMaxNumCall &&
                                 runtime.numCall > options.maxNumCall)) {
-                            if (options.exitCall) {
+                            if (_.isFunction(options.exitCall)) {
                                 options.exitCall();
                             }
 
@@ -76,11 +76,13 @@ define('Plugbot/utils/Watcher', [
             }
         },
         /**
-         * Add a call. But cannot be removed later
-         * @param {function} fn     Function call
+         * Add a call. But cannot be removed later, can only be removed when
+         * calling clear or close.
+         * @param {function} fn         Function call
+         * @param {Object=} options     Options
          */
-        addFn: function (fn) {
-            this.add(Date.now(), fn);
+        addFn: function (fn, options) {
+            this.add('d' + Date.now(), fn, options);
 
             return this;
         },

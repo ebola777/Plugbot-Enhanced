@@ -4,6 +4,11 @@ define('Plugbot/utils/APIBuffer', [
     'use strict';
 
     var Model = Backbone.Model.extend({
+        options: function () {
+            return {
+                tickerInterval: 1000
+            };
+        },
         initialize: function () {
             // runtime options
             this.ticker = new Ticker();
@@ -21,7 +26,7 @@ define('Plugbot/utils/APIBuffer', [
                 fnListenTo = function (event, options) {
                     listener.listenTo(API, event, function () {
                         that.ticker.add(id, function () {
-                            if (undefined !== options.fnCheck) {
+                            if (_.isFunction(options.fnCheck)) {
                                 if (options.fnCheck()) {
                                     options.callback();
                                 }
@@ -29,8 +34,7 @@ define('Plugbot/utils/APIBuffer', [
                                 options.callback();
                             }
                         }, {
-                            interval:
-                                Plugbot.settings.tickerInterval.APICallback
+                            interval: that.options.tickerInterval
                         });
                     });
                 };
@@ -69,5 +73,5 @@ define('Plugbot/utils/APIBuffer', [
         }
     });
 
-    return new Model();
+    return Model;
 });

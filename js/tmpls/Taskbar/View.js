@@ -9,6 +9,9 @@ define('Plugbot/tmpls/Taskbar/View', [
             elHandle: '.handle',
             elContainer: '.container'
         },
+        classes: {
+            hidden: '.plugbot-taskbar-hidden'
+        },
         template:
             '<div class="plugbot-taskbar">' +
             '    <div class="{{elContent}}">' +

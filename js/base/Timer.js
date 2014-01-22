@@ -4,9 +4,6 @@ define('Plugbot/base/Timer', [], function () {
     var Model = Backbone.Model.extend({
         defaults: function () {
             return {
-                /**
-                 * Default, read-only
-                 */
                 interval: 'optimal',
                 optimalHz: 12,
                 autoStart: true,

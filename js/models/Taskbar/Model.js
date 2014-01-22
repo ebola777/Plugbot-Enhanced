@@ -4,7 +4,6 @@ define('Plugbot/models/Taskbar/Model', [], function () {
     var Model = Backbone.Model.extend({
         defaults: function () {
             return {
-                windows: undefined,
                 windowTop: 0
             };
         }
