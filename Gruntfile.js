@@ -17,6 +17,25 @@ module.exports = function (grunt) {
         },
         initGrunt: function () {
             grunt.initConfig({
+                ngAnnotate: {
+                    options: { },
+                    main: {
+                        files: [{
+                            expand: true,
+                            cwd: './assets/js/',
+                            src: [
+                                './controllers/**/*.js',
+                                './directives/**/*.js',
+                                './services/**/*.js',
+                                './views/**/*.js',
+                                './app.js',
+                                './main.js'
+                            ],
+                            dest: './generated/js/',
+                            ext: '.js'
+                        }]
+                    }
+                },
                 requirejs: {
                     options: {
                         optimize: 'uglify2',
@@ -42,8 +61,8 @@ module.exports = function (grunt) {
                                 return this.disableDebug(contents);
                             },
                             disableDebug: function (contents) {
-                                var REGEX = /var\s+VAR_AUTO_DEBUG\s*=\s*(true|false|1|0)\s*;/g,
-                                    REPLACE_WITH = 'var VAR_AUTO_DEBUG = false;',
+                                var REGEX = /var\s+VAR_AUTO_DEBUG\s*=\s*(true|false|1|0)\s*/g,
+                                    REPLACE_WITH = 'var VAR_AUTO_DEBUG = false',
                                     match = REGEX.exec(contents),
                                     posBegin,
                                     posEnd,
@@ -64,7 +83,7 @@ module.exports = function (grunt) {
                     },
                     main: {
                         options: {
-                            baseUrl: './assets/js/',
+                            baseUrl: './generated/js/',
                             name: 'main',
                             out: './public/js/main.min.js',
                             requiredVariables: ['plugbot/app'],
@@ -72,6 +91,7 @@ module.exports = function (grunt) {
                                 angular: 'empty:',
                                 plugbot: './'
                             },
+                            deps: ['plugbot/app'],
                             generateSourceMaps: false,
                             preserveLicenseComments: true
                         }
@@ -143,6 +163,9 @@ module.exports = function (grunt) {
                     }
                 },
                 clean: {
+                    generated: [
+                        './generated/js/'
+                    ],
                     debug: [
                         './assets/css/'
                     ],
@@ -166,6 +189,7 @@ module.exports = function (grunt) {
             grunt.loadNpmTasks('grunt-contrib-requirejs');
             grunt.loadNpmTasks('grunt-contrib-uglify');
             grunt.loadNpmTasks('grunt-html2js');
+            grunt.loadNpmTasks('grunt-ng-annotate');
 
             return this;
         },
@@ -175,6 +199,9 @@ module.exports = function (grunt) {
             ]);
 
             grunt.registerTask('Assemble Release', [
+                'clean:generated',
+                'clean:release',
+                'ngAnnotate:main',
                 'requirejs:bootstrap',
                 'requirejs:main',
                 'compass:release',

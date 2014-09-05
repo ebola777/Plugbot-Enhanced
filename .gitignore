@@ -2,6 +2,9 @@
 # Reference
 ref
 
+# Generated files
+generated
+
 
 # Keywords: Windows, IntelliJ, Node, Bower, Sass
 # Created by http://www.gitignore.io

@@ -8,7 +8,7 @@
  */
 
 var VAR_AUTO_DEBUG = true,
-    LOCAL_REPO = true;
+    RELEASE_LOCAL_REPO = false;
 
 (function () {
     'use strict';
@@ -46,9 +46,9 @@ var VAR_AUTO_DEBUG = true,
             },
             baseDirs: {
                 debug: 'localhost/Plugbot-Enhanced/assets/',
-                release: (LOCAL_REPO ?
+                release: (RELEASE_LOCAL_REPO ?
                     'localhost/Plugbot-Enhanced/public/' :
-                    'localhost/not-found/')
+                    'ebola777.github.io/files/Plugbot-Enhanced/public/')
             },
             files: {
                 debug: 'main.js',
