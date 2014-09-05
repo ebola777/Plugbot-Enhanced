@@ -1,0 +1,30 @@
+<div class="plugbot-window plugbot-main"
+     data-window
+     data-draggable
+     data-drag-id="main"
+     data-drag-z-index="1000000"
+     data-drag-containment="#app"
+     data-drag-iframe-fix="#yt-frame"
+     data-drag-handle=".handle"
+     data-drag-grid="[4, 4]"
+     data-drag-snap=".app-header, #audience, #dj-booth, #playback-container, #dj-button, #vote, .app-right, #footer"
+     data-drag-snap-mode="outer"
+     data-drag-snap-tolerance="8"
+     data-drag-no-overlap=".app-header, #footer"
+     data-drag-keep-zoom="true"
+     data-ng-controller="MainCtrl">
+    <div class="handle">
+        <span class="title">Plugbot</span>
+        <span class="handle-buttons">
+            <i class="icon icon-settings-white" data-window-id="settings" data-window-toggle=".plugbot-settings"></i>
+        </span>
+    </div>
+    <div class="body">
+        <ul>
+            <li class="item"
+                data-ng-class="{ 'enabled': isEnabled(item) }"
+                data-ng-repeat="item in items"
+                data-ng-click="switchEnabled(item)">{{item.text}}</li>
+        </ul>
+    </div>
+</div>

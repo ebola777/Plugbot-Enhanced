@@ -114,12 +114,10 @@
         //"exampleVar",
         //"anotherCoolGlobal",
         //"iLoveDouglas"
-        "Plugbot",
-        "API",
         "requirejs",
-        "define",
         "require",
-        "Backbone",
+        "define",
+        "$",
         "_"
     ],
     "indent"        : 4         // Specify indentation spacing

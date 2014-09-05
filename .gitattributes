@@ -1,9 +1,1 @@
 * text=auto
-
-*.md text eol=lf
-*.rb text eol=lf
-*.css text eol=lf
-*.js text eol=lf
-*.scss text eol=lf
-*.hpp text eol=lf
-*.cpp text eol=lf

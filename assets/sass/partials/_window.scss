@@ -1,0 +1,43 @@
+@import "compass/css3/box-shadow";
+@import "compass/css3/user-interface";
+
+.plugbot-window {
+  @include box-shadow(inset -2px -2px 0 -1px #313133);
+  position: absolute;
+  left: 100px;
+  top: 100px;
+  z-index: 10;
+  background: rgb(50, 55, 66);
+  border: 1px solid #1c1f25;
+  border-radius: 2px;
+  color: #eee;
+
+  .handle {
+    @include user-select(none);
+
+    padding: 6px 10px;
+    border-bottom: 1px solid #1c1f25;
+    font-size: 18px;
+    font-weight: 300;
+    cursor: move;
+    white-space: nowrap;
+  }
+
+  .title {
+    padding-top: 3px;
+    vertical-align: middle;
+  }
+
+  .handle-buttons {
+    .icon {
+      position: relative;
+      display: inline-block;
+      vertical-align: middle;
+      cursor: pointer;
+    }
+  }
+
+  .body {
+    background: #282c35;
+  }
+}

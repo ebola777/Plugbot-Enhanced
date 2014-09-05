@@ -9,8 +9,6 @@
         <title></title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
-
-        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
     </head>
     <body>
         <!--[if lt IE 7]>
@@ -19,10 +17,11 @@
 
         <a href="javascript: (function () {
             var jsCode = document.createElement('script'),
+                protocol = 'https://',
                 baseUrl = 'localhost/Plugbot-Enhanced/',
-                script = 'js/release.min.js';
+                file = 'public/js/bootstrap.min.js';
             jsCode.setAttribute('id', 'plugbot-js');
-            jsCode.setAttribute('src', 'http://' + baseUrl + script);
+            jsCode.setAttribute('src', protocol + baseUrl + file);
             document.body.appendChild(jsCode); }());">
             PlugBot Enhanced LOCAL RELEASE</a>
     </body>

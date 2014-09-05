@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.0 (Sep 5 2014)
+- [NEW] New design.
+
 ## 1.0.13.pre (1/22/2014)
 - [FIXED] when enabling skipping video, previewing a song would cause volume
 to turn back after closing the preview window

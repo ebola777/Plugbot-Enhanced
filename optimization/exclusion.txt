@@ -1,2 +1,0 @@
-debug.js
-release.min.js

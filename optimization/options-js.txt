@@ -1,1 +1,0 @@
---output "release.min.js" --source-map "release.min.js.map" --comments --mangle --compress

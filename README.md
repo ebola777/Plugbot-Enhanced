@@ -1,23 +1,21 @@
 # Plugbot Enhanced
 
-Plugbot Enhanced is a bot for plug.dj.
+New design, fewer features but more stable.
 
-It is a brand new design but still a pre-alpha version, many old features
-such as emoticons are not included yet. I will add them back soon.
+This project is using AngularJS now, which means less code and easier to maintain.
 
 ## Installation
 
-See instructions [here](http://ebola777.github.io/)
+See instructions [Here](http://ebola777.github.io/)
 
 ## Features
 
 - Auto-woot
 - Auto-join
-- Skip video
 
 ## Version
 
-1.0.13.pre (1/22/2014)
+2.0.0 (Sep 5 2014)
 
 ## Author
 
@@ -25,6 +23,6 @@ Shawn
 
 ## License
 
-Copyright (c) 2013  Shawn
+Copyright (c) 2013-2014  Shawn
 
 See the LICENSE file for license rights and limitations (MIT).

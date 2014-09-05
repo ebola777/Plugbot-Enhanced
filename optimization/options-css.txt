@@ -1,1 +1,0 @@
---template=highest --compress_colors=true --compress_font-weight=true --remove_last_;=true --merge_selectors=0

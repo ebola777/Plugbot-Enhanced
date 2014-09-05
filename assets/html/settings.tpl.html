@@ -1,0 +1,29 @@
+<div class="plugbot-window plugbot-settings"
+     data-window="hide"
+     data-draggable
+     data-drag-id="settings"
+     data-drag-z-index="1000000"
+     data-drag-containment="#app"
+     data-drag-iframe-fix="#yt-frame"
+     data-drag-handle=".handle"
+     data-drag-grid="[8, 8]"
+     data-drag-snap="#app"
+     data-drag-snap-mode="inner"
+     data-drag-snap-tolerance="16"
+     data-drag-no-overlap=".app-header, #footer"
+     data-drag-keep-zoom="true"
+     data-ng-controller="SettingsCtrl">
+    <div class="handle">
+        <span class="title">Settings</span>
+        <span class="handle-buttons">
+            <i class="icon icon-dialog-close" data-window-id="close"></i>
+        </span>
+    </div>
+    <div class="body">
+        <ul>
+            <li class="item"
+                data-ng-repeat="item in items"
+                data-ng-click="item.click()">{{item.text}}</li>
+        </ul>
+    </div>
+</div>

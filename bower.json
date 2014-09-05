@@ -1,0 +1,24 @@
+{
+  "name": "Plugbot-Enhanced",
+  "version": "0.0.0",
+  "homepage": "https://github.com/ebola777/Plugbot-Enhanced",
+  "authors": [
+    "Shawn"
+  ],
+  "description": "An auto-woot script for plug.dj",
+  "keywords": [
+    "autowoot",
+    "plugdj"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "requirejs-domready": "~2.0.1"
+  }
+}
