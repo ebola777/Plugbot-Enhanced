@@ -10,8 +10,8 @@ See instructions [Here](http://ebola777.github.io/)
 
 ## Features
 
-- Auto-woot
-- Auto-join
+- Auto Woot
+- Auto Join
 
 ## Version
 
