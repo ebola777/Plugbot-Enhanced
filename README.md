@@ -15,7 +15,7 @@ See instructions [Here](http://ebola777.github.io/)
 
 ## Version
 
-2.0.0 (Sep 5 2014)
+2.0.1 (Sep 6 2014)
 
 ## Author
 

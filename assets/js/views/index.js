@@ -15,7 +15,7 @@ angular.module("main.tpl.html", []).run(["$templateCache", function($templateCac
     "     data-drag-snap-mode=\"outer\"\n" +
     "     data-drag-snap-tolerance=\"8\"\n" +
     "     data-drag-no-overlap=\".app-header, #footer\"\n" +
-    "     data-drag-keep-zoom=\"true\"\n" +
+    "     data-drag-keep-zoom=\"#app\"\n" +
     "     data-ng-controller=\"MainCtrl\">\n" +
     "    <div class=\"handle\">\n" +
     "        <span class=\"title\">Plugbot</span>\n" +
@@ -50,7 +50,7 @@ angular.module("settings.tpl.html", []).run(["$templateCache", function($templat
     "     data-drag-snap-mode=\"inner\"\n" +
     "     data-drag-snap-tolerance=\"16\"\n" +
     "     data-drag-no-overlap=\".app-header, #footer\"\n" +
-    "     data-drag-keep-zoom=\"true\"\n" +
+    "     data-drag-keep-zoom=\"#app\"\n" +
     "     data-ng-controller=\"SettingsCtrl\">\n" +
     "    <div class=\"handle\">\n" +
     "        <span class=\"title\">Settings</span>\n" +

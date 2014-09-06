@@ -61,8 +61,8 @@ module.exports = function (grunt) {
                                 return this.disableDebug(contents);
                             },
                             disableDebug: function (contents) {
-                                var REGEX = /var\s+VAR_AUTO_DEBUG\s*=\s*(true|false|1|0)\s*/g,
-                                    REPLACE_WITH = 'var VAR_AUTO_DEBUG = false',
+                                var REGEX = /\s+VAR_AUTO_DEBUG\s*=\s*(true|false|1|0)\s*/g,
+                                    REPLACE_WITH = ' VAR_AUTO_DEBUG = false',
                                     match = REGEX.exec(contents),
                                     posBegin,
                                     posEnd,
@@ -86,7 +86,6 @@ module.exports = function (grunt) {
                             baseUrl: './generated/js/',
                             name: 'main',
                             out: './public/js/main.min.js',
-                            requiredVariables: ['plugbot/app'],
                             paths: {
                                 angular: 'empty:',
                                 plugbot: './'
@@ -208,7 +207,7 @@ module.exports = function (grunt) {
                 'cssmin:release'
             ]);
 
-            grunt.registerTask('Assemble Html', [
+            grunt.registerTask('Assemble HTML', [
                 'html2js:main'
             ]);
 

@@ -148,17 +148,20 @@ define(['plugbot/directives/module', 'angular'], function (module, angular) {
 
                 function onResize() {
                     scope.$apply(function () {
-                        var newSize, scale, newPos;
+                        var elemKeepZoom = options.elemKeepZoom,
+                            newSize,
+                            scale,
+                            newPos;
 
-                        if (options.keepZoom) {
+                        if (elemKeepZoom.length) {
                             newSize = {
-                                width: window.width(),
-                                height: window.height()
+                                width: elemKeepZoom.width(),
+                                height: elemKeepZoom.height()
                             };
 
                             scale = {
-                                width: newSize.width / runtime.originalWindowSize.width,
-                                height: newSize.height / runtime.originalWindowSize.height
+                                width: newSize.width / runtime.originalKeepZoomSize.width,
+                                height: newSize.height / runtime.originalKeepZoomSize.height
                             };
 
                             newPos = {
@@ -166,11 +169,13 @@ define(['plugbot/directives/module', 'angular'], function (module, angular) {
                                 y: runtime.currentPosition.y * scale.height
                             };
 
+                            newPos = getPosition(newPos);
+
                             if (validatePosition(newPos)) {
                                 setElementPosition(newPos);
                             }
 
-                            runtime.originalWindowSize = newSize;
+                            runtime.originalKeepZoomSize = newSize;
                         }
                     });
                 }
@@ -243,18 +248,20 @@ define(['plugbot/directives/module', 'angular'], function (module, angular) {
                     snapMode: attrs.dragSnapMode,
                     snapTolerance: attrs.dragSnapTolerance || 8,
                     elemNoOverlap: angular.element(attrs.dragNoOverlap),
-                    keepZoom: attrs.dragKeepZoom
+                    elemKeepZoom: angular.element(attrs.dragKeepZoom)
                 };
 
                 /**
                  * Init runtime
                  */
-                runtime = {
-                    originalWindowSize: {
-                        width: window.width(),
-                        height: window.height()
-                    }
-                };
+                if (options.elemKeepZoom.length) {
+                    runtime = {
+                        originalKeepZoomSize: {
+                            width: options.elemKeepZoom.width(),
+                            height: options.elemKeepZoom.height()
+                        }
+                    };
+                }
 
                 /**
                  * Restore last position
@@ -293,7 +300,8 @@ define(['plugbot/directives/module', 'angular'], function (module, angular) {
                         containment: angular.element(attrs.dragContainment),
                         iframe: angular.element(attrs.dragIframeFix),
                         snap: angular.element(attrs.dragSnap),
-                        elemNoOverlap: angular.element(attrs.dragNoOverlap)
+                        elemNoOverlap: angular.element(attrs.dragNoOverlap),
+                        elemKeepZoom: angular.element(attrs.dragKeepZoom)
                     });
 
                     _.extend(runtime, {
