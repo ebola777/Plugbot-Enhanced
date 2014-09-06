@@ -4,7 +4,7 @@
 
 /**
  * @license
- * Copyright (C) 2013-2014  Shawn
+ * Copyright (C) 2013 Shawn
  * This program is licensed under the MIT license.
  */
 

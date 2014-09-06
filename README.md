@@ -15,7 +15,7 @@ See instructions [Here](http://ebola777.github.io/)
 
 ## Version
 
-2.0.1 (Sep 6 2014)
+2.0.2 (Sep 6 2014)
 
 ## Author
 
@@ -23,6 +23,6 @@ Shawn
 
 ## License
 
-Copyright (c) 2013-2014  Shawn
+Copyright (c) 2013 Shawn
 
 See the LICENSE file for license rights and limitations (MIT).

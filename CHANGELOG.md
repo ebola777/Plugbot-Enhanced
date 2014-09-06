@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.2 (Sep 6 2014)
+- Update license
+
 ## 2.0.1 (Sep 6 2014)
 - [FIXED] When resizing window, plugbot window might disappear
 

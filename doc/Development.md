@@ -4,16 +4,23 @@
 - Local HTTP server
 - Local SSL tunnel
 
-## Install Node packages
+## Recommended IDE and Tools
+
+- IntelliJ (Windows)
+- Sublime Text
+- HTTP File Server (Windows)
+- Stunnel
+
+## Install Node Packages
 
 Run `npm install` in root directory
 
-## Install Bower packages
+## Install Bower Packages
 
 Install Bower via `npm install -g bower`,
 and run `bower install` in root directory
 
-## Convert HTML to AngularJS javascript
+## Convert HTML to AngularJS Javascript
 
 Run `Assemble HTML` Grunt task to
 convert and merge all *.tpl.html files in `./assets/html/` to `./assets/js/views/index.js`
@@ -21,5 +28,8 @@ convert and merge all *.tpl.html files in `./assets/html/` to `./assets/js/views
 ## How to Release
 
 1. If you haven't installed Grunt yet, run `npm install` first
-2. Make sure `VAR_AUTO_DEBUG` is **true** and `RELEASE_LOCAL_REPO` is **false** in `./assets/js/bootstrap.js`
-3. Run `Assemble Release` Grunt task
+2. Make sure
+`VAR_AUTO_DEBUG`     is **true** and
+`RELEASE_LOCAL_REPO` is **false** in `./assets/js/bootstrap.js`
+3. Modify `VERSION` in `./assets/js/services/Export.js`
+4. Run `Assemble Release` Grunt task
