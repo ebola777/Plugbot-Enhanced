@@ -1,10 +1,19 @@
-.plugbot-main .body {
+.plugbot-main {
   color: #b0b0b0;
 }
-.plugbot-main .body ul {
+.plugbot-main ul {
   list-style-type: none;
 }
-.plugbot-main .body .item {
+.plugbot-main .item-url {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.plugbot-main .item-url:hover {
+  color: white;
+  background: #313641;
+}
+.plugbot-main .item {
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
@@ -14,21 +23,29 @@
   text-align: center;
   cursor: pointer;
 }
-.plugbot-main .body .enabled {
+.plugbot-main .item.disabled:hover {
+  color: white;
+  background: #313641;
+}
+.plugbot-main .enabled {
   background: #90ad2f;
   color: #eee;
   -webkit-box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.41);
   -moz-box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.41);
   box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.41);
 }
+.plugbot-main .enabled.enabled:hover {
+  color: whitesmoke;
+  background: #9dbd33;
+}
 
-.plugbot-settings .body {
+.plugbot-settings {
   color: #b0b0b0;
 }
-.plugbot-settings .body ul {
+.plugbot-settings ul {
   list-style-type: none;
 }
-.plugbot-settings .body .item {
+.plugbot-settings .item {
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;

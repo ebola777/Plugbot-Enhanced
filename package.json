@@ -1,7 +1,7 @@
 {
   "name": "Plugbot-Enhanced",
   "version": "1.0.0",
-  "description": "An auto-woot script for plug.dj",
+  "description": "A simple and elegant auto-woot script for plug.dj",
   "main": "Gruntfile.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -14,7 +14,7 @@
     "autowoot",
     "plugdj"
   ],
-  "author": "Shawn",
+  "author": "Shawn <ebola777@yahoo.com.tw>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/ebola777/Plugbot-Enhanced/issues"

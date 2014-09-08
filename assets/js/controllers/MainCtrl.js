@@ -2,42 +2,87 @@ define(['plugbot/controllers/module'], function (module) {
     'use strict';
 
     module.controller('MainCtrl', ['$scope', 'Settings', 'SiteApi', function ($scope, Settings, SiteApi) {
-        var settings = Settings.read().main;
+        var ID_MEDIA_CHANGE = 'MainCtrl.mediaLink',
+            settings = Settings.read().main;
+
+        function onItemClick(item) {
+            var isEnabled = !settings[item.id];
+
+            if (_.isFunction(item.switchEnabled)) { item.switchEnabled(isEnabled); }
+
+            settings[item.id] = isEnabled;
+            Settings.save();
+        }
+
+        function initEnabled(item) {
+            item.switchEnabled(settings[item.id]);
+        }
+
+        function onMediaResolved(media) {
+            if (media && media.url) {
+                $scope.mediaUrl = media.url;
+            } else {
+                $scope.mediaUrl = null;
+            }
+        }
 
         $scope.items = [{
             id: 'autoWoot',
             text: 'Auto Woot',
-            click: function (isEnabled) {
+            init: initEnabled,
+            handlerClick: onItemClick,
+            switchEnabled: function (isEnabled) {
                 SiteApi.autoWoot(isEnabled);
             }
         }, {
             id: 'autoJoin',
             text: 'Auto Join',
-            click: function (isEnabled) {
+            init: initEnabled,
+            handlerClick: onItemClick,
+            switchEnabled: function (isEnabled) {
                 SiteApi.autoJoin(isEnabled);
             }
         }];
 
-        $scope.isEnabled = function (item) {
-            return settings[item.id];
-        };
+        $scope.isExpanded = false;
 
-        $scope.switchEnabled = function (item) {
-            var isEnabled = !settings[item.id];
-
-            if (item.click) { item.click(isEnabled); }
-
-            settings[item.id] = isEnabled;
-            Settings.save();
-        };
+        $scope.mediaUrl = null;
 
         $scope.handleButtonClick = function () {
             return 'toggle';
         };
 
-        // init
+        $scope.isEnabled = function (item) {
+            return settings[item.id];
+        };
+
+        $scope.click = function (item) {
+            if (_.isFunction(item.handlerClick)) { item.handlerClick(item); }
+        };
+
+        $scope.getMediaLink = function () {
+            SiteApi.getMedia(onMediaResolved);
+        };
+
+        /**
+         * Init
+         */
         _.each($scope.items, function (item) {
-            item.click(settings[item.id]);
+            if (_.isFunction(item.init)) { item.init(item); }
+        });
+
+        SiteApi.getMedia(onMediaResolved);
+        SiteApi.bindMediaChange(ID_MEDIA_CHANGE, function () {
+            $scope.mediaUrl = null;
+        }, onMediaResolved);
+
+        /**
+         * Destroy
+         */
+        $scope.$on('$destroy', function () {
+            SiteApi.autoWoot(false);
+            SiteApi.autoJoin(false);
+            SiteApi.unbindMediaChange(ID_MEDIA_CHANGE);
         });
     }]);
 });

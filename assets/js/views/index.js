@@ -21,14 +21,18 @@ angular.module("main.tpl.html", []).run(["$templateCache", function($templateCac
     "        <span class=\"title\">Plugbot</span>\n" +
     "        <span class=\"handle-buttons\">\n" +
     "            <i class=\"icon icon-settings-white\" data-window-id=\"settings\" data-window-toggle=\".plugbot-settings\"></i>\n" +
+    "            <i class=\"icon\"\n" +
+    "               data-ng-class=\"{ 'icon-arrow-up': isExpanded, 'icon-arrow-down': !isExpanded }\"\n" +
+    "               data-ng-click=\"isExpanded = !isExpanded\"></i>\n" +
     "        </span>\n" +
     "    </div>\n" +
     "    <div class=\"body\">\n" +
     "        <ul>\n" +
     "            <li class=\"item\"\n" +
-    "                data-ng-class=\"{ 'enabled': isEnabled(item) }\"\n" +
     "                data-ng-repeat=\"item in items\"\n" +
-    "                data-ng-click=\"switchEnabled(item)\">{{item.text}}</li>\n" +
+    "                data-ng-class=\"{ 'enabled': isEnabled(item), disabled: !isEnabled(item) }\"\n" +
+    "                data-ng-click=\"click(item)\">{{item.text}}</li>\n" +
+    "            <a class=\"item item-url\" data-href=\"mediaUrl\" data-ng-show=\"isExpanded\">Media Link...</a>\n" +
     "        </ul>\n" +
     "    </div>\n" +
     "</div>\n" +
@@ -55,7 +59,7 @@ angular.module("settings.tpl.html", []).run(["$templateCache", function($templat
     "    <div class=\"handle\">\n" +
     "        <span class=\"title\">Settings</span>\n" +
     "        <span class=\"handle-buttons\">\n" +
-    "            <i class=\"icon icon-dialog-close\" data-window-id=\"close\"></i>\n" +
+    "            <i class=\"icon icon-dialog-close\" data-window-id=\"settings\" data-window-toggle=\".plugbot-settings\"></i>\n" +
     "        </span>\n" +
     "    </div>\n" +
     "    <div class=\"body\">\n" +

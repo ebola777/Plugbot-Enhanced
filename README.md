@@ -1,8 +1,8 @@
 # Plugbot Enhanced
 
-New design, fewer features but more stable.
+New design, More stable.
 
-This project is using AngularJS now, which means less code and easier to maintain.
+This project is using AngularJS, which means less code and easier to maintain.
 
 ## Installation
 
@@ -12,10 +12,11 @@ See instructions [Here](http://ebola777.github.io/)
 
 - Auto Woot
 - Auto Join
+- Media Link
 
 ## Version
 
-2.0.2 (Sep 6 2014)
+2.0.3 (Sep 9 2014)
 
 ## Author
 

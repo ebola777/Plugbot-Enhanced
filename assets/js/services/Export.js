@@ -3,7 +3,7 @@ define(['plugbot/services/module', 'angular'], function (module, angular) {
 
     module.factory('Export', ['$window', 'Settings', function ($window, Settings) {
         $window.plugbot = {
-            VERSION: '2.0.2',
+            VERSION: '2.0.3',
             dev: {
                 getSiteHighestZIndex: function () {
                     var elements = angular.element(

@@ -13,18 +13,17 @@ define(['plugbot/directives/module', 'angular'], function (module, angular) {
 
                     if (elemToggle.length) {
                         elemToggle[action]();
-                    } else {
-                        element[action]();
                     }
                 }
 
                 function onClick(event) {
                     scope.$apply(function () {
                         var elemButton = angular.element(event.target),
+                            idWindow = elemButton.data('window-id'),
                             action;
 
-                        if (scope.handleButtonClick) {
-                            action = scope.handleButtonClick(elemButton.data('window-id'));
+                        if (idWindow && scope.handleButtonClick) {
+                            action = scope.handleButtonClick(idWindow);
                             processActions(elemButton, action);
                         }
                     });

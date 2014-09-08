@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.3 (Sep 9 2014)
+- Add "Media Link" button, click to open current playing video/music link (Can resolve SoundCloud URL now)
+- Load faster
+- Fix Auto-Woot doesn't work if loaded too early
+
 ## 2.0.2 (Sep 6 2014)
 - Update license
 

@@ -20,27 +20,22 @@ var VAR_AUTO_DEBUG = true,
             DOMAIN: 'plug.dj',
             DEBUG: VAR_AUTO_DEBUG,
             TIMEOUT_LOADING: 5000,
-            INTERVAL_WAIT_DEPS: 1000,
             INTERVAL_RETRY: 1000,
             MAX_NUM_RETRIES: 2,
             PROTOCOL: '//',
+            intervalWaitDeps: {
+                core: 100,
+                module: 200,
+                dom: 500
+            },
             isAborted: false,
             numFiles: undefined,
             numLoadedFiles: 0,
             loadedFiles: {},
-            excludedPaths: [
-                '/',
-                '/dashboard'
-            ],
-            requiredVariables: [
-                'require',
-                'define',
-                'jQuery',
-                '_',
-                'API'
-            ],
+            excludedPaths: ['/', '/dashboard'],
+            requiredVariables: ['require', 'define', 'jQuery', '_', 'API'],
             requiredModule: 'core',
-            requiredDom: '#app',
+            requiredDoms: ['#app', '#playback'],
             dirs: {
                 script: 'js/',
                 stylesheet: 'css/',
@@ -71,8 +66,8 @@ var VAR_AUTO_DEBUG = true,
 
                     this.removeBookmarkScript();
                     this.waitCore(function () {
-                        that.waitRoom(function () {
-                            that.waitDom(function () {
+                        that.waitModule(function () {
+                            that.waitDoms(function () {
                                 that.loadFiles();
                             });
                         });
@@ -320,25 +315,36 @@ var VAR_AUTO_DEBUG = true,
                             dep = deps[i];
                         }
                     }
-                }, this.INTERVAL_WAIT_DEPS);
+                }, this.intervalWaitDeps.core);
             },
-            waitRoom: function (next) {
+            waitModule: function (next) {
                 var that = this,
                     id = setInterval(function () {
                         if (requirejs.specified(that.requiredModule)) {
                             clearInterval(id);
                             next();
                         }
-                    }, this.INTERVAL_WAIT_DEPS);
+                    }, this.intervalWaitDeps.module);
             },
-            waitDom: function (next) {
-                var that = this,
-                    id = setInterval(function () {
-                        if ($(that.requiredDom).length) {
+            waitDoms: function (next) {
+                var i = 0,
+                    id,
+                    requiredDoms = this.requiredDoms,
+                    requiredDom;
+
+                requiredDom = requiredDoms[0];
+
+                id = setInterval(function () {
+                    if ($(requiredDom).length) {
+                        i += 1;
+                        if (i >= requiredDoms.length) {
                             clearInterval(id);
                             next();
+                        } else {
+                            requiredDom = requiredDoms[i];
                         }
-                    }, this.INTERVAL_WAIT_DEPS);
+                    }
+                }, this.intervalWaitDeps.dom);
             }
         };
     }());

@@ -256,6 +256,10 @@ define(['plugbot/directives/module', 'angular'], function (module, angular) {
                  */
                 if (options.elemKeepZoom.length) {
                     runtime = {
+                        currentPosition: {
+                            x: element.prop('offsetLeft'),
+                            y: element.prop('offsetTop')
+                        },
                         originalKeepZoomSize: {
                             width: options.elemKeepZoom.width(),
                             height: options.elemKeepZoom.height()

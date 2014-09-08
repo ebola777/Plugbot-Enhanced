@@ -1,11 +1,22 @@
 @import "compass/css3/box-shadow";
 @import "compass/css3/user-interface";
 
-.plugbot-main .body {
+.plugbot-main {
   color: #b0b0b0;
 
   ul {
     list-style-type: none;
+  }
+
+  .item-url {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      color: white;
+      background: lighten(#282c35, 4%);
+    }
   }
 
   .item {
@@ -15,11 +26,21 @@
     font-size: 14px;
     text-align: center;
     cursor: pointer;
+
+    &.disabled:hover {
+      color: white;
+      background: lighten(#282c35, 4%);
+    }
   }
 
   .enabled {
     background: #90ad2f;
     color: #eee;
     @include box-shadow(inset 0 0 1px rgba(0, 0, 0, .41));
+
+    &.enabled:hover {
+      color: whitesmoke;
+      background: lighten(#90ad2f, 4%);
+    }
   }
 }

@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "homepage": "https://github.com/ebola777/Plugbot-Enhanced",
   "authors": [
-    "Shawn"
+    "Shawn <ebola777@yahoo.com.tw>"
   ],
-  "description": "An auto-woot script for plug.dj",
+  "description": "A simple and elegant auto-woot script for plug.dj",
   "keywords": [
     "autowoot",
     "plugdj"

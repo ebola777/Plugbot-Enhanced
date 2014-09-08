@@ -17,14 +17,18 @@
         <span class="title">Plugbot</span>
         <span class="handle-buttons">
             <i class="icon icon-settings-white" data-window-id="settings" data-window-toggle=".plugbot-settings"></i>
+            <i class="icon"
+               data-ng-class="{ 'icon-arrow-up': isExpanded, 'icon-arrow-down': !isExpanded }"
+               data-ng-click="isExpanded = !isExpanded"></i>
         </span>
     </div>
     <div class="body">
         <ul>
             <li class="item"
-                data-ng-class="{ 'enabled': isEnabled(item) }"
                 data-ng-repeat="item in items"
-                data-ng-click="switchEnabled(item)">{{item.text}}</li>
+                data-ng-class="{ 'enabled': isEnabled(item), disabled: !isEnabled(item) }"
+                data-ng-click="click(item)">{{item.text}}</li>
+            <a class="item item-url" data-href="mediaUrl" data-ng-show="isExpanded">Media Link...</a>
         </ul>
     </div>
 </div>
