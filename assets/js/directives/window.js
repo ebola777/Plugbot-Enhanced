@@ -43,12 +43,12 @@ define(['plugbot/directives/module', 'angular'], function (module, angular) {
                     children = elemHandleButtons.children();
 
                     if (children.length) {
-                        children.bind('click', onClick);
+                        children.on('click', onClick);
                     }
                 }
 
                 element.on('$destroy', function () {
-                    children.unbind('click', onClick);
+                    children.off('click', onClick);
                 });
             }
         };

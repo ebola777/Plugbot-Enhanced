@@ -20,12 +20,12 @@ define(['plugbot/directives/module'], function (module) {
                     }
                 }
 
-                element.bind('click', changeLink);
-                element.bind('mouseenter', changeLink);
+                element.on('click', changeLink);
+                element.on('mouseenter', changeLink);
 
                 element.on('$destroy', function () {
-                    element.unbind('click', changeLink);
-                    element.unbind('mouseenter', changeLink);
+                    element.off('click', changeLink);
+                    element.off('mouseenter', changeLink);
                 });
             }
         };

@@ -10,6 +10,7 @@ angular.module("main.tpl.html", []).run(["$templateCache", function($templateCac
     "     data-drag-containment=\"#app\"\n" +
     "     data-drag-iframe-fix=\"#yt-frame\"\n" +
     "     data-drag-handle=\".handle\"\n" +
+    "     data-drag-cancel=\".handle-buttons\"\n" +
     "     data-drag-grid=\"[4, 4]\"\n" +
     "     data-drag-snap=\".app-header, #audience, #dj-booth, #playback-container, #dj-button, #vote, .app-right, #footer\"\n" +
     "     data-drag-snap-mode=\"outer\"\n" +
@@ -49,6 +50,7 @@ angular.module("settings.tpl.html", []).run(["$templateCache", function($templat
     "     data-drag-containment=\"#app\"\n" +
     "     data-drag-iframe-fix=\"#yt-frame\"\n" +
     "     data-drag-handle=\".handle\"\n" +
+    "     data-drag-cancel=\".handle-buttons\"\n" +
     "     data-drag-grid=\"[8, 8]\"\n" +
     "     data-drag-snap=\"#app\"\n" +
     "     data-drag-snap-mode=\"inner\"\n" +

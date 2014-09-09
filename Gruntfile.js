@@ -17,25 +17,6 @@ module.exports = function (grunt) {
         },
         initGrunt: function () {
             grunt.initConfig({
-                ngAnnotate: {
-                    options: { },
-                    main: {
-                        files: [{
-                            expand: true,
-                            cwd: './assets/js/',
-                            src: [
-                                './controllers/**/*.js',
-                                './directives/**/*.js',
-                                './services/**/*.js',
-                                './views/**/*.js',
-                                './app.js',
-                                './main.js'
-                            ],
-                            dest: './generated/js/',
-                            ext: '.js'
-                        }]
-                    }
-                },
                 requirejs: {
                     options: {
                         optimize: 'uglify2',
@@ -145,9 +126,28 @@ module.exports = function (grunt) {
                         module: 'app.views',
                         base: './assets/html/'
                     },
-                    main: {
+                    views: {
                         src: ['./assets/html/**/*.tpl.html'],
                         dest: './assets/js/views/index.js'
+                    }
+                },
+                ngAnnotate: {
+                    options: { },
+                    main: {
+                        files: [{
+                            expand: true,
+                            cwd: './assets/js/',
+                            src: [
+                                './controllers/**/*.js',
+                                './directives/**/*.js',
+                                './services/**/*.js',
+                                './views/**/*.js',
+                                './app.js',
+                                './main.js'
+                            ],
+                            dest: './generated/js/',
+                            ext: '.js'
+                        }]
                     }
                 },
                 copy: {
@@ -175,6 +175,15 @@ module.exports = function (grunt) {
                     vendor: [
                         './public/vendor/requirejs-domready/'
                     ]
+                },
+                watch: {
+                    views: {
+                        files: ['./assets/html/**/*.tpl.html'],
+                        tasks: ['Assemble HTML'],
+                        options: {
+                            spawn: false
+                        }
+                    }
                 }
             });
 
@@ -187,6 +196,7 @@ module.exports = function (grunt) {
             grunt.loadNpmTasks('grunt-contrib-cssmin');
             grunt.loadNpmTasks('grunt-contrib-requirejs');
             grunt.loadNpmTasks('grunt-contrib-uglify');
+            grunt.loadNpmTasks('grunt-contrib-watch');
             grunt.loadNpmTasks('grunt-html2js');
             grunt.loadNpmTasks('grunt-ng-annotate');
 
@@ -200,6 +210,7 @@ module.exports = function (grunt) {
             grunt.registerTask('Assemble Release', [
                 'clean:generated',
                 'clean:release',
+                'html2js:views',
                 'ngAnnotate:main',
                 'requirejs:bootstrap',
                 'requirejs:main',
@@ -208,7 +219,7 @@ module.exports = function (grunt) {
             ]);
 
             grunt.registerTask('Assemble HTML', [
-                'html2js:main'
+                'html2js:views'
             ]);
 
             grunt.registerTask('Copy Bower Vendor', [
@@ -223,6 +234,10 @@ module.exports = function (grunt) {
 
             grunt.registerTask('Purge Release', [
                 'clean:release'
+            ]);
+
+            grunt.registerTask('Watch HTML', [
+                'watch:views'
             ]);
         }
     }.init();

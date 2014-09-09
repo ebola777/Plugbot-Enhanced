@@ -21,7 +21,7 @@ define(['plugbot/directives/module', 'angular'], function (module, angular) {
                     options,
                     runtime,
                     window = angular.element($window),
-                    elemHandle = element.find(attrs.dragHandle) || element;
+                    elemHandle = element.find(attrs.dragHandle);
 
                 function suspendIframe() {
                     var iframe = options.iframe,
@@ -221,10 +221,55 @@ define(['plugbot/directives/module', 'angular'], function (module, angular) {
                     resumeIframe();
                     savePosition();
 
-                    window.unbind('scroll', onScroll);
+                    window.off('scroll', onScroll);
 
-                    $document.unbind('mousemove', onMouseMove);
-                    $document.unbind('mouseup', onMouseUp);
+                    $document.off('mousemove', onMouseMove);
+                    $document.off('mouseup', onMouseUp);
+
+                    return false;
+                }
+
+                function onMouseDown($event) {
+                    start = {
+                        x: element.prop('offsetLeft'),
+                        y: element.prop('offsetTop')
+                    };
+
+                    initialMouse = {
+                        x: $event.clientX,
+                        y: $event.clientY
+                    };
+
+                    initialScroll = {
+                        x: window.scrollLeft(),
+                        y: window.scrollTop()
+                    };
+
+                    _.extend(options, {
+                        containment: angular.element(attrs.dragContainment),
+                        iframe: angular.element(attrs.dragIframeFix),
+                        snap: angular.element(attrs.dragSnap),
+                        elemNoOverlap: angular.element(attrs.dragNoOverlap),
+                        elemKeepZoom: angular.element(attrs.dragKeepZoom)
+                    });
+
+                    _.extend(runtime, {
+                        currentMouseOffset: { x: 0, y: 0 },
+                        currentScrollOffset: { x: 0, y: 0 },
+                        currentPosition: undefined,
+                        originalZIndex: element.css('z-index'),
+                        originalPointerEvents: undefined
+                    });
+
+                    setZIndex(options.zIndex);
+                    suspendIframe();
+
+                    window.on('scroll', onScroll);
+
+                    $document.on('mousemove', onMouseMove);
+                    $document.on('mouseup', onMouseUp);
+
+                    return false;
                 }
 
                 /**
@@ -279,56 +324,25 @@ define(['plugbot/directives/module', 'angular'], function (module, angular) {
                 /**
                  * Bind window
                  */
-                window.bind('resize', onResize);
+                window.on('resize', onResize);
 
                 /**
                  * Bind mousedown
                  */
-                elemHandle.bind('mousedown', function ($event) {
-                    start = {
-                        x: element.prop('offsetLeft'),
-                        y: element.prop('offsetTop')
-                    };
+                if (!elemHandle.length) { elemHandle = element; }
+                elemHandle.on('mousedown', function ($event) {
+                    var target = angular.element($event.target),
+                        ret;
 
-                    initialMouse = {
-                        x: $event.clientX,
-                        y: $event.clientY
-                    };
+                    if (!target.closest(attrs.dragCancel).length) {
+                        ret = onMouseDown($event);
+                    }
 
-                    initialScroll = {
-                        x: window.scrollLeft(),
-                        y: window.scrollTop()
-                    };
-
-                    _.extend(options, {
-                        containment: angular.element(attrs.dragContainment),
-                        iframe: angular.element(attrs.dragIframeFix),
-                        snap: angular.element(attrs.dragSnap),
-                        elemNoOverlap: angular.element(attrs.dragNoOverlap),
-                        elemKeepZoom: angular.element(attrs.dragKeepZoom)
-                    });
-
-                    _.extend(runtime, {
-                        currentMouseOffset: { x: 0, y: 0 },
-                        currentScrollOffset: { x: 0, y: 0 },
-                        currentPosition: undefined,
-                        originalZIndex: element.css('z-index'),
-                        originalPointerEvents: undefined
-                    });
-
-                    setZIndex(options.zIndex);
-                    suspendIframe();
-
-                    window.bind('scroll', onScroll);
-
-                    $document.bind('mousemove', onMouseMove);
-                    $document.bind('mouseup', onMouseUp);
-
-                    return false;
+                    return ret;
                 });
 
                 element.on('$destroy', function () {
-                    window.unbind('resize', onResize);
+                    window.off('resize', onResize);
                 });
             }
         };

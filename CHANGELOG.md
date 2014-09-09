@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.4 (Sep 9 2014)
+- Prevent window from moving when clicking window buttons
+
 ## 2.0.3 (Sep 9 2014)
 - Add "Media Link" button, click to open current playing video/music link (Can resolve SoundCloud URL now)
 - Load faster
