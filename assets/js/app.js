@@ -15,7 +15,7 @@ define([
     ]);
 
     // inject DOMs and export interface
-    app.run(['DomInjection', 'Export', _.identity]);
+    app.run(['DomInjection', 'Export', _.noop]);
 
     return app;
 });

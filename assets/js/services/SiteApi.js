@@ -38,9 +38,10 @@ define(['plugbot/services/module', 'angular'], function (module, angular) {
                     }
                 }, 1000);
             },
-            getMedia: function (callback) {
-                var media = API.getMedia(),
-                    ret;
+            getMedia: function (callback, media) {
+                var ret;
+
+                if (!media) { media = API.getMedia(); }
 
                 if (media) {
                     ret = {};
@@ -89,12 +90,12 @@ define(['plugbot/services/module', 'angular'], function (module, angular) {
                     this.stopJoin();
                 }
             },
-            onMediaChange: function () {
+            onMediaChange: function (data) {
                 var that = this;
 
                 _.each(listMediaChange, function (callback) {
                     callback.onAdvance();
-                    that.getMedia(callback.onResolved);
+                    that.getMedia(callback.onResolved, data.media);
                 });
             },
             bindMediaChange: function (id, onAdvance, onResolved) {

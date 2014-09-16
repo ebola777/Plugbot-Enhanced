@@ -254,9 +254,7 @@ var VAR_AUTO_DEBUG = true,
                 if (!this.isAborted) {
                     this.isAborted = true;
 
-                    _.defaults(options, {
-                        error: 'Unknown'
-                    });
+                    options.error = options.error || 'Unknown';
 
                     alert(
                         '[Plugbot] Failed to Load the File, Stopping Now.\n' +

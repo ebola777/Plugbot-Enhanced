@@ -33,7 +33,7 @@ angular.module("main.tpl.html", []).run(["$templateCache", function($templateCac
     "                data-ng-repeat=\"item in items\"\n" +
     "                data-ng-class=\"{ 'enabled': isEnabled(item), disabled: !isEnabled(item) }\"\n" +
     "                data-ng-click=\"click(item)\">{{item.text}}</li>\n" +
-    "            <a class=\"item item-url\" data-href=\"mediaUrl\" data-ng-show=\"isExpanded\">Media Link...</a>\n" +
+    "            <li><a class=\"item item-url\" data-href=\"mediaUrl\" data-ng-show=\"isExpanded\">Media Link...</a></li>\n" +
     "        </ul>\n" +
     "    </div>\n" +
     "</div>\n" +

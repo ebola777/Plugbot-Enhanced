@@ -4,4 +4,4 @@ define([
     'plugbot/services/DomInjection',
     'plugbot/services/Settings',
     'plugbot/services/SiteApi'
-], _.identity);
+], _.noop);

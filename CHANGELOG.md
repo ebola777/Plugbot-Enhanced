@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.5 (Sep 16 2014)
+- Fix small bugs
+
 ## 2.0.4 (Sep 9 2014)
 - Prevent window from moving when clicking window buttons
 

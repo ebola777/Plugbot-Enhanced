@@ -18,11 +18,11 @@ See instructions [Here](http://ebola777.github.io/)
 
 ## Version
 
-2.0.4 (Sep 9 2014)
+2.0.5 (Sep 16 2014)
 
 ## Author
 
-Shawn
+Shawn <ebola777@yahoo.com.tw>
 
 ## License
 
