@@ -33,9 +33,9 @@ var VAR_AUTO_DEBUG = true,
             numLoadedFiles: 0,
             loadedFiles: {},
             excludedPaths: ['/', '/dashboard'],
-            requiredVariables: ['require', 'define', 'jQuery', '_', 'API'],
+            requiredVariables: ['requirejs', 'jQuery', '_', 'API'],
             requiredModule: 'core',
-            requiredDoms: ['#app', '#playback'],
+            requiredDoms: ['#playback'],
             dirs: {
                 script: 'js/',
                 stylesheet: 'css/',
@@ -61,6 +61,7 @@ var VAR_AUTO_DEBUG = true,
 
                 if (this.verifySite()) {
                     if (this.DEBUG) {
+                        console.info('Plugbot DEBUG on.');
                         console.info('Plugbot Initializing...');
                     }
 

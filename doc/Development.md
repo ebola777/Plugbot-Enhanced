@@ -29,10 +29,11 @@ Run `Watch HTML` Grunt task to watch changes and compile automatically
 
 ## How to Release
 
-If you haven't installed Grunt yet, run `npm install` first
+If you haven't installed Grunt yet, run `npm install` first, 
+and run `npm install -g grunt-cli` to install Grunt CLI
 
-1. Make sure
-`VAR_AUTO_DEBUG`     is **true** and
-`RELEASE_LOCAL_REPO` is **false** in `./assets/js/bootstrap.js`
+1. Make sure `RELEASE_LOCAL_REPO` is **false** in `./assets/js/bootstrap.js`
 2. Modify `version` in `./assets/js/services/Export.js`
 3. Run `Assemble Release` Grunt task
+
+Source files inside `./assets/` will be compiled and compressed into `./public/` folder

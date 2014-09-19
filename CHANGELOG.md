@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.6 (Sep 20 2014)
+- Load faster
+
 ## 2.0.5 (Sep 16 2014)
 - Fix small bugs
 

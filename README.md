@@ -6,7 +6,7 @@ This project is using AngularJS, which means less code and easier to maintain.
 
 ## Installation
 
-**Please Update the Bookmark (< Sep 5 2014)**
+**Please Update the Bookmark (< Sep 20 2014)**
 
 See instructions [Here](http://ebola777.github.io/)
 
@@ -15,10 +15,6 @@ See instructions [Here](http://ebola777.github.io/)
 - Auto Woot
 - Auto Join
 - Media Link
-
-## Version
-
-2.0.5 (Sep 16 2014)
 
 ## Author
 

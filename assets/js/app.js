@@ -14,7 +14,7 @@ define([
         'app.views'
     ]);
 
-    // inject DOMs and export interface
+    // inject DOMs and export APIs
     app.run(['DomInjection', 'Export', _.noop]);
 
     return app;
