@@ -49,7 +49,7 @@
      */
     var BASE_DIR_ASSETS_DEBUG = "localhost/Plugbot-Enhanced/assets/";
     var BASE_DIR_PUBLIC_DEBUG = "localhost/Plugbot-Enhanced/public/";
-    var BASE_DIR_PUBLIC_RELEASE = "ebola777.github.io/files/Plugbot-Enhanced/public/";
+    var BASE_DIR_PUBLIC_RELEASE = "ebola777.github.io/Plugbot-Enhanced/downloads/public/";
     var DIR_SCRIPT = "js/";
     var DIR_STYLESHEET = "css/";
     var DIR_VENDOR = "bower_components/";
