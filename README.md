@@ -6,8 +6,6 @@ This project is using AngularJS, which means less code and easier to maintain.
 
 ## Installation
 
-**Please Update the Bookmark (Updated on 2015-03-01)**
-
 See instructions [Here](http://ebola777.github.io/Plugbot-Enhanced/)
 
 ## Features
