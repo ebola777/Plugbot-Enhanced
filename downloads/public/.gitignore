@@ -1,0 +1,3 @@
+### Project ###
+# Allow bower components for public use
+!bower_components

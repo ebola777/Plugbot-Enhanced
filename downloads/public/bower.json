@@ -1,0 +1,20 @@
+{
+  "name": "Plugbot-Enhanced-public",
+  "version": "0.0.0",
+  "homepage": "https://github.com/ebola777/Plugbot-Enhanced",
+  "authors": [
+    "Shawn Chang <ebola777@yahoo.com.tw>"
+  ],
+  "description": "Public folder for Plugbot Enhanced",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "requirejs-domready": "~2.0.1"
+  }
+}
