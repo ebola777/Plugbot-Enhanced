@@ -1,19 +1,20 @@
 /**
- * App bootstrap
+ * App bootstrap, load dependencies.
+ *
+ * @module plugbot/main
+ * @author ebola777@yahoo.com.tw (Shawn Chang)
+ * @copyright Shawn Chang 2013
+ * @license MIT
  */
 
-/**
- * @license
- * Copyright (C) 2013 Shawn
- * This program is licensed under the MIT license.
- */
+require(["angular", "domReady"], function (angular, domReady) {
+    "use strict";
 
-// redundant require, used to hide dependencies
-require(['angular'], function (angular) {
-    'use strict';
-
-    // require 3rd libraries here
-    require(['domReady!', 'plugbot/app'], function () {
-        angular.bootstrap(angular.element('#app'), ['app']);
+    // Wait for DOMs to be ready
+    domReady(function () {
+        // Require app
+        require(["plugbot/app"], function () {
+            angular.bootstrap(angular.element("#app"), ["app"]);
+        });
     });
 });

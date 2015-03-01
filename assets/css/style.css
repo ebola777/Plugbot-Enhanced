@@ -14,8 +14,9 @@
   background: #313641;
 }
 .plugbot-main .item {
+  -moz-user-select: -moz-none;
+  -ms-user-select: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
   user-select: none;
   margin-bottom: 1px;
   padding: 9px 0;
@@ -30,8 +31,8 @@
 .plugbot-main .enabled {
   background: #90ad2f;
   color: #eee;
-  -webkit-box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.41);
   -moz-box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.41);
+  -webkit-box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.41);
   box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.41);
 }
 .plugbot-main .enabled.enabled:hover {
@@ -46,8 +47,9 @@
   list-style-type: none;
 }
 .plugbot-settings .item {
+  -moz-user-select: -moz-none;
+  -ms-user-select: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
   user-select: none;
   margin-bottom: 1px;
   padding: 9px;
@@ -56,8 +58,8 @@
 }
 
 .plugbot-window {
-  -webkit-box-shadow: inset -2px -2px 0 -1px #313133;
   -moz-box-shadow: inset -2px -2px 0 -1px #313133;
+  -webkit-box-shadow: inset -2px -2px 0 -1px #313133;
   box-shadow: inset -2px -2px 0 -1px #313133;
   position: absolute;
   left: 100px;
@@ -69,8 +71,9 @@
   color: #eee;
 }
 .plugbot-window .handle {
+  -moz-user-select: -moz-none;
+  -ms-user-select: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
   user-select: none;
   padding: 6px 10px;
   border-bottom: 1px solid #1c1f25;

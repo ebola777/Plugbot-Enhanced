@@ -1,39 +1,74 @@
-## Prerequsites
+## Prerequisites
+
+### Platforms
 
 - [Node.js](http://nodejs.org/)
-- Local HTTP server
-- Local SSL tunnel
 
-## Recommended IDEs and Tools
+### NodeJS Packages
 
-- IntelliJ (Windows)
-- Sublime Text
-- HTTP File Server (Windows)
-- Stunnel
+- [Grunt CLI](http://gruntjs.com/getting-started#installing-the-cli)
+- [Bower](http://bower.io/#install-bower)
+- [http-server](https://github.com/nodeapps/http-server#installing-globally)
 
-## Install Node Packages
+## Install
 
-Run `npm install` in root directory
+1. Run `npm install` in root folder.
+2. Run `bower install` in `./assets` and `./public` folders.
 
-## Install Bower Packages
+## Debug
 
-Install Bower via `npm install -g bower`,
-and run `bower install` in root directory
+1. Run Grunt task "Run Local Https Server".
+2. Open browser and navigate to [Localhost](https://localhost).
+3. Ignore certificate warning.
+4. Use bookmarklets in `./bookmarklets/` to load Plug.bot files.
 
-## Convert HTML to AngularJS Javascript
+## Building Release
 
-Run `Assemble HTML` Grunt task to
-convert and merge all *.tpl.html files in `./assets/html/` to `./assets/js/views/index.js`
+1. Modify "version" in `./assets/js/services/Export.js`.
+2. Run Grunt task "Assemble Release".
 
-Run `Watch HTML` Grunt task to watch changes and compile automatically
+Results are in `./public/` folder.
 
-## How to Release
+## Converting HTML Templates to AngularJS HTML Templates
 
-If you haven't installed Grunt yet, run `npm install` first, 
-and run `npm install -g grunt-cli` to install Grunt CLI
+Run Grunt task "Assemble HTML" to convert and merge all
+"*.tpl.html" files in `./assets/html/` into `./assets/js/views/index.js`.
 
-1. Make sure `RELEASE_LOCAL_REPO` is **false** in `./assets/js/bootstrap.js`
-2. Modify `version` in `./assets/js/services/Export.js`
-3. Run `Assemble Release` Grunt task
+Run Grunt task "Watch HTML Templates" to compile automatically upon file changes.
 
-Source files inside `./assets/` will be compiled and compressed into `./public/` folder
+## File Structure
+
+    .
+    +-- assets/ (Source files)
+    |   +-- bower_components/ (Bower packages)
+    |   +-- css/ (Css files generated from Sass files)
+    |   +-- html/ (Html templates)
+    |   +-- js/ (JavaScript files)
+    |       +-- controllers/ (AngularJs controllers)
+    |       +-- directives (AngularJs directives)
+    |       +-- services (AngularJs services)
+    |       +-- views (AngularJs views generated from Html templates)
+    |       +-- .eslintrc (ESLint configuration file)
+    |       +-- app.js (Application file)
+    |       +-- bootstrap.js (Site bootstrap file, entry file, prepare dependencies)
+    |       +-- main.js (Application bootstrap file, load dependencies)
+    |   +-- sass/ (Sass files)
+    |   +-- bower.json (Bower configuration file, same as "public/bower.json")
+    +-- bookmarklets/ (Bookmarklets used to initialize Plug.bot on plug.dj web pages)
+    +-- doc/ (Documentation)
+    +-- generated/ (Generated files by NPM package ng-annotate)
+    +-- node_modules/ (NPM packages)
+    +-- preferences/ (Preference files which are not related to compilation)
+    +-- public/ (Files for production use)
+    |   +-- bower_components/ (Bower packages)
+    |   +-- css/ (Minified Css files)
+    |   +-- js/ (Minified JavaScript files)
+    |   +-- bower.json (Bower configuration file, same as "assets/bower.json")
+    +-- .gitattributes (Git configuration file, defining attributes per path)
+    +-- .gitignore (Git configuration file, specifying intentionally untracked files to ignore)
+    +-- CHANGELOG.md (Project changelog)
+    +-- config.rb (Compass configuration file)
+    +-- Gruntfile.js (Grunt task configuration file)
+    +-- LICENSE (Project license)
+    +-- package.json (NPM configuration file)
+    +-- README.md (Project readme)

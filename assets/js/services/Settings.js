@@ -1,57 +1,52 @@
-define(['plugbot/services/module'], function (module) {
-    'use strict';
+define(["plugbot/services/module"], function (module) {
+    "use strict";
 
-    module.factory('Settings', ['$window', function ($window) {
-        var KEY = 'plugbotEnhanced',
-            localStorage = $window.localStorage,
-            defaults = {
-                main: {
-                    autoWoot: true,
-                    autoJoin: false
-                },
-                window: {
-                    main: {
-                        x: 70,
-                        y: 85
-                    },
-                    settings: {
-                        x: 80,
-                        y: 100
-                    }
-                }
+    module.factory("Settings", ["$window", function ($window) {
+        var KEY = "plugbotEnhanced";
+        var INTERVAL_DEBOUNCE_SAVE = 1000;
+
+        var localStorage = $window.localStorage;
+        var defaults = {
+            main: {
+                autoWoot: true,
+                autoJoin: false
             },
-            settings;
+            window: {
+                main: {
+                    x: 70,
+                    y: 85
+                },
+                settings: {
+                    x: 80,
+                    y: 100
+                }
+            }
+        };
+        var settings;
 
         return {
             read: function () {
-                var ret;
-
-                if (settings) {
-                    ret = settings;
-                } else {
+                if (!settings) {
                     if (localStorage[KEY]) {
-                        ret = JSON.parse(localStorage[KEY]);
+                        // Get settings from local storage
+                        settings = JSON.parse(localStorage[KEY]);
                     } else {
-                        ret = this._clone();
+                        // Clone settings from defaults
+                        settings = JSON.parse(JSON.stringify(defaults));
                     }
-
-                    settings = ret;
                 }
 
-                return ret;
+                return settings;
             },
             save: function () {
-                this._debounceSave();
+                this.debounceSave();
             },
             reset: function () {
                 delete localStorage[KEY];
             },
-            _debounceSave: _.debounce(function () {
+            debounceSave: _.debounce(function () {
                 localStorage[KEY] = JSON.stringify(settings);
-            }, 1000),
-            _clone: function () {
-                return JSON.parse(JSON.stringify(defaults));
-            }
+            }, INTERVAL_DEBOUNCE_SAVE)
         };
     }]);
 });

@@ -1,9 +1,9 @@
-define(['plugbot/directives/module'], function (module) {
-    'use strict';
+define(["plugbot/directives/module"], function (module) {
+    "use strict";
 
-    module.directive('href', function () {
+    module.directive("href", function () {
         return {
-            restrict: 'A',
+            restrict: "A",
             link: function (scope, element, attrs) {
                 var variable = attrs.href;
 
@@ -11,8 +11,8 @@ define(['plugbot/directives/module'], function (module) {
                     var value = scope[variable];
 
                     if (value) {
-                        element.attr('target', '_blank');
-                        element.attr('href', value);
+                        element.attr("target", "_blank");
+                        element.attr("href", value);
                     } else {
                         if (_.isFunction(scope.getMediaLink)) {
                             scope.getMediaLink();
@@ -20,12 +20,12 @@ define(['plugbot/directives/module'], function (module) {
                     }
                 }
 
-                element.on('click', changeLink);
-                element.on('mouseenter', changeLink);
+                element.on("click", changeLink);
+                element.on("mouseenter", changeLink);
 
-                element.on('$destroy', function () {
-                    element.off('click', changeLink);
-                    element.off('mouseenter', changeLink);
+                element.on("$destroy", function () {
+                    element.off("click", changeLink);
+                    element.off("mouseenter", changeLink);
                 });
             }
         };

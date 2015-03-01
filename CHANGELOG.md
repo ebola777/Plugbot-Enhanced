@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.7 (2015-03-01)
+- Clean up code
+
 ## 2.0.6 (Sep 20 2014)
 - Load faster
 

@@ -1,11 +1,11 @@
-define(['plugbot/services/module', 'angular'], function (module, angular) {
-    'use strict';
+define(["plugbot/services/module", "angular"], function (module, angular) {
+    "use strict";
 
-    module.factory('SiteApi', ['$http', '$interval', '$window', function ($http, $interval, $window) {
-        var API = $window.API,
-            idWoot,
-            idJoin,
-            listMediaChange;
+    module.factory("SiteApi", ["$http", "$interval", "$window", function ($http, $interval, $window) {
+        var API = $window.API;
+        var idWoot;
+        var idJoin;
+        var listMediaChange;
 
         return {
             woot: function () {
@@ -14,11 +14,11 @@ define(['plugbot/services/module', 'angular'], function (module, angular) {
                 this.stopWoot();
 
                 idWoot = $interval(function () {
-                    var elemWoot = angular.element('#woot'),
-                        user = API.getUser(),
-                        dj = API.getDJ();
+                    var elemWoot = angular.element("#woot");
+                    var user = API.getUser();
+                    var dj = API.getDJ();
 
-                    if (dj && dj.id !== user.id && 0 === user.vote) {
+                    if (dj && dj.id !== user.id && user.vote === 0) {
                         elemWoot.click();
                     } else {
                         that.stopWoot();
@@ -39,29 +39,31 @@ define(['plugbot/services/module', 'angular'], function (module, angular) {
                 }, 1000);
             },
             getMedia: function (callback, media) {
-                var ret;
+                var mediaDetails;
 
-                if (!media) { media = API.getMedia(); }
+                if (!media) {
+                    media = API.getMedia();
+                }
 
                 if (media) {
-                    ret = {};
+                    mediaDetails = {};
 
-                    if (1 === media.format) {
-                        ret.format = 'youtube';
-                        ret.url = '//www.youtube.com/watch?v=' + media.cid;
-                        callback(ret);
+                    if (media.format === 1) {
+                        mediaDetails.format = "youtube";
+                        mediaDetails.url = "//www.youtube.com/watch?v=" + media.cid;
+                        callback(mediaDetails);
                     } else {
-                        ret.format = 'soundcloud';
+                        mediaDetails.format = "soundcloud";
                         $http
-                            .get('//api.soundcloud.com/tracks/' + media.cid +
-                            '.json?client_id=YOUR_CLIENT_ID')
+                            .get("//api.soundcloud.com/tracks/" + media.cid +
+                            ".json?client_id=YOUR_CLIENT_ID")
                             .then(function (data) {
-                                ret.url = data.data.permalink_url;
+                                mediaDetails.url = data.data.permalink_url;
                             }, function () {
-                                ret.url = null;
+                                mediaDetails.url = null;
                             })
                             .then(function () {
-                                callback(ret);
+                                callback(mediaDetails);
                             });
                     }
                 }

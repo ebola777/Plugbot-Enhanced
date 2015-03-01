@@ -2,7 +2,7 @@
   "name": "Plugbot-Enhanced",
   "version": "1.0.0",
   "description": "A simple and elegant auto-woot script for plug.dj",
-  "main": "Gruntfile.js",
+  "main": "plugbot-enhanced",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,10 +11,11 @@
     "url": "https://github.com/ebola777/Plugbot-Enhanced.git"
   },
   "keywords": [
-    "autowoot",
-    "plugdj"
+    "plug.dj",
+    "auto-woot",
+    "auto-join"
   ],
-  "author": "Shawn <ebola777@yahoo.com.tw>",
+  "author": "Shawn Chang <ebola777@yahoo.com.tw>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/ebola777/Plugbot-Enhanced/issues"
@@ -24,12 +25,11 @@
     "grunt": "^0.4.5",
     "grunt-contrib-clean": "^0.6.0",
     "grunt-contrib-compass": "^1.0.1",
-    "grunt-contrib-copy": "^0.5.0",
-    "grunt-contrib-cssmin": "^0.10.0",
+    "grunt-contrib-cssmin": "^0.12.2",
     "grunt-contrib-requirejs": "^0.4.4",
-    "grunt-contrib-uglify": "^0.5.1",
     "grunt-contrib-watch": "^0.6.1",
-    "grunt-html2js": "^0.2.9",
-    "grunt-ng-annotate": "^0.3.2"
+    "grunt-html2js": "^0.3.0",
+    "grunt-ng-annotate": "^0.10.0",
+    "grunt-shell": "^1.1.2"
   }
 }

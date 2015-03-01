@@ -1,14 +1,16 @@
-define(['plugbot/controllers/module'], function (module) {
-    'use strict';
+define(["plugbot/controllers/module"], function (module) {
+    "use strict";
 
-    module.controller('MainCtrl', ['$scope', 'Settings', 'SiteApi', function ($scope, Settings, SiteApi) {
-        var ID_MEDIA_CHANGE = 'MainCtrl.mediaLink',
-            settings = Settings.read().main;
+    module.controller("MainCtrl", ["$scope", "Settings", "SiteApi", function ($scope, Settings, SiteApi) {
+        var ID_MEDIA_CHANGE = "MainCtrl.mediaLink";
+        var settings = Settings.read().main;
 
         function onItemClick(item) {
             var isEnabled = !settings[item.id];
 
-            if (_.isFunction(item.switchEnabled)) { item.switchEnabled(isEnabled); }
+            if (_.isFunction(item.switchEnabled)) {
+                item.switchEnabled(isEnabled);
+            }
 
             settings[item.id] = isEnabled;
             Settings.save();
@@ -27,17 +29,17 @@ define(['plugbot/controllers/module'], function (module) {
         }
 
         $scope.items = [{
-            id: 'autoWoot',
-            text: 'Auto Woot',
-            init: initEnabled,
+            id: "autoWoot",
+            text: "Auto Woot",
+            initialize: initEnabled,
             handlerClick: onItemClick,
             switchEnabled: function (isEnabled) {
                 SiteApi.autoWoot(isEnabled);
             }
         }, {
-            id: 'autoJoin',
-            text: 'Auto Join',
-            init: initEnabled,
+            id: "autoJoin",
+            text: "Auto Join",
+            initialize: initEnabled,
             handlerClick: onItemClick,
             switchEnabled: function (isEnabled) {
                 SiteApi.autoJoin(isEnabled);
@@ -49,7 +51,7 @@ define(['plugbot/controllers/module'], function (module) {
         $scope.mediaUrl = null;
 
         $scope.handleButtonClick = function () {
-            return 'toggle';
+            return "toggle";
         };
 
         $scope.isEnabled = function (item) {
@@ -57,7 +59,9 @@ define(['plugbot/controllers/module'], function (module) {
         };
 
         $scope.click = function (item) {
-            if (_.isFunction(item.handlerClick)) { item.handlerClick(item); }
+            if (_.isFunction(item.handlerClick)) {
+                item.handlerClick(item);
+            }
         };
 
         $scope.getMediaLink = function () {
@@ -68,7 +72,9 @@ define(['plugbot/controllers/module'], function (module) {
          * Init
          */
         _.each($scope.items, function (item) {
-            if (_.isFunction(item.init)) { item.init(item); }
+            if (_.isFunction(item.initialize)) {
+                item.initialize(item);
+            }
         });
 
         SiteApi.getMedia(onMediaResolved);
@@ -79,7 +85,7 @@ define(['plugbot/controllers/module'], function (module) {
         /**
          * Destroy
          */
-        $scope.$on('$destroy', function () {
+        $scope.$on("$destroy", function () {
             SiteApi.autoWoot(false);
             SiteApi.autoJoin(false);
             SiteApi.unbindMediaChange(ID_MEDIA_CHANGE);

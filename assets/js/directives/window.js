@@ -1,15 +1,15 @@
-define(['plugbot/directives/module', 'angular'], function (module, angular) {
-    'use strict';
+define(["plugbot/directives/module", "angular"], function (module, angular) {
+    "use strict";
 
-    module.directive('window', function () {
+    module.directive("window", function () {
         return {
-            restrict: 'A',
+            restrict: "A",
             link: function (scope, element, attrs) {
-                var elemHandleButtons = element.find('.handle-buttons'),
-                    children;
+                var elemHandleButtons = element.find(".handle-buttons");
+                var children;
 
                 function processActions(elemButton, action) {
-                    var elemToggle = angular.element(elemButton.data('window-toggle'));
+                    var elemToggle = angular.element(elemButton.data("window-toggle"));
 
                     if (elemToggle.length) {
                         elemToggle[action]();
@@ -19,7 +19,7 @@ define(['plugbot/directives/module', 'angular'], function (module, angular) {
                 function onClick(event) {
                     scope.$apply(function () {
                         var elemButton = angular.element(event.target),
-                            idWindow = elemButton.data('window-id'),
+                            idWindow = elemButton.data("window-id"),
                             action;
 
                         if (idWindow && scope.handleButtonClick) {
@@ -43,12 +43,12 @@ define(['plugbot/directives/module', 'angular'], function (module, angular) {
                     children = elemHandleButtons.children();
 
                     if (children.length) {
-                        children.on('click', onClick);
+                        children.on("click", onClick);
                     }
                 }
 
-                element.on('$destroy', function () {
-                    children.off('click', onClick);
+                element.on("$destroy", function () {
+                    children.off("click", onClick);
                 });
             }
         };

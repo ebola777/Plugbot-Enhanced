@@ -1,4 +1,4 @@
 define([
-    'plugbot/controllers/MainCtrl',
-    'plugbot/controllers/SettingsCtrl'
+    "plugbot/controllers/MainCtrl",
+    "plugbot/controllers/SettingsCtrl"
 ], _.noop);

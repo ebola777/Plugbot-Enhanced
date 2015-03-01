@@ -1,15 +1,11 @@
 {
-  "name": "Plugbot-Enhanced",
+  "name": "Plugbot-Enhanced-public",
   "version": "0.0.0",
   "homepage": "https://github.com/ebola777/Plugbot-Enhanced",
   "authors": [
-    "Shawn <ebola777@yahoo.com.tw>"
+    "Shawn Chang <ebola777@yahoo.com.tw>"
   ],
-  "description": "A simple and elegant auto-woot script for plug.dj",
-  "keywords": [
-    "autowoot",
-    "plugdj"
-  ],
+  "description": "Public folder for Plugbot Enhanced",
   "license": "MIT",
   "ignore": [
     "**/.*",

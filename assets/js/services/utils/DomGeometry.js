@@ -1,15 +1,15 @@
 /*global HTMLElement */
 
-define(['plugbot/services/module', 'angular'], function (module, angular) {
-    'use strict';
+define(["plugbot/services/module", "angular"], function (module, angular) {
+    "use strict";
 
-    module.factory('DomGeometry', ['$window', function ($window) {
+    module.factory("DomGeometry", ["$window", function ($window) {
         return {
             isContainRect: function (targetRect, sourceRect) {
                 var ret = {
-                        x: false,
-                        y: false
-                    };
+                    x: false,
+                    y: false
+                };
 
                 if (targetRect.left - sourceRect.left <= 0 &&
                     sourceRect.right - targetRect.right <= 0) {
@@ -31,35 +31,35 @@ define(['plugbot/services/module', 'angular'], function (module, angular) {
                 sourceRect.top - targetRect.bottom < 0);
             },
             isContain: function (target, source) {
-                var targetRect = this.getBoundingRect(target),
-                    sourceRect = this.getBoundingRect(source);
+                var targetRect = this.getBoundingRect(target);
+                var sourceRect = this.getBoundingRect(source);
 
                 return this.isContainRect(targetRect, sourceRect);
             },
             isIntersect: function (target, source) {
-                var targetRect = this.getBoundingRect(target),
-                    sourceRect = this.getBoundingRect(source);
+                var targetRect = this.getBoundingRect(target);
+                var sourceRect = this.getBoundingRect(source);
 
                 return this.isIntersectRect(targetRect, sourceRect);
             },
             getSnap: function (target, source, snapMode, tolerance) {
-                var i,
-                    distance,
-                    targetRect = this.getBoundingRect(target),
-                    sourceRect = this.getBoundingRect(source),
-                    propsX = ['left', 'right'],
-                    propsY = ['top', 'bottom'],
-                    indexes = [],
-                    ret = {
-                        x: 0,
-                        y: 0
-                    };
+                var i;
+                var distance;
+                var targetRect = this.getBoundingRect(target);
+                var sourceRect = this.getBoundingRect(source);
+                var propsX = ["left", "right"];
+                var propsY = ["top", "bottom"];
+                var indexes = [];
+                var ret = {
+                    x: 0,
+                    y: 0
+                };
 
-                if ('inner' === snapMode || 'both' === snapMode) {
+                if (snapMode === "inner" || snapMode === "both") {
                     indexes.push([0, 0], [1, 1]);
                 }
 
-                if ('outer' === snapMode || 'both' === snapMode) {
+                if (snapMode === "outer" || snapMode === "both") {
                     indexes.push([0, 1], [1, 0]);
                 }
 
@@ -67,21 +67,25 @@ define(['plugbot/services/module', 'angular'], function (module, angular) {
                     distance = targetRect[propsX[indexes[i][0]]] - sourceRect[propsX[indexes[i][1]]];
                     if (Math.abs(distance) <= tolerance &&
                         targetRect.top <= sourceRect.bottom &&
-                        sourceRect.top <= targetRect.bottom) { ret.x += distance; }
+                        sourceRect.top <= targetRect.bottom) {
+                        ret.x += distance;
+                    }
 
                     distance = targetRect[propsY[indexes[i][0]]] - sourceRect[propsY[indexes[i][1]]];
                     if (Math.abs(distance) <= tolerance &&
                         targetRect.left <= sourceRect.right &&
-                        sourceRect.left <= targetRect.right) { ret.y += distance; }
+                        sourceRect.left <= targetRect.right) {
+                        ret.y += distance;
+                    }
                 }
 
                 return ret;
             },
             getRestraint: function (target, source) {
-                var targetRect = this.getBoundingRect(target),
-                    sourceRect = this.getBoundingRect(source),
-                    isContain = this.isContainRect(targetRect, sourceRect),
-                    ret = sourceRect;
+                var targetRect = this.getBoundingRect(target);
+                var sourceRect = this.getBoundingRect(source);
+                var isContain = this.isContainRect(targetRect, sourceRect);
+                var ret = sourceRect;
 
                 if (!isContain.x) {
                     if (sourceRect.left < targetRect.left) {
@@ -118,13 +122,13 @@ define(['plugbot/services/module', 'angular'], function (module, angular) {
                 target.bottom += source.y;
             },
             getBoundingRect: function (element) {
-                var window = angular.element($window),
-                    rect,
-                    props = ['left', 'right', 'top', 'bottom', 'width', 'height'],
-                    scroll = {
-                        x: window.scrollLeft(),
-                        y: window.scrollTop()
-                    };
+                var window = angular.element($window);
+                var rect;
+                var props = ["left", "right", "top", "bottom", "width", "height"];
+                var scroll = {
+                    x: window.scrollLeft(),
+                    y: window.scrollTop()
+                };
 
                 if (element instanceof angular.element) {
                     rect = _.pick(element[0].getBoundingClientRect(), props);
