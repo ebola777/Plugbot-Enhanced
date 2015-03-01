@@ -172,7 +172,7 @@ module.exports = function (grunt) {
         "cssmin:release"
     ]);
 
-    grunt.registerTask("Convert Html Templates", [
+    grunt.registerTask("Convert HTML Templates", [
         "html2js:htmlTemplates"
     ]);
 
@@ -185,11 +185,11 @@ module.exports = function (grunt) {
         "clean:release"
     ]);
 
-    grunt.registerTask("Watch Html Templates", [
+    grunt.registerTask("Watch HTML Templates", [
         "watch:htmlTemplates"
     ]);
 
-    grunt.registerTask("Run Local Https Server", [
+    grunt.registerTask("Run Local HTTPS Server", [
         "shell:runLocalHttpsServer"
     ]);
 };

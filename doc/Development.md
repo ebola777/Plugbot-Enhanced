@@ -17,7 +17,7 @@
 
 ## Debug
 
-1. Run Grunt task "Run Local Https Server".
+1. Run Grunt task "Run Local HTTPS Server".
 2. Open browser and navigate to [Localhost](https://localhost).
 3. Ignore certificate warning.
 4. Use bookmarklets in `./bookmarklets/` to load Plug.bot files.
@@ -25,13 +25,13 @@
 ## Building Release
 
 1. Modify "version" in `./assets/js/services/Export.js`.
-2. Run Grunt task "Assemble Release".
+2. Run Grunt task "Build Release".
 
 Results are in `./public/` folder.
 
 ## Converting HTML Templates to AngularJS HTML Templates
 
-Run Grunt task "Assemble HTML" to convert and merge all
+Run Grunt task "Convert HTML Templates" to convert and merge all
 "*.tpl.html" files in `./assets/html/` into `./assets/js/views/index.js`.
 
 Run Grunt task "Watch HTML Templates" to compile automatically upon file changes.
@@ -42,12 +42,12 @@ Run Grunt task "Watch HTML Templates" to compile automatically upon file changes
     +-- assets/ (Source files)
     |   +-- bower_components/ (Bower packages)
     |   +-- css/ (Css files generated from Sass files)
-    |   +-- html/ (Html templates)
+    |   +-- html/ (HTML templates)
     |   +-- js/ (JavaScript files)
     |       +-- controllers/ (AngularJs controllers)
     |       +-- directives (AngularJs directives)
     |       +-- services (AngularJs services)
-    |       +-- views (AngularJs views generated from Html templates)
+    |       +-- views (AngularJs views generated from HTML templates)
     |       +-- .eslintrc (ESLint configuration file)
     |       +-- app.js (Application file)
     |       +-- bootstrap.js (Site bootstrap file, entry file, prepare dependencies)
