@@ -134,8 +134,8 @@ module.exports = function (grunt) {
                 command: "http-server ../" +
                 " -p 443 -a localhost" +
                 " --ssl" +
-                " --cert ./preferences/Certificates/ryans-cert.pem" +
-                " --key ./preferences/Certificates/ryans-key.pem"
+                " --cert ./preferences/certificates/ryans-cert.pem" +
+                " --key ./preferences/certificates/ryans-key.pem"
             }
         }
     });
