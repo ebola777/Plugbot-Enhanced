@@ -1,10 +1,10 @@
-# Plugbot Enhanced
+# Plug.bot Enhanced
 
 New design, More stable.
 
 This project is using AngularJS, which means less code and easier to maintain.
 
-## Installation
+## Install
 
 See instructions [Here](http://ebola777.github.io/Plugbot-Enhanced/)
 
