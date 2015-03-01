@@ -5,4 +5,4 @@
 
 ## Online
 
-- [GitIgnore Generator](http://www.gitignore.io/)
+- [GitIgnore Generator](https://www.gitignore.io/)

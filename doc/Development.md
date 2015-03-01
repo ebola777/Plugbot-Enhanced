@@ -4,7 +4,7 @@
 
 - [Node.js](http://nodejs.org/)
 
-### NodeJS Packages
+### NPM Packages
 
 - [Grunt CLI](http://gruntjs.com/getting-started#installing-the-cli)
 - [Bower](http://bower.io/#install-bower)
