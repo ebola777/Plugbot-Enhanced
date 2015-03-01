@@ -426,9 +426,14 @@
      */
 
     function loadDevelopmentVariables() {
+        // Default values
+        DEBUG = false;
+        BASE_DIR_TYPE = "public release";
+
+        // Use specified values
         if (window.plugbot && window.plugbot.dev) {
-            DEBUG = window.plugbot.dev.DEBUG || false;
-            BASE_DIR_TYPE = window.plugbot.dev.BASE_DIR_TYPE || "public release";
+            DEBUG = window.plugbot.dev.DEBUG || DEBUG;
+            BASE_DIR_TYPE = window.plugbot.dev.BASE_DIR_TYPE || BASE_DIR_TYPE;
         }
     }
 
