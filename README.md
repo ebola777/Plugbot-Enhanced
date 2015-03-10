@@ -1,6 +1,6 @@
 # Plug.bot Enhanced
 
-A simple and elegant auto-woot script for plug.dj.
+A simple and elegant auto-woot script for [plug.dj](https://plug.dj/).
 
 New design. More stable.
 
