@@ -1,8 +1,8 @@
 # Plug.bot Enhanced
 
-New design, More stable.
+A simple and elegant auto-woot script for plug.dj.
 
-This project is using AngularJS, which means less code and easier to maintain.
+New design. More stable.
 
 ## Install
 
