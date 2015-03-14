@@ -28,10 +28,10 @@ define(["plugbot/services/module"], function (module) {
             read: function () {
                 if (!settings) {
                     if (localStorage[KEY]) {
-                        // Get settings from local storage
+                        // Get settings from local storage.
                         settings = JSON.parse(localStorage[KEY]);
                     } else {
-                        // Clone settings from defaults
+                        // Clone settings from defaults.
                         settings = JSON.parse(JSON.stringify(defaults));
                     }
                 }

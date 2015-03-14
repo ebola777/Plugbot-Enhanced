@@ -6,5 +6,7 @@ define(["plugbot/services/module", "angular"], function (module, angular) {
 
         elemApp.append($templateCache.get("main.tpl.html"));
         elemApp.append($templateCache.get("settings.tpl.html"));
+
+        return {};
     }]);
 });

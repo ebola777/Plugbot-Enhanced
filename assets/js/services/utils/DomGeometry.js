@@ -1,5 +1,3 @@
-/*global HTMLElement */
-
 define(["plugbot/services/module", "angular"], function (module, angular) {
     "use strict";
 

@@ -31,7 +31,7 @@
      * Preferences of site
      */
     var DOMAIN = "plug.dj";
-    var PROTOCOL = "//";
+    var PROTOCOL = "https://";
 
     /*
      * Preferences of loading
@@ -88,22 +88,22 @@
         var currentDomain = document.domain;
         var currentPath = window.location.pathname;
         var excludedSitePath;
-        var isValid = true;
 
-        if (currentDomain.toLowerCase() === DOMAIN.toLowerCase()) {
+        if (DEBUG) {
+            return true;
+        } else if (currentDomain.toLowerCase() === DOMAIN.toLowerCase()) {
             for (excludedSitePath in excludedSitePaths) {
                 if (excludedSitePaths.hasOwnProperty(excludedSitePath)) {
                     if (currentPath.toLowerCase() === excludedSitePaths[excludedSitePath].toLowerCase()) {
-                        isValid = false;
-                        break;
+                        return false;
                     }
                 }
             }
-        } else {
-            isValid = false;
-        }
 
-        return isValid;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     function getUrlWithoutTrailingSlash(url) {
@@ -215,7 +215,7 @@
         requirejs.config({
             paths: {
                 plugbot: getUrlWithoutTrailingSlash(baseDir + DIR_SCRIPT),
-                angular: "//ajax.googleapis.com/ajax/libs/angularjs/1.2.23/angular.min",
+                angular: "https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min",
                 domReady: vendorDir + "requirejs-domready/domReady"
             },
             shim: {

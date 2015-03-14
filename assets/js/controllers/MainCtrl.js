@@ -68,8 +68,8 @@ define(["plugbot/controllers/module"], function (module) {
             SiteApi.getMedia(onMediaResolved);
         };
 
-        /**
-         * Init
+        /*
+         * Initialize
          */
         _.each($scope.items, function (item) {
             if (_.isFunction(item.initialize)) {
@@ -82,7 +82,7 @@ define(["plugbot/controllers/module"], function (module) {
             $scope.mediaUrl = null;
         }, onMediaResolved);
 
-        /**
+        /*
          * Destroy
          */
         $scope.$on("$destroy", function () {

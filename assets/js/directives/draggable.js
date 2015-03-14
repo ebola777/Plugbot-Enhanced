@@ -17,7 +17,6 @@
  * drag-no-overlap      =<String>, selector, keep main element from overlapping with these elements
  * drag-keep-zoom       =<String>, selector, keep main element position relative to this element
  */
-
 define(["plugbot/directives/module", "angular"], function (module, angular) {
     "use strict";
 
@@ -25,40 +24,32 @@ define(["plugbot/directives/module", "angular"], function (module, angular) {
         function ($document, $window, DomGeometry, Settings) {
             return {
                 restrict: "A",
-                scope: {
-                    dragGrid: "&"
-                },
-                controller: function ($scope) {
-                    var settingsWindow;
-
-                    $scope.settings = Settings.read();
-
-                    settingsWindow = $scope.settings.window;
-
-                    $scope.loadPosition = function (id, fnValidate, fnSetPosition) {
-                        if (id && settingsWindow[id]) {
-                            if (fnValidate(settingsWindow[id])) {
-                                fnSetPosition(settingsWindow[id]);
-                            }
-                        }
-                    };
-
-                    $scope.savePosition = function (id, currentPosition) {
-                        if (id && currentPosition) {
-                            settingsWindow[id] = currentPosition;
-                            Settings.save();
-                        }
-                    };
-                },
                 link: function (scope, element, attrs) {
-                    var start;
+                    var settings = Settings.read();
+                    var settingsWindow = settings.window;
+                    var initialPos;
                     var initialMouse;
                     var initialScroll;
                     var options;
                     var runtime;
                     var window = angular.element($window);
                     var originalZIndex = element.css("z-index");
-                    var elemHandle = element.find(attrs.dragHandle);
+                    var elHandle = element.find(attrs.dragHandle);
+
+                    function loadPosition(id, fnValidate, fnSetPosition) {
+                        if (id && settingsWindow[id]) {
+                            if (fnValidate(settingsWindow[id])) {
+                                fnSetPosition(settingsWindow[id]);
+                            }
+                        }
+                    }
+
+                    function savePosition(id, currentPosition) {
+                        if (id && currentPosition) {
+                            settingsWindow[id] = currentPosition;
+                            Settings.save();
+                        }
+                    }
 
                     function suspendIframe() {
                         var iframe = options.iframe;
@@ -77,30 +68,6 @@ define(["plugbot/directives/module", "angular"], function (module, angular) {
 
                         if (iframe.length) {
                             iframe.css("pointer-events", runtime.originalPointerEvents);
-                        }
-                    }
-
-                    function setAbsolute() {
-                        if (options.relative) {
-                            element.css({
-                                position: "absolute",
-                                left: element.prop("offsetLeft"),
-                                top: element.prop("offsetTop"),
-                                width: element.outerWidth(),
-                                height: element.outerHeight()
-                            });
-                        }
-                    }
-
-                    function setRelative() {
-                        if (options.relative) {
-                            element.css({
-                                position: "relative",
-                                left: "",
-                                top: "",
-                                width: "",
-                                height: ""
-                            });
                         }
                     }
 
@@ -251,8 +218,8 @@ define(["plugbot/directives/module", "angular"], function (module, angular) {
                                 y: window.scrollTop() - initialScroll.y
                             };
                             var pos = {
-                                x: start.x + mouseOffset.x + scrollOffset.x,
-                                y: start.y + mouseOffset.y + scrollOffset.y
+                                x: initialPos.x + mouseOffset.x + scrollOffset.x,
+                                y: initialPos.y + mouseOffset.y + scrollOffset.y
                             };
 
                             runtime.currentScrollOffset = scrollOffset;
@@ -268,8 +235,8 @@ define(["plugbot/directives/module", "angular"], function (module, angular) {
                             y: event.clientY - initialMouse.y
                         };
                         var pos = {
-                            x: start.x + mouseOffset.x + scrollOffset.x,
-                            y: start.y + mouseOffset.y + scrollOffset.y
+                            x: initialPos.x + mouseOffset.x + scrollOffset.x,
+                            y: initialPos.y + mouseOffset.y + scrollOffset.y
                         };
 
                         runtime.currentMouseOffset = mouseOffset;
@@ -280,9 +247,8 @@ define(["plugbot/directives/module", "angular"], function (module, angular) {
                     }
 
                     function onMouseUp() {
-                        scope.savePosition(options.id, runtime.currentPosition);
+                        savePosition(options.id, runtime.currentPosition);
 
-                        setRelative();
                         setZIndex(originalZIndex);
                         resumeIframe();
 
@@ -298,7 +264,7 @@ define(["plugbot/directives/module", "angular"], function (module, angular) {
                         var isKeepRunningEvents;
 
                         if (!target.closest(attrs.dragCancel).length) {
-                            start = {
+                            initialPos = {
                                 x: element.prop("offsetLeft"),
                                 y: element.prop("offsetTop")
                             };
@@ -328,7 +294,6 @@ define(["plugbot/directives/module", "angular"], function (module, angular) {
                                 originalPointerEvents: undefined
                             });
 
-                            setAbsolute();
                             setZIndex(options.zIndex);
                             suspendIframe();
 
@@ -342,8 +307,8 @@ define(["plugbot/directives/module", "angular"], function (module, angular) {
                         return isKeepRunningEvents;
                     }
 
-                    /**
-                     * Init options
+                    /*
+                     * Initialize options
                      */
                     options = {
                         id: attrs.dragId,
@@ -352,7 +317,7 @@ define(["plugbot/directives/module", "angular"], function (module, angular) {
                         containment: angular.element(attrs.dragContainment),
                         containmentTolerance: attrs.dragContainmentTolerance,
                         iframe: angular.element(attrs.dragIframeFix),
-                        grid: scope.dragGrid(),
+                        grid: JSON.parse(attrs.dragGrid),
                         snap: angular.element(attrs.dragSnap),
                         snapMode: attrs.dragSnapMode,
                         snapTolerance: attrs.dragSnapTolerance || 8,
@@ -360,8 +325,8 @@ define(["plugbot/directives/module", "angular"], function (module, angular) {
                         elemKeepZoom: angular.element(attrs.dragKeepZoom)
                     };
 
-                    /**
-                     * Init runtime
+                    /*
+                     * Initialize runtime
                      */
                     runtime = {
                         currentPosition: {
@@ -374,29 +339,24 @@ define(["plugbot/directives/module", "angular"], function (module, angular) {
                         }
                     };
 
-                    /**
-                     * Init elements
+                    /*
+                     * Initialize elements
                      */
-                    if (!elemHandle.length) {
-                        elemHandle = element;
+                    if (!elHandle.length) {
+                        elHandle = element;
                     }
 
-                    /**
-                     * Init style
-                     */
-                    setRelative();
-
-                    /**
+                    /*
                      * Load last position
                      */
-                    scope.loadPosition(options.id, validatePosition, setElementPosition);
+                    loadPosition(options.id, validatePosition, setElementPosition);
 
                     window.on("resize", onResize);
-                    elemHandle.on("mousedown", onMouseDown);
+                    elHandle.on("mousedown", onMouseDown);
 
                     element.on("$destroy", function () {
                         window.off("resize", onResize);
-                        elemHandle.off("mousedown", onMouseDown);
+                        elHandle.off("mousedown", onMouseDown);
                     });
                 }
             };

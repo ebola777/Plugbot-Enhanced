@@ -29,14 +29,14 @@ define(["plugbot/directives/module", "angular"], function (module, angular) {
                     });
                 }
 
-                /**
+                /*
                  * Default visibility
                  */
-                if (attrs.window) {
-                    element[attrs.window]();
+                if (attrs.window && attrs.window === "hide") {
+                    element.hide();
                 }
 
-                /**
+                /*
                  * Bind handle buttons
                  */
                 if (elemHandleButtons.length) {
