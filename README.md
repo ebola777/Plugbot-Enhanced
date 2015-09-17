@@ -14,6 +14,11 @@ See instructions [Here](http://ebola777.github.io/Plugbot-Enhanced/)
 - Auto Join
 - Media Link
 
+## FAQ
+
+- Q: It's not working after changing the community?
+- A: Reload the webpage and reload the script.
+
 ## Author
 
 Shawn Chang <ebola777@yahoo.com.tw>
