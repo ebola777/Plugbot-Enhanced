@@ -19,22 +19,22 @@
 
 1. Run Grunt task "Run Local HTTPS Server".
 2. Open browser and navigate to [Localhost](https://localhost).
-3. Ignore certificate warning.
-4. Use bookmarklets in `./bookmarklets/` to load Plug.bot files.
+3. Bypass certificate warning.
+4. Use any bookmarklets in `./bookmarklets/` to load Plug.bot files.
 
 ## Building Release
 
 1. Modify "version" in `./assets/js/services/Export.js`.
-2. Run Grunt task "Build Release".
+2. Run the Grunt task "Build Release".
 
 Results are in `./public/` folder.
 
 ## Converting HTML Templates to AngularJS HTML Templates
 
-Run Grunt task "Convert HTML Templates" to convert and merge all
+Run the Grunt task "Convert HTML Templates" to convert and merge all
 "*.tpl.html" files in `./assets/html/` into `./assets/js/views/index.js`.
 
-Run Grunt task "Watch HTML Templates" to compile automatically upon file changes.
+Run the Grunt task "Watch HTML Templates" to compile automatically upon file changes.
 
 ## File Structure
 

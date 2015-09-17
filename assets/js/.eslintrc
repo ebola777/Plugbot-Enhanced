@@ -5,10 +5,23 @@
     "jquery": true
   },
   "rules": {
-    "max-depth": [1, 4],
-    "max-len": [1, 120, 4],
-    "max-params": [1, 3],
-    "max-statements": [1, 15]
+    "max-depth": [
+      1,
+      4
+    ],
+    "max-len": [
+      1,
+      120,
+      4
+    ],
+    "max-params": [
+      1,
+      3
+    ],
+    "max-statements": [
+      1,
+      15
+    ]
   },
   "globals": {
     "requirejs": false,

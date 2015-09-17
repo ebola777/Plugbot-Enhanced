@@ -28,7 +28,8 @@
             <li class="item"
                 data-ng-repeat="item in items"
                 data-ng-class="{ 'enabled': isEnabled(item), disabled: !isEnabled(item) }"
-                data-ng-click="click(item)">{{item.text}}</li>
+                data-ng-click="click(item)">{{item.text}}
+            </li>
             <li><a class="item item-url" data-href="mediaUrl" data-ng-show="isExpanded">Media Link...</a></li>
         </ul>
     </div>

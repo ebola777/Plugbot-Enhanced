@@ -2,7 +2,7 @@ define(["plugbot/controllers/module"], function (module) {
     "use strict";
 
     module.controller("MainCtrl", ["$scope", "Settings", "SiteApi", function ($scope, Settings, SiteApi) {
-        var ID_MEDIA_CHANGE = "MainCtrl.mediaLink";
+        var EVENT_ID_MEDIA_CHANGE = "main_ctrl.media_link";
         var settings = Settings.read().main;
 
         function onItemClick(item) {
@@ -34,7 +34,7 @@ define(["plugbot/controllers/module"], function (module) {
             initialize: initEnabled,
             handlerClick: onItemClick,
             switchEnabled: function (isEnabled) {
-                SiteApi.autoWoot(isEnabled);
+                SiteApi.switchAutoWoot(isEnabled);
             }
         }, {
             id: "autoJoin",
@@ -42,7 +42,7 @@ define(["plugbot/controllers/module"], function (module) {
             initialize: initEnabled,
             handlerClick: onItemClick,
             switchEnabled: function (isEnabled) {
-                SiteApi.autoJoin(isEnabled);
+                SiteApi.switchAutoJoin(isEnabled);
             }
         }];
 
@@ -78,7 +78,7 @@ define(["plugbot/controllers/module"], function (module) {
         });
 
         SiteApi.getMedia(onMediaResolved);
-        SiteApi.bindMediaChange(ID_MEDIA_CHANGE, function () {
+        SiteApi.bindMediaChange(EVENT_ID_MEDIA_CHANGE, function () {
             $scope.mediaUrl = null;
         }, onMediaResolved);
 
@@ -86,9 +86,9 @@ define(["plugbot/controllers/module"], function (module) {
          * Destroy
          */
         $scope.$on("$destroy", function () {
-            SiteApi.autoWoot(false);
-            SiteApi.autoJoin(false);
-            SiteApi.unbindMediaChange(ID_MEDIA_CHANGE);
+            SiteApi.switchAutoWoot(false);
+            SiteApi.switchAutoJoin(false);
+            SiteApi.unbindMediaChange(EVENT_ID_MEDIA_CHANGE);
         });
     }]);
 });

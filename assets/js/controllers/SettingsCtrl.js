@@ -5,8 +5,8 @@ define(["plugbot/controllers/module"], function (module) {
         $scope.items = [{
             text: "Reset Settings",
             click: function () {
-                if ($window.confirm("Reset Settings?\n" +
-                    "Please Reload the Page after Resetting.")) {
+                if ($window.confirm("Reset settings?\n" +
+                        "Please reload the webpage after clicking OK.")) {
                     Settings.reset();
                 }
             }

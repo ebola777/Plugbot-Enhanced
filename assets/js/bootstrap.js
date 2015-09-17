@@ -1,12 +1,12 @@
 /**
- * <p>Site bootstrap file, entry file, prepare dependencies.</p>
+ * <p>Bootstrap file for preparing dependencies.</p>
  * <p>Module loading order: bootstrap.js -> main.js -> app.js.</p>
  * <p>In this module, bootstrapping steps are as follows:
  * <ol>
- *     <li>Check whether the current site is a plug.dj room</li>
- *     <li>Wait for dependencies</li>
- *     <li>Load external files</li>
- *     <li>Run app bootstrap (plugbot/main)</li>
+ *     <li>Check whether the current webpage is a plug.dj room.</li>
+ *     <li>Wait for dependencies.</li>
+ *     <li>Load external files.</li>
+ *     <li>Run app bootstrap file (plugbot/main).</li>
  * </ol>
  * </p>
  *
@@ -22,30 +22,30 @@
     "use strict";
 
     /*
-     * Development
+     * Development environment variables.
      */
     var DEBUG;
     var BASE_DIR_TYPE;
 
     /*
-     * Preferences of site
+     * Website preferences.
      */
     var DOMAIN = "plug.dj";
     var PROTOCOL = "https://";
 
     /*
-     * Preferences of loading
+     * Loading preferences.
      */
     var TIMEOUT_LOADING = 5000;
     var INTERVAL_RETRY = 1000;
     var MAX_RETRY_TIMES = 2;
-    var INTERVAL_WAIT_CORE = 100;
-    var INTERVAL_WAIT_MODULE = 200;
-    var INTERVAL_WAIT_DOM = 500;
+    var INTERVAL_WAIT_JAVASCRIPT_VARIABLES = 100;
+    var INTERVAL_WAIT_REQUIREJS_MODULES = 200;
+    var INTERVAL_WAIT_WEBPAGE_ELEMENTS = 500;
     var PROJECT_FILE_PREFIX = "project!";
 
     /*
-     * Preferences of location
+     * Resource preferences.
      */
     var BASE_DIR_ASSETS_DEBUG = "localhost/Plugbot-Enhanced/assets/";
     var BASE_DIR_PUBLIC_DEBUG = "localhost/Plugbot-Enhanced/public/";
@@ -55,28 +55,29 @@
     var DIR_VENDOR = "bower_components/";
     var FILE_APP_ASSETS = "main.js";
     var FILE_APP_PUBLIC = "main.min.js";
+    var excludedWebSitePaths = ["/", "/dashboard"];
+    var requiredJavaScriptVariables = ["requirejs", "jQuery", "_", "API"];
+    var requiredRequireJSModules = ["core"];
+    var requiredWebPageElements = ["#playback"];
+    var scripts = [];
+    var stylesheets = ["project!style.css"];
 
     /*
-     * Loading
+     * Runtime properties.
      */
+
     var baseDirUrl;
     var mainFileUrl;
     var isAborted = false;
     var totalFileCount = 0;
     var loadedFileCount = 0;
     var loadedFiles = {};
-    var excludedSitePaths = ["/", "/dashboard"];
-    var requiredVariables = ["requirejs", "jQuery", "_", "API"];
-    var requiredModule = "core";
-    var requiredDoms = ["#playback"];
-    var scripts = [];
-    var stylesheets = ["project!style.css"];
 
     /*
      * Utilities
      */
 
-    function removeBookmarkScript() {
+    function removeBookmarkletScript() {
         var src = document.getElementById("plugbot-js");
 
         if (src) {
@@ -84,7 +85,7 @@
         }
     }
 
-    function isSiteValid() {
+    function isWebPageIntended() {
         var currentDomain = document.domain;
         var currentPath = window.location.pathname;
         var excludedSitePath;
@@ -92,9 +93,9 @@
         if (DEBUG) {
             return true;
         } else if (currentDomain.toLowerCase() === DOMAIN.toLowerCase()) {
-            for (excludedSitePath in excludedSitePaths) {
-                if (excludedSitePaths.hasOwnProperty(excludedSitePath)) {
-                    if (currentPath.toLowerCase() === excludedSitePaths[excludedSitePath].toLowerCase()) {
+            for (excludedSitePath in excludedWebSitePaths) {
+                if (excludedWebSitePaths.hasOwnProperty(excludedSitePath)) {
+                    if (currentPath.toLowerCase() === excludedWebSitePaths[excludedSitePath].toLowerCase()) {
                         return false;
                     }
                 }
@@ -180,13 +181,13 @@
         $(document.head).append(link);
     }
 
-    function convertFilesUrl(listIn, projectDir) {
-        var i;
+    function getConvertedFilePaths(listIn, projectDir) {
         var listOut = [];
         var baseDir = getBaseDir();
         var url;
         var urlProjectPrefixHead;
         var urlProjectPrefixTail;
+        var i;
 
         for (i = 0; i < listIn.length; ++i) {
             url = listIn[i];
@@ -208,7 +209,7 @@
      * Configuration
      */
 
-    function configureRequireJs() {
+    function configureRequireJS() {
         var baseDir = getBaseDir();
         var vendorDir = baseDir + DIR_VENDOR;
 
@@ -233,15 +234,15 @@
     function loadApp() {
         var mainFile = getMainFile();
 
-        configureRequireJs();
+        configureRequireJS();
 
-        // Make sure angular is exported first, because main.js and views/index.js are combined but views/index.js
-        // doesn't support AMD and use angular as globals, if didn't wrap with it, there would be "angular is not
-        // defined" error.
+        // Make sure "angular" is required first, because "main.js" and "views/index.js" will be combined after the
+        // minification process but "views/index.js" uses "angular" directly without using RequireJS. If it didn't
+        // get wrapped, there would be "angular is not defined" error.
         require(["angular"], function () {
-            // Require app bootstrap
+            // Require app bootstrap file.
             require([mainFile], function () {
-                console.info("Plug.bot Bootstrapped.");
+                console.info("Plug.bot bootstrapped.");
             });
         });
     }
@@ -254,7 +255,7 @@
         return !_.isUndefined(loadedFiles[url]);
     }
 
-    function fileDone(url) {
+    function onFileDone(url) {
         if (!isFileLoaded(url)) {
             loadedFileCount += 1;
             loadedFiles[url] = true;
@@ -265,13 +266,13 @@
         }
     }
 
-    function fileFail(url, options) {
+    function onFileFail(url, options) {
         if (!isAborted) {
             isAborted = true;
 
             options.error = options.error || "Unknown";
 
-            console.error("Plug.bot Failed to Load the File, Stopping Now.\n" +
+            console.error("Plug.bot failed to load the following file, stopping now.\n" +
                 "\n" +
                 "File: " + url + "\n" +
                 "Error: " + options.error
@@ -294,7 +295,7 @@
             timeout: TIMEOUT_LOADING,
             doneCallback: function () {
                 if (!isAborted) {
-                    fileDone(url);
+                    onFileDone(url);
                 }
             },
             failCallback: function (jqXHR) {
@@ -303,7 +304,7 @@
 
                     // Check retry times
                     if (numRetry === MAX_RETRY_TIMES) {
-                        fileFail(url, {
+                        onFileFail(url, {
                             error: jqXHR.status
                         });
                     } else {
@@ -322,7 +323,7 @@
             class: "plugbot-css",
             doneCallback: function () {
                 if (!isAborted) {
-                    fileDone(url);
+                    onFileDone(url);
                 }
             },
             failCallback: function () {
@@ -331,7 +332,7 @@
 
                     // Check retry times
                     if (numRetry === MAX_RETRY_TIMES) {
-                        fileFail(url, {
+                        onFileFail(url, {
                             error: "Timeout"
                         });
                     } else {
@@ -345,12 +346,12 @@
     }
 
     function loadFiles() {
-        var i;
         var listScripts;
         var listStylesheets;
+        var i;
 
-        listScripts = convertFilesUrl(scripts, DIR_SCRIPT);
-        listStylesheets = convertFilesUrl(stylesheets, DIR_STYLESHEET);
+        listScripts = getConvertedFilePaths(scripts, DIR_SCRIPT);
+        listStylesheets = getConvertedFilePaths(stylesheets, DIR_STYLESHEET);
 
         totalFileCount = listScripts.length + listStylesheets.length;
 
@@ -371,61 +372,51 @@
      * Waiting dependencies
      */
 
-    function waitCore(next) {
-        var id;
-        var requiredVariableIndex = 0;
-        var requiredVariable;
+    function waitDependencies(dependencies, intervalCheck, validationHandler, next) {
+        var idChecker;
+        var index = 0;
+        var dependency = dependencies[index];
 
-        requiredVariable = requiredVariables[0];
+        idChecker = setInterval(function () {
+            if (validationHandler(dependency)) {
+                index += 1;
 
-        id = setInterval(function () {
-            if (window[requiredVariable]) {
-                // Move to next dependency
-                requiredVariableIndex += 1;
-                if (requiredVariableIndex >= requiredVariables.length) {
-                    clearInterval(id);
-                    next();
+                if (index < dependencies.length) {
+                    dependency = dependencies[index];
                 } else {
-                    requiredVariable = requiredVariables[requiredVariableIndex];
+                    clearInterval(idChecker);
+                    next();
                 }
             }
-        }, INTERVAL_WAIT_CORE);
+        }, intervalCheck);
     }
 
-    function waitModule(next) {
-        var id = setInterval(function () {
-            if (requirejs.specified(requiredModule)) {
-                clearInterval(id);
-                next();
-            }
-        }, INTERVAL_WAIT_MODULE);
+    function waitJavaScriptVariables(next) {
+        waitDependencies(requiredJavaScriptVariables, INTERVAL_WAIT_JAVASCRIPT_VARIABLES,
+            function (dependency) {
+                return window[dependency];
+            }, next);
     }
 
-    function waitDoms(next) {
-        var id;
-        var requiredDomIndex = 0;
-        var requiredDom;
+    function waitRequireJSModules(next) {
+        waitDependencies(requiredRequireJSModules, INTERVAL_WAIT_REQUIREJS_MODULES,
+            function (dependency) {
+                return requirejs.specified(dependency);
+            }, next);
+    }
 
-        requiredDom = requiredDoms[0];
-
-        id = setInterval(function () {
-            if ($(requiredDom).length) {
-                requiredDomIndex += 1;
-                if (requiredDomIndex >= requiredDoms.length) {
-                    clearInterval(id);
-                    next();
-                } else {
-                    requiredDom = requiredDoms[requiredDomIndex];
-                }
-            }
-        }, INTERVAL_WAIT_DOM);
+    function waitWebpageElements(next) {
+        waitDependencies(requiredWebPageElements, INTERVAL_WAIT_WEBPAGE_ELEMENTS,
+            function (dependency) {
+                return $(dependency).length;
+            }, next);
     }
 
     /*
      * Initialization
      */
 
-    function loadDevelopmentVariables() {
+    function loadDevEnvVars() {
         // Default values
         DEBUG = false;
         BASE_DIR_TYPE = "public release";
@@ -437,28 +428,28 @@
         }
     }
 
-    function initialize() {
-        if (isSiteValid()) {
+    function init() {
+        if (isWebPageIntended()) {
             console.info("Initialize Plug.bot.");
 
             if (DEBUG) {
                 console.warn("Plug.bot DEBUG on.");
             }
 
-            removeBookmarkScript();
+            removeBookmarkletScript();
 
-            waitCore(function () {
-                waitModule(function () {
-                    waitDoms(function () {
+            waitJavaScriptVariables(function () {
+                waitRequireJSModules(function () {
+                    waitWebpageElements(function () {
                         loadFiles();
                     });
                 });
             });
         } else {
-            console.error("Plug.bot Not Bootstrapped Because of Wrong Url.");
+            console.error("Plug.bot not bootstrapped because the current webpage is not a plug.dj room.");
         }
     }
 
-    loadDevelopmentVariables();
-    initialize();
+    loadDevEnvVars();
+    init();
 }());

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.9 (2015-09-17)
+
+- Fix clicking "Media Link..." not working when the media is from SoundCloud.
+
+## 2.0.8 (2015-03-14)
+- Update framework.
+
 ## 2.0.7 (2015-03-01)
 - Clean up code
 

@@ -1,5 +1,5 @@
 /**
- * App bootstrap, load dependencies.
+ * App bootstrap file for loading dependencies.
  *
  * @module plugbot/main
  * @author ebola777@yahoo.com.tw (Shawn Chang)
@@ -10,9 +10,9 @@
 require(["angular", "domReady"], function (angular, domReady) {
     "use strict";
 
-    // Wait for DOMs to be ready
+    // Wait for DOMs to be ready.
     domReady(function () {
-        // Require app
+        // Require app.
         require(["plugbot/app"], function () {
             angular.bootstrap(angular.element("#app"), ["app"]);
         });

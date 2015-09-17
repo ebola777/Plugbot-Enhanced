@@ -32,7 +32,8 @@ angular.module("main.tpl.html", []).run(["$templateCache", function($templateCac
     "            <li class=\"item\"\n" +
     "                data-ng-repeat=\"item in items\"\n" +
     "                data-ng-class=\"{ 'enabled': isEnabled(item), disabled: !isEnabled(item) }\"\n" +
-    "                data-ng-click=\"click(item)\">{{item.text}}</li>\n" +
+    "                data-ng-click=\"click(item)\">{{item.text}}\n" +
+    "            </li>\n" +
     "            <li><a class=\"item item-url\" data-href=\"mediaUrl\" data-ng-show=\"isExpanded\">Media Link...</a></li>\n" +
     "        </ul>\n" +
     "    </div>\n" +
@@ -68,7 +69,8 @@ angular.module("settings.tpl.html", []).run(["$templateCache", function($templat
     "        <ul>\n" +
     "            <li class=\"item\"\n" +
     "                data-ng-repeat=\"item in items\"\n" +
-    "                data-ng-click=\"item.click()\">{{item.text}}</li>\n" +
+    "                data-ng-click=\"item.click()\">{{item.text}}\n" +
+    "            </li>\n" +
     "        </ul>\n" +
     "    </div>\n" +
     "</div>\n" +

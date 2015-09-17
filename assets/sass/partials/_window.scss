@@ -6,7 +6,7 @@
   position: absolute;
   left: 100px;
   top: 100px;
-  // Decided by using the value returned by `plugbot.dev.getSiteHighestZIndex()` on plug.dj room plus 1
+  // Decided by using the value returned by `plugbot.dev.getSiteHighestZIndex()` on plug.dj room plus 1.
   z-index: 10;
   background: rgb(50, 55, 66);
   border: 1px solid #1c1f25;
@@ -19,7 +19,6 @@
     padding: 6px 10px;
     border-bottom: 1px solid #1c1f25;
     font-size: 18px;
-    font-weight: 300;
     cursor: move;
     white-space: nowrap;
   }

@@ -23,7 +23,7 @@ define([
         "app.views"
     ]);
 
-    // Inject DOMs and export APIs
+    // Inject DOMs and export APIs.
     app.run(["DomInjection", "Export", _.noop]);
 
     return app;
