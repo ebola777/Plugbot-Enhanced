@@ -1,3 +1,7 @@
+## News
+
+This script has been **obsolete** with the shutdown of plug.dj on Sep 28 2015.
+
 # Plug.bot Enhanced
 
 A simple and elegant auto-woot script for [plug.dj](https://plug.dj/).
